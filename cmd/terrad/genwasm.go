@@ -10,6 +10,7 @@ import (
 	wasmcli "github.com/CosmWasm/wasmd/x/wasm/client/cli"
 )
 
+// AddGenesisWasmMsgCmd add wasm genesis message
 func AddGenesisWasmMsgCmd(defaultNodeHome string) *cobra.Command {
 	txCmd := &cobra.Command{
 		Use:                        "add-wasm-genesis-message",
@@ -30,6 +31,7 @@ func AddGenesisWasmMsgCmd(defaultNodeHome string) *cobra.Command {
 	return txCmd
 }
 
+// GetWasmCmdOptions return wasm command options
 func GetWasmCmdOptions() []cosmoscmd.Option {
 	var options []cosmoscmd.Option
 
