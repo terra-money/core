@@ -39,6 +39,7 @@ import (
 	ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
 	ibc "github.com/cosmos/ibc-go/v3/modules/core"
+	"github.com/strangelove-ventures/packet-forward-middleware/v2/router"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 )
@@ -100,26 +101,27 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	// the VersionMap to simulate upgrading with a new module.
 	_, err := app.mm.RunMigrations(ctx, app.configurator,
 		module.VersionMap{
-			"bank":               bank.AppModule{}.ConsensusVersion(),
-			"auth":               auth.AppModule{}.ConsensusVersion(),
-			"authz":              authzmodule.AppModule{}.ConsensusVersion(),
-			"staking":            staking.AppModule{}.ConsensusVersion(),
-			"mint":               mint.AppModule{}.ConsensusVersion(),
-			"distribution":       distribution.AppModule{}.ConsensusVersion(),
-			"slashing":           slashing.AppModule{}.ConsensusVersion(),
-			"gov":                gov.AppModule{}.ConsensusVersion(),
-			"params":             params.AppModule{}.ConsensusVersion(),
-			"upgrade":            upgrade.AppModule{}.ConsensusVersion(),
-			"feegrant":           feegrantmodule.AppModule{}.ConsensusVersion(),
-			"evidence":           evidence.AppModule{}.ConsensusVersion(),
-			"crisis":             crisis.AppModule{}.ConsensusVersion(),
-			"genutil":            genutil.AppModule{}.ConsensusVersion(),
-			"capability":         capability.AppModule{}.ConsensusVersion(),
-			"wasm":               wasm.AppModule{}.ConsensusVersion(),
-			"ibc":                ibc.AppModule{}.ConsensusVersion(),
-			"transfer":           transfer.AppModule{}.ConsensusVersion(),
-			"interchainaccounts": ica.AppModule{}.ConsensusVersion(),
-			"vesting":            vesting.AppModule{}.ConsensusVersion(),
+			"bank":                   bank.AppModule{}.ConsensusVersion(),
+			"auth":                   auth.AppModule{}.ConsensusVersion(),
+			"authz":                  authzmodule.AppModule{}.ConsensusVersion(),
+			"staking":                staking.AppModule{}.ConsensusVersion(),
+			"mint":                   mint.AppModule{}.ConsensusVersion(),
+			"distribution":           distribution.AppModule{}.ConsensusVersion(),
+			"slashing":               slashing.AppModule{}.ConsensusVersion(),
+			"gov":                    gov.AppModule{}.ConsensusVersion(),
+			"params":                 params.AppModule{}.ConsensusVersion(),
+			"upgrade":                upgrade.AppModule{}.ConsensusVersion(),
+			"feegrant":               feegrantmodule.AppModule{}.ConsensusVersion(),
+			"evidence":               evidence.AppModule{}.ConsensusVersion(),
+			"crisis":                 crisis.AppModule{}.ConsensusVersion(),
+			"genutil":                genutil.AppModule{}.ConsensusVersion(),
+			"capability":             capability.AppModule{}.ConsensusVersion(),
+			"wasm":                   wasm.AppModule{}.ConsensusVersion(),
+			"ibc":                    ibc.AppModule{}.ConsensusVersion(),
+			"transfer":               transfer.AppModule{}.ConsensusVersion(),
+			"interchainaccounts":     ica.AppModule{}.ConsensusVersion(),
+			"packetfowardmiddleware": router.AppModule{}.ConsensusVersion(),
+			"vesting":                vesting.AppModule{}.ConsensusVersion(),
 		},
 	)
 	require.NoError(t, err)
