@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-# mkdir -p ./tmp-swagger-gen
+mkdir -p ./tmp-swagger-gen
 proto_dirs=$(find ./third_party/proto/cosmos ./third_party/proto/ibc ./third_party/proto/cosmwasm -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 for dir in $proto_dirs; do
 
@@ -12,7 +12,7 @@ for dir in $proto_dirs; do
     buf protoc  \
     -I "third_party/proto" \
     "$query_file" \
-    --swagger_out=./client/docs/swagger-ui \
+    --swagger_out=./tmp-swagger-gen \
     --swagger_opt=logtostderr=true --swagger_opt=fqn_for_swagger_name=true --swagger_opt=simple_operation_ids=true
   fi
 done
@@ -20,7 +20,7 @@ done
 # combine swagger files
 # uses nodejs package `swagger-combine`.
 # all the individual swagger files need to be configured in `config.json` for merging
-# swagger-combine ./client/docs/config.json -o ./client/docs/swagger-ui/swagger.yaml -f yaml --continueOnConflictingPaths true --includeDefinitions true
+swagger-combine ./client/docs/config.json -o ./client/docs/swagger-ui/swagger.yaml -f yaml --continueOnConflictingPaths true --includeDefinitions true
 
 # clean swagger files
-# rm -rf ./tmp-swagger-gen
+rm -rf ./tmp-swagger-gen

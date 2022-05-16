@@ -2,6 +2,10 @@
 
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT := $(shell git log -1 --format='%H')
+LEDGER_ENABLED ?= true
+BINDIR ?= $(GOPATH)/bin
+BUILDDIR ?= $(CURDIR)/build
+DOCKER := $(shell which docker)
 
 # don't override user values
 ifeq (,$(VERSION))
@@ -12,12 +16,7 @@ ifeq (,$(VERSION))
   endif
 endif
 
-PACKAGES_SIMTEST=$(shell go list ./... | grep '/simulation')
-LEDGER_ENABLED ?= true
-SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
-TM_VERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::') # grab everything after the space in "github.com/tendermint/tendermint v0.34.7"
-DOCKER := $(shell which docker)
-BUILDDIR ?= $(CURDIR)/build
+TM_VERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
 
 export GO111MODULE = on
 
@@ -47,9 +46,16 @@ ifeq ($(LEDGER_ENABLED),true)
   endif
 endif
 
-ifeq (cleveldb,$(findstring cleveldb,$(TERRA_BUILD_OPTIONS)))
-  build_tags += gcc cleveldb
+ifeq (cleveldb,$(findstring cleveldb,$(COSMOS_BUILD_OPTIONS)))
+  build_tags += gcc
 endif
+ifeq (rocksdb,$(findstring rocksdb,$(COSMOS_BUILD_OPTIONS)))
+  build_tags += rocksdb
+endif
+ifeq (boltdb,$(findstring boltdb,$(COSMOS_BUILD_OPTIONS)))
+  build_tags += boltdb
+endif
+
 build_tags += $(BUILD_TAGS)
 build_tags := $(strip $(build_tags))
 
@@ -67,13 +73,28 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=terra \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
 			-X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TM_VERSION)
 
-ifeq (cleveldb,$(findstring cleveldb,$(TERRA_BUILD_OPTIONS)))
+# DB backend selection
+ifeq (cleveldb,$(findstring cleveldb,$(COSMOS_BUILD_OPTIONS)))
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
 endif
-ifeq ($(LINK_STATICALLY),true)
-  ldflags += -linkmode=external -extldflags "-Wl,-z,muldefs -static"
+ifeq (badgerdb,$(findstring badgerdb,$(COSMOS_BUILD_OPTIONS)))
+  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=badgerdb
 endif
-ifeq (,$(findstring nostrip,$(TERRA_BUILD_OPTIONS)))
+# handle rocksdb
+ifeq (rocksdb,$(findstring rocksdb,$(COSMOS_BUILD_OPTIONS)))
+  $(info ################################################################)
+  $(info To use rocksdb, you need to install rocksdb first)
+  $(info Please follow this guide https://github.com/rockset/rocksdb-cloud/blob/master/INSTALL.md)
+  $(info ################################################################)
+  CGO_ENABLED=1
+  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=rocksdb
+endif
+# handle boltdb
+ifeq (boltdb,$(findstring boltdb,$(COSMOS_BUILD_OPTIONS)))
+  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=boltdb
+endif
+
+ifeq (,$(findstring nostrip,$(COSMOS_BUILD_OPTIONS)))
   ldflags += -w -s
 endif
 ldflags += $(LDFLAGS)
@@ -81,17 +102,14 @@ ldflags := $(strip $(ldflags))
 
 BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
 # check for nostrip option
-ifeq (,$(findstring nostrip,$(TERRA_BUILD_OPTIONS)))
+ifeq (,$(findstring nostrip,$(COSMOS_BUILD_OPTIONS)))
   BUILD_FLAGS += -trimpath
 endif
- 
-#$(info $$BUILD_FLAGS is [$(BUILD_FLAGS)])
 
+# The below include contains the tools and runsim targets.
+include contrib/devtools/Makefile
 
-all: install
-
-install: go.sum 
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/terrad
+all: tools install lint test
 
 build: go.sum
 ifeq ($(OS),Windows_NT)
@@ -114,6 +132,9 @@ build-linux-with-shared-library:
 	docker cp temp:/usr/local/bin/terrad $(BUILDDIR)/
 	docker cp temp:/lib/libwasmvm.so $(BUILDDIR)/
 	docker rm temp
+
+install: go.sum 
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/terrad
 
 update-swagger-docs: statik
 	$(BINDIR)/statik -src=client/docs/swagger-ui -dest=client/docs -f -m
