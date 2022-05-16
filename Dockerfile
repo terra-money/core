@@ -5,7 +5,6 @@ ARG arch=x86_64
 
 # See https://github.com/terra-money/wasmvm/releases
 ENV LIBWASMVM_VERSION=v1.0.0-rc.0
-ENV LIBWASMVM_SHA256=d1be6826066e9d292cefc71ba7ca8107a7c7fbf5a241b3d7a5c5ee4fa60cb799
 
 # this comes from standard alpine nightly file
 #  https://github.com/rust-lang/docker-rust-nightly/blob/master/alpine3.12/Dockerfile
