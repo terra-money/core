@@ -4856,7 +4856,7 @@ paths:
             type: string
         '500':
           description: Internal Server Error
-  /wasm/codes:
+  /wasm/code:
     post:
       deprecated: true
       summary: Generate wasm store code message
@@ -4969,7 +4969,36 @@ paths:
           description: Bad request
         '500':
           description: Internal Server Error
-  /wasm/codes/{codeID}:
+    get:
+      deprecated: true
+      summary: List CodeInfos
+      tags:
+        - Wasm
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                code_id:
+                  type: number
+                creator:
+                  type: string
+                data_hash:
+                  type: string
+                instantiate_permission:
+                  type: object
+                  properties:
+                    permission:
+                      type: number
+                      description: '0: Unspecified, 1: Nobody, 2: OnlyAddress, 3: Everybody'
+                    address:
+                      type: string
+  /wasm/code/{codeID}:
     post:
       deprecated: true
       summary: Instantiate wasm contract
@@ -5030,7 +5059,10 @@ paths:
                     description: >-
                       Estimate gas for a transaction (cannot be used in
                       conjunction with generate_only)
-              init_coins:
+              label:
+                type: string
+                description: string contract label
+              deposit:
                 type: array
                 items:
                   type: object
@@ -5041,10 +5073,10 @@ paths:
                     amount:
                       type: string
                       example: '50'
-              init_msg:
+              msg:
                 type: string
-                description: json formatted string
-                example: '{}'
+                description: base64 encoded binary msg
+                example: Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH
               admin:
                 type: string
                 description: bech32 encoded address
@@ -5122,11 +5154,52 @@ paths:
           schema:
             type: object
             properties:
-              code_hash:
+              data:
                 type: string
-              creator:
-                type: string
-  /wasm/contracts/{contractAddress}:
+                description: wasm bytes
+                example: Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH
+              code_info:
+                type: object
+                properties:
+                  code_id:
+                    type: number
+                  creator:
+                    type: string
+                  data_hash:
+                    type: string
+                  instantiate_permission:
+                    type: object
+                    properties:
+                      permission:
+                        type: number
+                        description: >-
+                          0: Unspecified, 1: Nobody, 2: OnlyAddress, 3:
+                          Everybody
+                      address:
+                        type: string
+  /wasm/code/{codeID}/contracts:
+    get:
+      deprecated: true
+      summary: Query list contracts which are using the codeID
+      tags:
+        - Wasm
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: codeID
+          description: code ID you want to query
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              type: string
+              description: contract addresses
+  /wasm/contract/{contractAddr}:
     post:
       deprecated: true
       summary: Execute wasm contract message
@@ -5136,7 +5209,7 @@ paths:
         - application/json
       parameters:
         - in: path
-          name: contractAddress
+          name: contractAddr
           description: contract address you want to execute
           required: true
           type: string
@@ -5200,7 +5273,8 @@ paths:
                       example: '50'
               exec_msg:
                 type: string
-                example: '{}'
+                description: base64 encoded binary msg
+                example: Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH
       responses:
         '200':
           description: OK
@@ -5264,7 +5338,7 @@ paths:
         - application/json
       parameters:
         - in: path
-          name: contractAddress
+          name: contractAddr
           description: contract address you want to execute
           required: true
           type: string
@@ -5274,23 +5348,35 @@ paths:
           schema:
             type: object
             properties:
-              code_id:
-                type: string
               address:
                 type: string
                 description: bech32 encoded address
                 example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
-              creator:
-                type: string
-                description: bech32 encoded address
-                example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
-              admin:
-                type: string
-                description: bech32 encoded address
-                example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
-              init_msg:
-                type: string
-  /wasm/contracts/{contractAddress}/migrate:
+              contract_info:
+                type: object
+                properties:
+                  code_id:
+                    type: string
+                  creator:
+                    type: string
+                    description: bech32 encoded address
+                    example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
+                  admin:
+                    type: string
+                    description: bech32 encoded address
+                    example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
+                  label:
+                    type: string
+                  created_at:
+                    type: object
+                    properties:
+                      block_height:
+                        type: number
+                      tx_index:
+                        type: number
+                  ibc_port_id:
+                    type: string
+  /wasm/contract/{contractAddr}/code:
     post:
       deprecated: true
       summary: Migrate wasm contract to new code base
@@ -5300,7 +5386,7 @@ paths:
         - application/json
       parameters:
         - in: path
-          name: contractAddress
+          name: contractAddr
           description: contract address you want to migrate
           required: true
           type: string
@@ -5351,13 +5437,18 @@ paths:
                     description: >-
                       Estimate gas for a transaction (cannot be used in
                       conjunction with generate_only)
-              new_code_id:
+              admin:
+                type: string
+                description: bech32 encoded address
+                example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
+              code_id:
                 type: number
                 format: integer
                 example: 10
-              migrate_msg:
+              msg:
                 type: string
-                example: '{}'
+                description: base64 encoded binary msg
+                example: Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH
       responses:
         '200':
           description: OK
@@ -5412,7 +5503,7 @@ paths:
           description: Bad request
         '500':
           description: Internal Server Error
-  /wasm/contracts/{contractAddress}/admin/update:
+  /wasm/contract/{contractAddr}/admin:
     post:
       deprecated: true
       summary: Update wasm contract admin to new address
@@ -5422,7 +5513,7 @@ paths:
         - application/json
       parameters:
         - in: path
-          name: contractAddress
+          name: contractAddr
           description: contract address you want to update admin
           required: true
           type: string
@@ -5473,7 +5564,7 @@ paths:
                     description: >-
                       Estimate gas for a transaction (cannot be used in
                       conjunction with generate_only)
-              new_admin:
+              admin:
                 type: string
                 description: bech32 encoded address
                 example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
@@ -5531,122 +5622,29 @@ paths:
           description: Bad request
         '500':
           description: Internal Server Error
-  /wasm/contracts/{contractAddress}/admin/clear:
-    post:
+  /wasm/contract/{contractAddr}/state:
+    get:
       deprecated: true
-      summary: Clear wasm contract admin to make the contract un-migratable
+      summary: Query all contract state
       tags:
         - Wasm
-      produces:
-        - application/json
       parameters:
         - in: path
-          name: contractAddress
-          description: contract address you want to clear admin
+          name: contractAddr
+          description: contract address you want to lookup
           required: true
           type: string
-        - in: body
-          name: clear contract admin request body
-          schema:
-            type: object
-            properties:
-              base_req:
-                type: object
-                properties:
-                  from:
-                    type: string
-                    example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
-                    description: Sender address or Keybase name to generate a transaction
-                  memo:
-                    type: string
-                    example: Sent via Terra Station 🚀
-                  chain_id:
-                    type: string
-                    example: Columbus-5
-                  account_number:
-                    type: string
-                    example: '0'
-                  sequence:
-                    type: string
-                    example: '1'
-                  gas:
-                    type: string
-                    example: '200000'
-                  gas_adjustment:
-                    type: string
-                    example: '1.2'
-                  fees:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                          example: uluna
-                        amount:
-                          type: string
-                          example: '50'
-                  simulate:
-                    type: boolean
-                    example: false
-                    description: >-
-                      Estimate gas for a transaction (cannot be used in
-                      conjunction with generate_only)
+      produces:
+        - application/json
       responses:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              msg:
-                type: array
-                items:
-                  type: string
-              fee:
-                type: object
-                properties:
-                  gas:
-                    type: string
-                  amount:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        denom:
-                          type: string
-                          example: uluna
-                        amount:
-                          type: string
-                          example: '50'
-              memo:
-                type: string
-              signature:
-                type: object
-                properties:
-                  signature:
-                    type: string
-                    example: >-
-                      MEUCIQD02fsDPra8MtbRsyB1w7bqTM55Wu138zQbFcWx4+CFyAIge5WNPfKIuvzBZ69MyqHsqD8S1IwiEp+iUb6VSdtlpgY=
-                  pub_key:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                        example: tendermint/PubKeySecp256k1
-                      value:
-                        type: string
-                        example: Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH
-                  account_number:
-                    type: string
-                    example: '0'
-                  sequence:
-                    type: string
-                    example: '0'
-        '400':
-          description: Bad request
-        '500':
-          description: Internal Server Error
-  /wasm/contracts/{contractAddress}/store:
+            type: array
+            items:
+              type: object
+              example: {}
+  /wasm/contract/{contractAddr}/smart/{query}:
     get:
       deprecated: true
       summary: Get stored information with query msg
@@ -5654,16 +5652,16 @@ paths:
         - Wasm
       parameters:
         - in: path
-          name: contractAddress
+          name: contractAddr
           description: contract address you want to lookup
           required: true
           type: string
-        - in: query
-          name: query_msg
-          description: json formatted query msg
+        - in: path
+          name: query
+          description: hex encoded json string
           required: true
           type: string
-          x-example: '{}'
+          x-example: 7B7D
       produces:
         - application/json
       responses:
@@ -5671,7 +5669,8 @@ paths:
           description: OK
           schema:
             type: string
-  /wasm/contracts/{contractAddress}/store/raw:
+            description: base64-encoded raw bytes
+  /wasm/contract/{contractAddr}/raw/{key}:
     get:
       deprecated: true
       summary: Get stored information with store key
@@ -5679,13 +5678,13 @@ paths:
         - Wasm
       parameters:
         - in: path
-          name: contractAddress
+          name: contractAddr
           description: contract address you want to lookup
           required: true
           type: string
-        - in: query
+        - in: path
           name: key
-          description: base64 encoded raw key to access
+          description: hex encoded raw key to access
           required: true
           type: string
       produces:
@@ -5695,57 +5694,37 @@ paths:
           description: OK
           schema:
             type: string
-  /wasm/parameters:
+  /wasm/contract/{contractAddr}/history:
     get:
       deprecated: true
-      summary: Get wasm module params
+      summary: Get contact historical infos
       tags:
         - Wasm
+      parameters:
+        - in: path
+          name: contractAddr
+          description: contract address you want to lookup
+          required: true
+          type: string
       produces:
         - application/json
       responses:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              max_contract_size:
-                type: number
-                format: integer
-                example: '1000000'
-                description: allowed max contract bytes size
-              max_contract_gas:
-                type: number
-                format: integer
-                example: '1000000'
-                description: allowed max gas usages per each contract execution
-              max_contract_msg_size:
-                type: number
-                format: integer
-                example: '1000000'
-                description: allowed max contract exe msg bytes size
-              max_contract_data_size:
-                type: number
-                format: integer
-                example: '100'
-                description: allowed max contract return data size
-              event_params:
-                type: object
-                properties:
-                  max_attribute_num:
-                    type: string
-                    example: '128'
-                    description: 'allowed max # of contract attribute num'
-                  max_attribute_key_length:
-                    type: string
-                    example: '128'
-                    description: allowed max length of a contract event attribute key
-                  max_attribute_value_length:
-                    type: string
-                    example: '128'
-                    description: allowed max length of a contract event attribute value
-        '404':
-          description: Not Found
+            type: array
+            items:
+              type: object
+              properties:
+                operation:
+                  type: number
+                  description: '0: Unspecified, 1: TypeInit, 2: TypeMigrate, 3: TypeGenesis'
+                code_id:
+                  type: number
+                msg:
+                  type: string
+                  description: base64 encoded binary msg
+                  example: Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH
   /cosmos/auth/v1beta1/accounts:
     get:
       summary: Accounts returns all the existing accounts
@@ -39443,44 +39422,6 @@ definitions:
       end_time:
         type: string
         example: '0'
-  WasmParams:
-    type: object
-    properties:
-      max_contract_size:
-        type: number
-        format: integer
-        example: '1000000'
-        description: allowed max contract bytes size
-      max_contract_gas:
-        type: number
-        format: integer
-        example: '1000000'
-        description: allowed max gas usages per each contract execution
-      max_contract_msg_size:
-        type: number
-        format: integer
-        example: '1000000'
-        description: allowed max contract exe msg bytes size
-      max_contract_data_size:
-        type: number
-        format: integer
-        example: '100'
-        description: allowed max contract return data size
-      event_params:
-        type: object
-        properties:
-          max_attribute_num:
-            type: string
-            example: '128'
-            description: 'allowed max # of contract attribute num'
-          max_attribute_key_length:
-            type: string
-            example: '128'
-            description: allowed max length of a contract event attribute key
-          max_attribute_value_length:
-            type: string
-            example: '128'
-            description: allowed max length of a contract event attribute value
   MultiSignPubKey:
     type: object
     properties:
@@ -39528,22 +39469,91 @@ definitions:
                 amount:
                   type: string
                   example: '50'
+  CodeResponse:
+    type: object
+    properties:
+      data:
+        type: string
+        description: wasm bytes
+        example: Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH
+      code_info:
+        type: object
+        properties:
+          code_id:
+            type: number
+          creator:
+            type: string
+          data_hash:
+            type: string
+          instantiate_permission:
+            type: object
+            properties:
+              permission:
+                type: number
+                description: '0: Unspecified, 1: Nobody, 2: OnlyAddress, 3: Everybody'
+              address:
+                type: string
   CodeInfo:
     type: object
     properties:
-      code_hash:
-        type: string
+      code_id:
+        type: number
       creator:
         type: string
+      data_hash:
+        type: string
+      instantiate_permission:
+        type: object
+        properties:
+          permission:
+            type: number
+            description: '0: Unspecified, 1: Nobody, 2: OnlyAddress, 3: Everybody'
+          address:
+            type: string
+  AccessConfig:
+    type: object
+    properties:
+      permission:
+        type: number
+        description: '0: Unspecified, 1: Nobody, 2: OnlyAddress, 3: Everybody'
+      address:
+        type: string
+  ContractInfoRes:
+    type: object
+    properties:
+      address:
+        type: string
+        description: bech32 encoded address
+        example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
+      contract_info:
+        type: object
+        properties:
+          code_id:
+            type: string
+          creator:
+            type: string
+            description: bech32 encoded address
+            example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
+          admin:
+            type: string
+            description: bech32 encoded address
+            example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
+          label:
+            type: string
+          created_at:
+            type: object
+            properties:
+              block_height:
+                type: number
+              tx_index:
+                type: number
+          ibc_port_id:
+            type: string
   ContractInfo:
     type: object
     properties:
       code_id:
         type: string
-      address:
-        type: string
-        description: bech32 encoded address
-        example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
       creator:
         type: string
         description: bech32 encoded address
@@ -39552,8 +39562,24 @@ definitions:
         type: string
         description: bech32 encoded address
         example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
-      init_msg:
+      label:
         type: string
+      created_at:
+        type: object
+        properties:
+          block_height:
+            type: number
+          tx_index:
+            type: number
+      ibc_port_id:
+        type: string
+  AbsoluteTxPosition:
+    type: object
+    properties:
+      block_height:
+        type: number
+      tx_index:
+        type: number
   StoreCodeReq:
     type: object
     properties:
@@ -39695,7 +39721,10 @@ definitions:
             description: >-
               Estimate gas for a transaction (cannot be used in conjunction with
               generate_only)
-      init_coins:
+      label:
+        type: string
+        description: string contract label
+      deposit:
         type: array
         items:
           type: object
@@ -39706,10 +39735,10 @@ definitions:
             amount:
               type: string
               example: '50'
-      init_msg:
+      msg:
         type: string
-        description: json formatted string
-        example: '{}'
+        description: base64 encoded binary msg
+        example: Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH
       admin:
         type: string
         description: bech32 encoded address
@@ -39772,7 +39801,8 @@ definitions:
               example: '50'
       exec_msg:
         type: string
-        example: '{}'
+        description: base64 encoded binary msg
+        example: Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH
   MigrateContractReq:
     type: object
     properties:
@@ -39818,13 +39848,18 @@ definitions:
             description: >-
               Estimate gas for a transaction (cannot be used in conjunction with
               generate_only)
-      new_code_id:
+      admin:
+        type: string
+        description: bech32 encoded address
+        example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
+      code_id:
         type: number
         format: integer
         example: 10
-      migrate_msg:
+      msg:
         type: string
-        example: '{}'
+        description: base64 encoded binary msg
+        example: Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH
   UpdateContractAdminReq:
     type: object
     properties:
@@ -39870,303 +39905,22 @@ definitions:
             description: >-
               Estimate gas for a transaction (cannot be used in conjunction with
               generate_only)
-      new_admin:
+      admin:
         type: string
         description: bech32 encoded address
         example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
-  ClearContractAdminReq:
+  ContractCodeHistoryEntry:
     type: object
     properties:
-      base_req:
-        type: object
-        properties:
-          from:
-            type: string
-            example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
-            description: Sender address or Keybase name to generate a transaction
-          memo:
-            type: string
-            example: Sent via Terra Station 🚀
-          chain_id:
-            type: string
-            example: Columbus-5
-          account_number:
-            type: string
-            example: '0'
-          sequence:
-            type: string
-            example: '1'
-          gas:
-            type: string
-            example: '200000'
-          gas_adjustment:
-            type: string
-            example: '1.2'
-          fees:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                  example: uluna
-                amount:
-                  type: string
-                  example: '50'
-          simulate:
-            type: boolean
-            example: false
-            description: >-
-              Estimate gas for a transaction (cannot be used in conjunction with
-              generate_only)
-  GenericAuthorization:
-    type: object
-    properties:
-      type:
+      operation:
+        type: number
+        description: '0: Unspecified, 1: TypeInit, 2: TypeMigrate, 3: TypeGenesis'
+      code_id:
+        type: number
+      msg:
         type: string
-        example: msgauth/GenericAuthorization
-      value:
-        type: object
-        properties:
-          msg_type:
-            type: string
-            example: send
-  SendAuthorization:
-    type: object
-    properties:
-      type:
-        type: string
-        example: msgauth/SendAuthorization
-      value:
-        type: object
-        properties:
-          spend_limit:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                  example: uluna
-                amount:
-                  type: string
-                  example: '50'
-  GenericGrantInfo:
-    type: object
-    properties:
-      authorization:
-        type: object
-        properties:
-          type:
-            type: string
-            example: msgauth/GenericAuthorization
-          value:
-            type: object
-            properties:
-              msg_type:
-                type: string
-                example: send
-      expiration:
-        type: string
-        example: '2021-06-24T09:33:20.012999Z'
-  SendGrantInfo:
-    type: object
-    properties:
-      authorization:
-        type: object
-        properties:
-          type:
-            type: string
-            example: msgauth/SendAuthorization
-          value:
-            type: object
-            properties:
-              spend_limit:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    denom:
-                      type: string
-                      example: uluna
-                    amount:
-                      type: string
-                      example: '50'
-      expiration:
-        type: string
-        example: '2021-06-24T09:33:20.012999Z'
-  GrantReq:
-    type: object
-    required:
-      - base_req
-      - period
-    properties:
-      base_req:
-        type: object
-        properties:
-          from:
-            type: string
-            example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
-            description: Sender address or Keybase name to generate a transaction
-          memo:
-            type: string
-            example: Sent via Terra Station 🚀
-          chain_id:
-            type: string
-            example: Columbus-5
-          account_number:
-            type: string
-            example: '0'
-          sequence:
-            type: string
-            example: '1'
-          gas:
-            type: string
-            example: '200000'
-          gas_adjustment:
-            type: string
-            example: '1.2'
-          fees:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                  example: uluna
-                amount:
-                  type: string
-                  example: '50'
-          simulate:
-            type: boolean
-            example: false
-            description: >-
-              Estimate gas for a transaction (cannot be used in conjunction with
-              generate_only)
-      period:
-        type: string
-        description: nano second of time duration
-        example: '3600000000000'
-      limit:
-        type: array
-        items:
-          type: object
-          properties:
-            denom:
-              type: string
-              example: uluna
-            amount:
-              type: string
-              example: '50'
-        description: required when grant MsgType == send
-  RevokeGrantReq:
-    type: object
-    required:
-      - base_req
-    properties:
-      base_req:
-        type: object
-        properties:
-          from:
-            type: string
-            example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
-            description: Sender address or Keybase name to generate a transaction
-          memo:
-            type: string
-            example: Sent via Terra Station 🚀
-          chain_id:
-            type: string
-            example: Columbus-5
-          account_number:
-            type: string
-            example: '0'
-          sequence:
-            type: string
-            example: '1'
-          gas:
-            type: string
-            example: '200000'
-          gas_adjustment:
-            type: string
-            example: '1.2'
-          fees:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                  example: uluna
-                amount:
-                  type: string
-                  example: '50'
-          simulate:
-            type: boolean
-            example: false
-            description: >-
-              Estimate gas for a transaction (cannot be used in conjunction with
-              generate_only)
-  ExecuteGrantReq:
-    type: object
-    required:
-      - base_req
-      - msgs
-    properties:
-      base_req:
-        type: object
-        properties:
-          from:
-            type: string
-            example: terra1wg2mlrxdmnnkkykgqg4znky86nyrtc45q336yv
-            description: Sender address or Keybase name to generate a transaction
-          memo:
-            type: string
-            example: Sent via Terra Station 🚀
-          chain_id:
-            type: string
-            example: Columbus-5
-          account_number:
-            type: string
-            example: '0'
-          sequence:
-            type: string
-            example: '1'
-          gas:
-            type: string
-            example: '200000'
-          gas_adjustment:
-            type: string
-            example: '1.2'
-          fees:
-            type: array
-            items:
-              type: object
-              properties:
-                denom:
-                  type: string
-                  example: uluna
-                amount:
-                  type: string
-                  example: '50'
-          simulate:
-            type: boolean
-            example: false
-            description: >-
-              Estimate gas for a transaction (cannot be used in conjunction with
-              generate_only)
-      msgs:
-        type: array
-        items:
-          type: string
-  TaxCap:
-    type: object
-    properties:
-      denom:
-        type: string
-        example: uluna
-      tax_cap:
-        type: string
-        example: '50'
+        description: base64 encoded binary msg
+        example: Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH
   cosmos.auth.v1beta1.Params:
     type: object
     properties:

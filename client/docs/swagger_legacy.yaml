@@ -1986,7 +1986,7 @@ paths:
             type: string
         500:
           description: Internal Server Error
-  /wasm/codes:
+  /wasm/code:
     post:
       deprecated: true
       summary: Generate wasm store code message
@@ -2008,7 +2008,21 @@ paths:
           description: Bad request
         500:
           description: Internal Server Error
-  /wasm/codes/{codeID}:
+    get:
+      deprecated: true
+      summary: List CodeInfos
+      tags:
+        - Wasm
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/CodeInfo"
+  /wasm/code/{codeID}:
     post:
       deprecated: true
       summary: Instantiate wasm contract
@@ -2052,8 +2066,30 @@ paths:
         200:
           description: OK
           schema:
-            $ref: "#/definitions/CodeInfo"
-  /wasm/contracts/{contractAddress}:
+            $ref: "#/definitions/CodeResponse"
+  /wasm/code/{codeID}/contracts:
+    get:
+      deprecated: true
+      summary: Query list contracts which are using the codeID
+      tags:
+        - Wasm
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: codeID
+          description: code ID you want to query
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: string
+              description: contract addresses
+  /wasm/contract/{contractAddr}:
     post:
       deprecated: true
       summary: Execute wasm contract message
@@ -2063,7 +2099,7 @@ paths:
         - application/json
       parameters:
         - in: path
-          name: contractAddress
+          name: contractAddr
           description: contract address you want to execute
           required: true
           type: string
@@ -2089,7 +2125,7 @@ paths:
         - application/json
       parameters:
         - in: path
-          name: contractAddress
+          name: contractAddr
           description: contract address you want to execute
           required: true
           type: string
@@ -2097,8 +2133,8 @@ paths:
         200:
           description: OK
           schema:
-            $ref: "#/definitions/ContractInfo"
-  /wasm/contracts/{contractAddress}/migrate:
+            $ref: "#/definitions/ContractInfoRes"
+  /wasm/contract/{contractAddr}/code:
     post:
       deprecated: true
       summary: Migrate wasm contract to new code base
@@ -2108,7 +2144,7 @@ paths:
         - application/json
       parameters:
         - in: path
-          name: contractAddress
+          name: contractAddr
           description: contract address you want to migrate
           required: true
           type: string
@@ -2125,7 +2161,7 @@ paths:
           description: Bad request
         500:
           description: Internal Server Error
-  /wasm/contracts/{contractAddress}/admin/update:
+  /wasm/contract/{contractAddr}/admin:
     post:
       deprecated: true
       summary: Update wasm contract admin to new address
@@ -2135,7 +2171,7 @@ paths:
         - application/json
       parameters:
         - in: path
-          name: contractAddress
+          name: contractAddr
           description: contract address you want to update admin
           required: true
           type: string
@@ -2152,34 +2188,29 @@ paths:
           description: Bad request
         500:
           description: Internal Server Error
-  /wasm/contracts/{contractAddress}/admin/clear:
-    post:
+  /wasm/contract/{contractAddr}/state:
+    get:
       deprecated: true
-      summary: Clear wasm contract admin to make the contract un-migratable
+      summary: Query all contract state
       tags:
         - Wasm
-      produces:
-        - application/json
       parameters:
         - in: path
-          name: contractAddress
-          description: contract address you want to clear admin
+          name: contractAddr
+          description: contract address you want to lookup
           required: true
           type: string
-        - in: body
-          name: clear contract admin request body
-          schema:
-            $ref: "#/definitions/ClearContractAdminReq"
+      produces:
+        - application/json
       responses:
         200:
           description: OK
           schema:
-            $ref: "#/definitions/StdTx"
-        400:
-          description: Bad request
-        500:
-          description: Internal Server Error
-  /wasm/contracts/{contractAddress}/store:
+            type: array
+            items:
+              type: object
+              example: {}
+  /wasm/contract/{contractAddr}/smart/{query}:
     get:
       deprecated: true
       summary: Get stored information with query msg
@@ -2187,16 +2218,16 @@ paths:
         - Wasm
       parameters:
         - in: path
-          name: contractAddress
+          name: contractAddr
           description: contract address you want to lookup
           required: true
           type: string
-        - in: query
-          name: query_msg
-          description: json formatted query msg
+        - in: path
+          name: query
+          description: hex encoded json string
           required: true
           type: string
-          x-example: "{}"
+          x-example: "7B7D"
       produces:
         - application/json
       responses:
@@ -2204,7 +2235,8 @@ paths:
           description: OK
           schema:
             type: string
-  /wasm/contracts/{contractAddress}/store/raw:
+            description: base64-encoded raw bytes
+  /wasm/contract/{contractAddr}/raw/{key}:
     get:
       deprecated: true
       summary: Get stored information with store key
@@ -2212,13 +2244,13 @@ paths:
         - Wasm
       parameters:
         - in: path
-          name: contractAddress
+          name: contractAddr
           description: contract address you want to lookup
           required: true
           type: string
-        - in: query
+        - in: path
           name: key
-          description: base64 encoded raw key to access
+          description: hex encoded raw key to access
           required: true
           type: string
       produces:
@@ -2228,21 +2260,27 @@ paths:
           description: OK
           schema:
             type: string
-  /wasm/parameters:
+  /wasm/contract/{contractAddr}/history:
     get:
       deprecated: true
-      summary: Get wasm module params
+      summary: Get contact historical infos
       tags:
         - Wasm
+      parameters:
+        - in: path
+          name: contractAddr
+          description: contract address you want to lookup
+          required: true
+          type: string
       produces:
         - application/json
       responses:
         200:
           description: OK
           schema:
-            $ref: "#/definitions/WasmParams"
-        404:
-          description: Not Found
+            type: array
+            items:
+              $ref: "#/definitions/ContractCodeHistoryEntry"
 definitions:
   CheckTxResult:
     type: object
@@ -2935,44 +2973,6 @@ definitions:
       end_time:
         type: string
         example: "0"
-  WasmParams:
-    type: object
-    properties:
-      max_contract_size:
-        type: number
-        format: integer
-        example: "1000000"
-        description: "allowed max contract bytes size"
-      max_contract_gas:
-        type: number
-        format: integer
-        example: "1000000"
-        description: "allowed max gas usages per each contract execution"
-      max_contract_msg_size:
-        type: number
-        format: integer
-        example: "1000000"
-        description: "allowed max contract exe msg bytes size"
-      max_contract_data_size:
-        type: number
-        format: integer
-        example: "100"
-        description: "allowed max contract return data size"
-      event_params:
-        type: object
-        properties:
-          max_attribute_num:
-            type: string
-            example: "128"
-            description: "allowed max # of contract attribute num"
-          max_attribute_key_length:
-            type: string
-            example: "128"
-            description: "allowed max length of a contract event attribute key"
-          max_attribute_value_length:
-            type: string
-            example: "128"
-            description: "allowed max length of a contract event attribute value"
   MultiSignPubKey:
     type: object
     properties:
@@ -3011,29 +3011,66 @@ definitions:
             type: array
             items:
               $ref: "#/definitions/Coin"
+  CodeResponse:
+    type: object
+    properties:
+      data:
+        type: string
+        description: wasm bytes
+        example: "Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH"
+      code_info:
+        $ref: "#/definitions/CodeInfo"
   CodeInfo:
     type: object
     properties:
-      code_hash:
-        type: string
+      code_id:
+        type: number
       creator:
         type: string
+      data_hash:
+        type: string
+      instantiate_permission:
+        $ref: "#/definitions/AccessConfig"
+  AccessConfig:
+    type: object
+    properties:
+      permission: 
+        type: number
+        description: "0: Unspecified, 1: Nobody, 2: OnlyAddress, 3: Everybody"
+      address:
+        type: string
+  ContractInfoRes:
+    type: object
+    properties:
+      address:
+        $ref: "#/definitions/Address"
+        description: contract address
+      contract_info:
+        $ref: "#/definitions/ContractInfo"
   ContractInfo:
     type: object
     properties:
       code_id:
         type: string
-      address:
-        $ref: "#/definitions/Address"
-        description: contract address
       creator:
         $ref: "#/definitions/Address"
         description: contract creator address
       admin:
         $ref: "#/definitions/Address"
         description: admin address which has contract migration privilege; empty means not migratable
-      init_msg:
+      label:
         type: string
+      created_at:
+        $ref: "#/definitions/AbsoluteTxPosition"
+      ibc_port_id:
+        type: string
+  AbsoluteTxPosition:
+    type: object
+    properties:
+      block_height: 
+        type: number
+      tx_index: 
+        type: number
   StoreCodeReq:
     type: object
     properties:
@@ -3055,14 +3092,17 @@ definitions:
     properties:
       base_req:
         $ref: "#/definitions/BaseReq"
-      init_coins:
+      label:
+        type: string
+        description: string contract label
+      deposit:
         type: array
         items:
           $ref: "#/definitions/Coin"
-      init_msg:
+      msg:
         type: string
-        description: json formatted string
-        example: "{}"
+        description: base64 encoded binary msg
+        example: "Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH"
       admin:
         $ref: "#/definitions/Address"
         description: admin address which has contract migration privilege; empty means not migratable
@@ -3078,116 +3118,43 @@ definitions:
           $ref: "#/definitions/Coin"
       exec_msg:
         type: string
-        example: "{}"
+        description: base64 encoded binary msg
+        example: "Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH"
   MigrateContractReq:
     type: object
     properties:
       base_req:
         $ref: "#/definitions/BaseReq"
-      new_code_id:
+      admin:
+        $ref: "#/definitions/Address"
+        description: admin address which has contract migration privilege; empty means not migratable
+        example: "terra..."
+      code_id:
         type: number
         format: integer
         example: 10
-      migrate_msg:
+      msg:
         type: string
-        example: "{}"
+        description: base64 encoded binary msg
+        example: "Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH"
   UpdateContractAdminReq:
     type: object
     properties:
       base_req:
         $ref: "#/definitions/BaseReq"
-      new_admin:
+      admin:
         $ref: "#/definitions/Address"
         description: new contract admin address who has contract migration privilege
         example: "terra..."
-  ClearContractAdminReq:
+  ContractCodeHistoryEntry:
     type: object
     properties:
-      base_req:
-        $ref: "#/definitions/BaseReq"
-  GenericAuthorization:
-    type: object
-    properties:
-      type:
+      operation:
+        type: number
+        description: "0: Unspecified, 1: TypeInit, 2: TypeMigrate, 3: TypeGenesis"
+      code_id:
+        type: number
+      msg:
         type: string
-        example: "msgauth/GenericAuthorization"
-      value:
-        type: object
-        properties:
-          msg_type:
-            type: string
-            example: "send"
-  SendAuthorization:
-    type: object
-    properties:
-      type:
-        type: string
-        example: "msgauth/SendAuthorization"
-      value:
-        type: object
-        properties:
-          spend_limit:
-            type: array
-            items:
-              $ref: "#/definitions/Coin"
-  GenericGrantInfo:
-    type: object
-    properties:
-      authorization:
-        $ref: "#/definitions/GenericAuthorization"
-      expiration:
-        type: string
-        example: "2021-06-24T09:33:20.012999Z"
-  SendGrantInfo:
-    type: object
-    properties:
-      authorization:
-        $ref: "#/definitions/SendAuthorization"
-      expiration:
-        type: string
-        example: "2021-06-24T09:33:20.012999Z"
-  GrantReq:
-    type: object
-    required:
-      - base_req
-      - period
-    properties:
-      base_req:
-        $ref: "#/definitions/BaseReq"
-      period:
-        type: string
-        description: "nano second of time duration"
-        example: "3600000000000"
-      limit:
-        type: array
-        items:
-          $ref: "#/definitions/Coin"
-        description: "required when grant MsgType == send"
-  RevokeGrantReq:
-    type: object
-    required:
-      - base_req
-    properties:
-      base_req:
-        $ref: "#/definitions/BaseReq"
-  ExecuteGrantReq:
-    type: object
-    required:
-      - base_req
-      - msgs
-    properties:
-      base_req:
-        $ref: "#/definitions/BaseReq"
-      msgs:
-        type: array
-        items:
-          $ref: "#/definitions/Msg"
-  TaxCap:
-    type: object
-    properties:
-      denom:
-        type: string
-        example: uluna
-      tax_cap:
-        type: string
-        example: "50"
+        description: base64 encoded binary msg
+        example: "Avz04VhtKJh8ACCVzlI8aTosGy0ikFXKIVHQ3jKMrosH"
