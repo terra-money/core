@@ -35,6 +35,7 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingexported "github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -709,7 +710,44 @@ func (app *TerraApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abc
 		panic(err)
 	}
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
-	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
+	res := app.mm.InitGenesis(ctx, app.appCodec, genesisState)
+
+	// Enforce locked or vesting tokens to be staked.
+	// CONTRACT: validator's gentx account must not be a vesting account
+
+	var authState authtypes.GenesisState
+	app.appCodec.MustUnmarshalJSON(genesisState[authtypes.ModuleName], &authState)
+
+	validators := app.StakingKeeper.GetValidators(ctx, app.StakingKeeper.MaxValidators(ctx))
+	validatorLen := len(validators)
+
+	i := 0
+	for _, acc := range authState.GetAccounts() {
+		var account authtypes.AccountI
+		if err := app.InterfaceRegistry().UnpackAny(acc, &account); err != nil {
+			panic(err)
+		}
+
+		if vestingAcc, ok := account.(vestingexported.VestingAccount); ok {
+			if amt := vestingAcc.GetOriginalVesting().AmountOf(app.StakingKeeper.BondDenom(ctx)); amt.GTE(sdk.OneInt()) {
+				if _, err := app.StakingKeeper.Delegate(
+					ctx,
+					vestingAcc.GetAddress(),
+					amt,
+					stakingtypes.Unbonded,
+					validators[i%validatorLen],
+					true,
+				); err != nil {
+					panic(err)
+				}
+
+				// increase index only when staking happened
+				i++
+			}
+		}
+	}
+
+	return res
 }
 
 // LoadHeight loads a particular height
