@@ -29,7 +29,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	cosmosante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
@@ -111,6 +111,8 @@ import (
 
 	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
 	tmjson "github.com/tendermint/tendermint/libs/json"
+
+	"github.com/terra-money/core/app/ante"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/terra-money/core/client/docs/statik"
@@ -631,14 +633,14 @@ func NewTerraApp(
 	// register upgrade
 	app.RegisterUpgradeHandlers(app.configurator)
 
-	anteHandler, err := NewAnteHandler(
-		HandlerOptions{
-			HandlerOptions: ante.HandlerOptions{
+	anteHandler, err := ante.NewAnteHandler(
+		ante.HandlerOptions{
+			HandlerOptions: cosmosante.HandlerOptions{
 				AccountKeeper:   app.AccountKeeper,
 				BankKeeper:      app.BankKeeper,
 				FeegrantKeeper:  app.FeeGrantKeeper,
 				SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
-				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
+				SigGasConsumer:  cosmosante.DefaultSigVerificationGasConsumer,
 			},
 			IBCkeeper:         app.IBCKeeper,
 			TxCounterStoreKey: keys[wasm.StoreKey],
