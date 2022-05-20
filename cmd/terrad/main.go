@@ -3,28 +3,22 @@ package main
 import (
 	"os"
 
+	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
-	"github.com/terra-money/core/app"
+
+	terraapp "github.com/terra-money/core/app"
 )
 
 func main() {
-	config := sdk.GetConfig()
-	config.SetCoinType(app.CoinType)
+	rootCmd, _ := NewRootCmd()
 
-	cmdOptions := GetWasmCmdOptions()
-	rootCmd, _ := cosmoscmd.NewRootCmd(
-		app.AppName,
-		app.AccountAddressPrefix,
-		app.DefaultNodeHome,
-		app.AppName,
-		app.ModuleBasics,
-		app.NewTerraApp,
-		// this line is used by starport scaffolding # root/arguments
-		cmdOptions...,
-	)
-	if err := svrcmd.Execute(rootCmd, app.DefaultNodeHome); err != nil {
-		os.Exit(1)
+	if err := svrcmd.Execute(rootCmd, terraapp.DefaultNodeHome); err != nil {
+		switch e := err.(type) {
+		case server.ErrorCode:
+			os.Exit(e.Code)
+
+		default:
+			os.Exit(1)
+		}
 	}
 }

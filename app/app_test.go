@@ -11,6 +11,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
+	"github.com/terra-money/core/app/wasmconfig"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/cosmos/cosmos-sdk/tests/mocks"
@@ -34,7 +35,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
 
 	ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
@@ -45,9 +45,12 @@ import (
 )
 
 func TestSimAppExportAndBlockedAddrs(t *testing.T) {
-	encCfg := cosmoscmd.MakeEncodingConfig(ModuleBasics)
+	encCfg := MakeEncodingConfig()
 	db := dbm.NewMemDB()
-	app := NewTerraApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 0, encCfg, simapp.EmptyAppOptions{})
+	app := NewTerraApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 0, encCfg,
+		simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	genesisState := NewDefaultGenesisState(encCfg.Marshaler)
 	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")
@@ -63,7 +66,10 @@ func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	app.Commit()
 
 	// Making a new app object with the db, so that initchain hasn't been called
-	app2 := NewTerraApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 0, encCfg, simapp.EmptyAppOptions{})
+	app2 := NewTerraApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 0,
+		encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 	_, err = app2.ExportAppStateAndValidators(false, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 
@@ -78,10 +84,11 @@ func TestGetMaccPerms(t *testing.T) {
 
 func TestInitGenesisOnMigration(t *testing.T) {
 	db := dbm.NewMemDB()
-	encCfg := cosmoscmd.MakeEncodingConfig(ModuleBasics)
+	encCfg := MakeEncodingConfig()
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
-	cosmosApp := NewTerraApp(logger, db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 0, encCfg, simapp.EmptyAppOptions{})
-	app := cosmosApp.(*TerraApp)
+	app := NewTerraApp(
+		logger, db, nil, true, map[int64]bool{},
+		simapp.DefaultNodeHome, 0, encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
 
@@ -128,10 +135,12 @@ func TestInitGenesisOnMigration(t *testing.T) {
 }
 
 func TestUpgradeStateOnGenesis(t *testing.T) {
-	encCfg := cosmoscmd.MakeEncodingConfig(ModuleBasics)
+	encCfg := MakeEncodingConfig()
 	db := dbm.NewMemDB()
-	cosmosApp := NewTerraApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 0, encCfg, simapp.EmptyAppOptions{})
-	app := cosmosApp.(*TerraApp)
+	app := NewTerraApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 0,
+		encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	genesisState := NewDefaultGenesisState(encCfg.Marshaler)
 	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")
@@ -154,37 +163,45 @@ func TestUpgradeStateOnGenesis(t *testing.T) {
 }
 
 func TestLegacyAmino(t *testing.T) {
-	encCfg := cosmoscmd.MakeEncodingConfig(ModuleBasics)
+	encCfg := MakeEncodingConfig()
 	db := dbm.NewMemDB()
-	cosmosApp := NewTerraApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, simapp.EmptyAppOptions{})
-	app := cosmosApp.(*TerraApp)
+	app := NewTerraApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db, nil, true, map[int64]bool{}, DefaultNodeHome, 0,
+		encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	require.Equal(t, encCfg.Amino, app.LegacyAmino())
 }
 
 func TestAppCodec(t *testing.T) {
-	encCfg := cosmoscmd.MakeEncodingConfig(ModuleBasics)
+	encCfg := MakeEncodingConfig()
 	db := dbm.NewMemDB()
-	cosmosApp := NewTerraApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, simapp.EmptyAppOptions{})
-	app := cosmosApp.(*TerraApp)
+	app := NewTerraApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db, nil, true, map[int64]bool{}, DefaultNodeHome, 0,
+		encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	require.Equal(t, encCfg.Marshaler, app.AppCodec())
 }
 
 func TestInterfaceRegistry(t *testing.T) {
-	encCfg := cosmoscmd.MakeEncodingConfig(ModuleBasics)
+	encCfg := MakeEncodingConfig()
 	db := dbm.NewMemDB()
-	cosmosApp := NewTerraApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, simapp.EmptyAppOptions{})
-	app := cosmosApp.(*TerraApp)
+	app := NewTerraApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db, nil, true, map[int64]bool{}, DefaultNodeHome, 0,
+		encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	require.Equal(t, encCfg.InterfaceRegistry, app.InterfaceRegistry())
 }
 
 func TestGetKey(t *testing.T) {
-	encCfg := cosmoscmd.MakeEncodingConfig(ModuleBasics)
+	encCfg := MakeEncodingConfig()
 	db := dbm.NewMemDB()
-	cosmosApp := NewTerraApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, simapp.EmptyAppOptions{})
-	app := cosmosApp.(*TerraApp)
+	app := NewTerraApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db, nil, true, map[int64]bool{}, DefaultNodeHome, 0,
+		encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	require.NotEmpty(t, app.GetKey(banktypes.StoreKey))
 	require.NotEmpty(t, app.GetTKey(paramstypes.TStoreKey))

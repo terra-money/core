@@ -22,9 +22,9 @@ import (
 	xauthsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
 
 	terraapp "github.com/terra-money/core/app"
+	"github.com/terra-money/core/app/wasmconfig"
 )
 
 // AnteTestSuite is a test suite to be used with ante handler tests.
@@ -40,12 +40,11 @@ type AnteTestSuite struct {
 
 // returns context and app with params set on account keeper
 func createTestApp(isCheckTx bool, tempDir string) (*terraapp.TerraApp, sdk.Context) {
-	cosmosApp := terraapp.NewTerraApp(
+	app := terraapp.NewTerraApp(
 		log.NewNopLogger(), dbm.NewMemDB(), nil, true, map[int64]bool{},
-		tempDir, simapp.FlagPeriodValue, cosmoscmd.MakeEncodingConfig(terraapp.ModuleBasics),
-		simapp.EmptyAppOptions{},
+		tempDir, simapp.FlagPeriodValue, terraapp.MakeEncodingConfig(),
+		simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig(),
 	)
-	app := cosmosApp.(*terraapp.TerraApp)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 

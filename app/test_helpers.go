@@ -5,11 +5,11 @@ package app
 import (
 	"encoding/json"
 
-	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
+	"github.com/terra-money/core/app/wasmconfig"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 
@@ -20,7 +20,7 @@ import (
 
 func setup(withGenesis bool, invCheckPeriod uint) (*TerraApp, GenesisState) {
 	db := dbm.NewMemDB()
-	encCdc := cosmoscmd.MakeEncodingConfig(ModuleBasics)
+	encCdc := MakeEncodingConfig()
 	app := NewTerraApp(
 		log.NewNopLogger(),
 		db,
@@ -30,14 +30,15 @@ func setup(withGenesis bool, invCheckPeriod uint) (*TerraApp, GenesisState) {
 		simapp.DefaultNodeHome,
 		invCheckPeriod,
 		encCdc,
-		simapp.EmptyAppOptions{})
+		simapp.EmptyAppOptions{},
+		wasmconfig.DefaultConfig(),
+	)
 
-	originalApp := app.(*TerraApp)
 	if withGenesis {
-		return originalApp, NewDefaultGenesisState(encCdc.Marshaler)
+		return app, NewDefaultGenesisState(encCdc.Marshaler)
 	}
 
-	return originalApp, GenesisState{}
+	return app, GenesisState{}
 }
 
 // SetupWithGenesisAccounts setup TerraApp with genesis account

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -109,10 +110,11 @@ import (
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
-	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 
 	"github.com/terra-money/core/app/ante"
+	terraappparams "github.com/terra-money/core/app/params"
+	"github.com/terra-money/core/app/wasmconfig"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/terra-money/core/client/docs/statik"
@@ -127,6 +129,9 @@ const (
 
 	// CoinType is the LUNA coin type as defined in SLIP44 (https://github.com/satoshilabs/slips/blob/master/slip-0044.md)
 	CoinType = 330
+
+	// BondDenom staking denom
+	BondDenom = "uluna"
 )
 
 // this line is used by starport scaffolding # stargate/wasm/app/enabledProposals
@@ -138,6 +143,15 @@ var (
 	// of "EnableAllProposals" (takes precedence over ProposalsEnabled)
 	// https://github.com/CosmWasm/wasmd/blob/02a54d33ff2c064f3539ae12d75d027d9c665f05/x/wasm/internal/types/proposal.go#L28-L34
 	EnableSpecificProposals = ""
+
+	// AddressVerifier terra address verifier
+	AddressVerifier = func(bz []byte) error {
+		if n := len(bz); n != 20 {
+			return fmt.Errorf("incorrect address length %d", n)
+		}
+
+		return nil
+	}
 )
 
 // GetEnabledProposals parses the ProposalsEnabled / EnableSpecificProposals values to
@@ -163,8 +177,6 @@ func GetWasmOpts(appOpts servertypes.AppOptions) []wasm.Option {
 	if cast.ToBool(appOpts.Get("telemetry.enabled")) {
 		wasmOpts = append(wasmOpts, wasmkeeper.WithVMCacheMetrics(prometheus.DefaultRegisterer))
 	}
-
-	wasmOpts = append(wasmOpts, wasmkeeper.WithGasRegister(NewTerraWasmGasRegister()))
 
 	return wasmOpts
 }
@@ -235,7 +247,6 @@ var (
 )
 
 var (
-	_ cosmoscmd.CosmosApp     = (*TerraApp)(nil)
 	_ servertypes.Application = (*TerraApp)(nil)
 )
 
@@ -310,10 +321,11 @@ func NewTerraApp(
 	skipUpgradeHeights map[int64]bool,
 	homePath string,
 	invCheckPeriod uint,
-	encodingConfig cosmoscmd.EncodingConfig,
+	encodingConfig terraappparams.EncodingConfig,
 	appOpts servertypes.AppOptions,
+	wasmConfig *wasmconfig.Config,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) cosmoscmd.App {
+) *TerraApp {
 	appCodec := encodingConfig.Marshaler
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
@@ -455,15 +467,9 @@ func NewTerraApp(
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	wasmDir := filepath.Join(homePath, "data")
 
-	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
-	if err != nil {
-		panic("error while reading wasm config: " + err.Error())
-	}
-
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
 	supportedFeatures := "iterator,staking,stargate"
-	wasmOpts := GetWasmOpts(appOpts)
 	app.wasmKeeper = wasm.NewKeeper(
 		appCodec,
 		keys[wasm.StoreKey],
@@ -479,9 +485,9 @@ func NewTerraApp(
 		app.MsgServiceRouter(),
 		app.GRPCQueryRouter(),
 		wasmDir,
-		wasmConfig,
+		wasmConfig.ToWasmConfig(),
 		supportedFeatures,
-		wasmOpts...,
+		GetWasmOpts(appOpts)...,
 	)
 
 	// register wasm gov proposal types
@@ -644,7 +650,7 @@ func NewTerraApp(
 			},
 			IBCkeeper:         app.IBCKeeper,
 			TxCounterStoreKey: keys[wasm.StoreKey],
-			WasmConfig:        wasmConfig,
+			WasmConfig:        wasmConfig.ToWasmConfig(),
 		},
 	)
 	if err != nil {
