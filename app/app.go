@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -143,15 +142,6 @@ var (
 	// of "EnableAllProposals" (takes precedence over ProposalsEnabled)
 	// https://github.com/CosmWasm/wasmd/blob/02a54d33ff2c064f3539ae12d75d027d9c665f05/x/wasm/internal/types/proposal.go#L28-L34
 	EnableSpecificProposals = ""
-
-	// AddressVerifier terra address verifier
-	AddressVerifier = func(bz []byte) error {
-		if n := len(bz); n != 20 {
-			return fmt.Errorf("incorrect address length %d", n)
-		}
-
-		return nil
-	}
 )
 
 // GetEnabledProposals parses the ProposalsEnabled / EnableSpecificProposals values to
