@@ -35,6 +35,7 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingexported "github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -710,7 +711,12 @@ func (app *TerraApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abc
 		panic(err)
 	}
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
-	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
+	res := app.mm.InitGenesis(ctx, app.appCodec, genesisState)
+
+	// stake all vesting tokens
+	app.enforceStakingForVestingTokens(ctx, genesisState)
+
+	return res
 }
 
 // LoadHeight loads a particular height
@@ -854,4 +860,56 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(wasm.ModuleName)
 
 	return paramsKeeper
+}
+
+// enforceStakingForVestingTokens enforce vesting tokens to be staked
+// CONTRACT: validator's gentx account must not be a vesting account
+func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisState GenesisState) {
+
+	var authState authtypes.GenesisState
+	app.appCodec.MustUnmarshalJSON(genesisState[authtypes.ModuleName], &authState)
+
+	validators := app.StakingKeeper.GetValidators(ctx, app.StakingKeeper.MaxValidators(ctx))
+	validatorLen := len(validators)
+
+	// ignore when validator len is zero
+	if validatorLen == 0 {
+		return
+	}
+
+	i := 0
+	stakeSplitCondition := sdk.NewInt(1_000_000_000_000)
+	for _, acc := range authState.GetAccounts() {
+		var account authtypes.AccountI
+		if err := app.InterfaceRegistry().UnpackAny(acc, &account); err != nil {
+			panic(err)
+		}
+
+		if vestingAcc, ok := account.(vestingexported.VestingAccount); ok {
+			amt := vestingAcc.GetOriginalVesting().AmountOf(app.StakingKeeper.BondDenom(ctx))
+
+			// if a vesting account has more staking token than `stakeSplitCondition`,
+			// split staking balance to distribute staking power evenly
+			// Ex) 2_200_000_000_000
+			// stake 1_000_000_000_000 to val1
+			// stake 1_000_000_000_000 to val2
+			// stake 200_000_000_000 to val3
+			for ; amt.GTE(sdk.OneInt()); amt = amt.Sub(stakeSplitCondition) {
+				if _, err := app.StakingKeeper.Delegate(
+					ctx,
+					vestingAcc.GetAddress(),
+					sdk.MinInt(amt, stakeSplitCondition),
+					stakingtypes.Unbonded,
+					validators[i%validatorLen],
+					true,
+				); err != nil {
+					panic(err)
+				}
+
+				// increase index only when staking happened
+				i++
+			}
+
+		}
+	}
 }
