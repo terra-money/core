@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-Full-node software implementing the Terra protocol<br/><br/>
+The full-node software implementation of the Terra blockchain.<br/><br/>
 
 <a href="https://codecov.io/gh/terra-money/core">
     <img src="https://codecov.io/gh/terra-money/core/branch/main/graph/badge.svg">
@@ -27,10 +27,6 @@ Full-node software implementing the Terra protocol<br/><br/>
   ·
   <a href="https://lcd.terra.dev/swagger/#/">Rest API</a>
   ·
-  <a href="https://github.com/terra-money/terra.py">Python SDK</a>
-  ·
-  <a href="https://terra-money.github.io/terra.js/">Terra.js</a>
-  ·
   <a href="https://finder.terra.money/">Finder</a>
   ·
   <a href="https://station.terra.money/">Station</a>
@@ -38,20 +34,25 @@ Full-node software implementing the Terra protocol<br/><br/>
 
 <br/>
 
+## Terra migration guides
+
+Visit the [migration guide](https://migrate.terra.money) to learn how to migrate from Terra Classic to the new Terra blockchain.
+
 ## Table of Contents <!-- omit in toc -->
 
 - [What is Terra?](#what-is-terra)
 - [Installation](#installation)
-  - [Binaries](#binaries)
+  - [From Binary](#from-binary)
   - [From Source](#from-source)
-- [`terrad`](#terrad)
+  - [terrad](#terrad)
 - [Node Setup](#node-setup)
+  - [Terra node quickstart](#terra-node-quick-start)
   - [Join the mainnet](#join-the-mainnet)
   - [Join a testnet](#join-a-testnet)
   - [Run a local testnet](#run-a-local-testnet)
   - [Run a single node testnet](#run-a-single-node-testnet)
 - [Set up a production environment](#set-up-a-production-environment)
-  - [Increase maximum open files](#increase-maximum-open-files)
+[Increase maximum open files](#step-increase-maximum-open-files)
   - [Create a dedicated user](#create-a-dedicated-user)
   - [Port configuration](#port-configuration)
   - [Run the server as a daemon](#run-the-server-as-a-daemon)
@@ -65,29 +66,48 @@ Full-node software implementing the Terra protocol<br/><br/>
 
 ## What is Terra?
 
-**[Terra](https://terra.money)** is a public, open-source blockchain protocol that provides fundamental infrastructure for a decentralized economy and enables open participation in the creation of new financial primitives to power the innovation of money.
-
-The Terra blockchain is secured by distributed consensus on staked asset Luna and natively supports the issuance of [price-tracking stablecoins](https://docs.terra.money/docs/learn/glossary.html#algorithmic-stablecoin) that are algorithmically pegged to major world currencies, such as UST, KRT, and SDT. Smart contracts on Terra run on WebAssembly and take advantage of core modules, such as on-chain swaps, price oracle, and staking rewards, to power modern [DeFi](https://docs.terra.money/docs/learn/glossary.html#defi) apps. Through dynamic fiscal policy managed by community governance, Terra is an evolving, democratized economy directed by its users.
-
-**Terra Core** is the reference implementation of the Terra protocol, written in Golang. Terra Core is built atop [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) and uses [Tendermint](https://github.com/tendermint/tendermint) BFT consensus. If you intend to work on Terra Core source, it is recommended that you familiarize yourself with the concepts in those projects.
+**[Terra](https://terra.money)** is a public, open-source, proof-of-stake blockchain. **The Terra Core** is the reference implementation of the Terra protocol written in Golang. The Terra Core is powered by the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) and [Tendermint](https://github.com/tendermint/tendermint) BFT consensus.
 
 ## Installation
 
-### Binaries
+### From Binary
 
-The easiest way to get started is by downloading a pre-built binary for your operating system. You can find the latest binaries on the [releases](https://github.com/terra-money/core/releases) page.
+The easiest way to install the Terra Core is to download a pre-built binary. You can find the latest binaries on the [releases](https://github.com/terra-money/core/releases) page.
 
 ### From Source
 
-**Step 1. Install Golang**
+**Step 1: Install Golang**
 
-Go v1.17+ or higher is required for Terra Core.
+Go v1.17+ or higher is required for The Terra Core.
 
-If you haven't already, install Golang by following the [official docs](https://golang.org/doc/install). Make sure that your `GOPATH` and `GOBIN` environment variables are properly set up.
+1. Install [Go 1.17+ from the official site](https://go.dev/dl/). Ensure that your `GOPATH` and `GOBIN` environment variables are properly set up by using the following commands:
+
+   For Windows:
+
+   ```sh
+   wget <https://golang.org/dl/go1.17.1.linux-amd64.tar.gz>
+   sudo tar -C /usr/local -xzf go1.17.1.linux-amd64.tar.gz
+   export PATH=$PATH:/usr/local/go/bin
+   export PATH=$PATH:$(go env GOPATH)/bin
+   ```
+
+   For Mac:
+
+   ```sh
+   export PATH=$PATH:/usr/local/go/bin
+   export PATH=$PATH:$(go env GOPATH)/bin
+   ```
+
+2. Confirm your Go installation by checking the version:
+
+   ```sh
+   go version
+   ```
+
 
 **Step 2: Get Terra Core source code**
 
-Use `git` to retrieve Terra Core from the [official repo](https://github.com/terra-money/core/) and checkout the `main` branch. This branch contains the latest stable release, which will install the `terrad` binary.
+Clone the Terra Core from the [official repo](https://github.com/terra-money/core/) and check out the `main` branch for the latest stable release.
 
 ```bash
 git clone https://github.com/terra-money/core/
@@ -97,7 +117,7 @@ git checkout main
 
 **Step 3: Build Terra core**
 
-Run the following command to install the executable `terrad` to your `GOPATH` and build Terra Core. `terrad` is the node daemon and CLI for interacting with a Terra node.
+Run the following command to install `terrad` to your `GOPATH` and build the Terra Core. `terrad` is the node daemon and CLI for interacting with a Terra node.
 
 ```bash
 # COSMOS_BUILD_OPTIONS=rocksdb make install
@@ -106,69 +126,73 @@ make install
 
 **Step 4: Verify your installation**
 
-Verify that you've installed terrad successfully by running the following command:
+Verify your installation with the following command:
 
 ```bash
 terrad version --long
 ```
 
-If terrad is installed correctly, the following information is returned:
+A successful installation will return the following:
 
 ```bash
 name: terra
 server_name: terrad
-version: 0.5.0-rc0-9-g640fd0ed
-commit: 640fd0ed921d029f4d1c3d88435bd5dbd67d14cd
+version: <x.x.x>
+commit: <Commit hash>
 build_tags: netgo,ledger
-go: go version go1.17.2 darwin/amd64
+go: go version go1.17.x darwin/amd64
 ```
 
 ## `terrad`
 
-**NOTE:** `terracli` has been deprecated and all of its functionalities have been merged into `terrad`.
+`terrad` is the all-in-one CLI and node daemon for interacting with the Terra blockchain. 
 
-`terrad` is the all-in-one command for operating and interacting with a running Terra node. For comprehensive coverage on each of the available functions, see [the terrad reference information](https://docs.terra.money/docs/develop/how-to/terrad/README.html). To view various subcommands and their expected arguments, use the `$ terrad --help` command:
+To view various subcommands and their expected arguments, use the following command:
 
-<pre>
-        <div align="left">
-        <b>$ terrad --help</b>
+``` sh
+$ terrad --help
+```
 
-        Stargate Terra App
 
-        Usage:
-          terrad [command]
+```
+Stargate Terra App
 
-        Available Commands:
-          add-genesis-account Add a genesis account to genesis.json
-          collect-gentxs      Collect genesis txs and output a genesis.json file
-          debug               Tool for helping with debugging your application
-          export              Export state to JSON
-          gentx               Generate a genesis tx carrying a self delegation
-          help                Help about any command
-          init                Initialize private validator, p2p, genesis, and application configuration files
-          keys                Manage your application's keys
-          migrate             Migrate genesis to a specified target version
-          query               Querying subcommands
-          rosetta             spin up a rosetta server
-          start               Run the full node
-          status              Query remote node for status
-          tendermint          Tendermint subcommands
-          testnet             Initialize files for a terrad testnet
-          tx                  Transactions subcommands
-          unsafe-reset-all    Resets the blockchain database, removes address book files, and resets data/priv_validator_state.json to the genesis state
-          validate-genesis    validates the genesis file at the default location or at the location passed as an arg
-          version             Print the application binary version information
+Usage:
+  terrad [command]
 
-        Flags:
-          -h, --help                help for terrad
-              --home string         directory for config and data (default "/Users/$HOME/.terra")
-              --log_format string   The logging format (json|plain) (default "plain")
-              --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic) (default "info")
-              --trace               print out full stack trace on errors
+Available Commands:
+  add-genesis-account Add a genesis account to genesis.json
+  collect-gentxs      Collect genesis txs and output a genesis.json file
+  debug               Tool for helping with debugging your application
+  export              Export state to JSON
+  gentx               Generate a genesis tx carrying a self delegation
+  help                Help about any command
+  init                Initialize private validator, p2p, genesis, and application configuration files
+  keys                Manage your application's keys
+  migrate             Migrate genesis to a specified target version
+  query               Querying subcommands
+  rosetta             spin up a rosetta server
+  start               Run the full node
+  status              Query remote node for status
+  tendermint          Tendermint subcommands
+  testnet             Initialize files for a terrad testnet
+  tx                  Transactions subcommands
+  unsafe-reset-all    Resets the blockchain database, removes address book files, and resets data/priv_validator_state.json to the genesis state
+  validate-genesis    validates the genesis file at the default location or at the location passed as an arg
+  version             Print the application binary version information
 
-        <b>Use "terrad [command] --help" for more information about a command.</b>
-        </div>
-</pre>
+Flags:
+  -h, --help                help for terrad
+      --home string         directory for config and data (default "/Users/evan/.terra")
+      --log_format string   The logging format (json|plain) (default "plain")
+      --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic) (default "info")
+      --trace               print out full stack trace on errors
+
+Use "terrad [command] --help" for more information about a command.
+```
+
+Visit the [terrad documentation page](https://docs.terra.money/docs/develop/how-to/terrad/README.html) for more info on usage. 
+
 
 ## Node Setup
 
@@ -176,16 +200,15 @@ Once you have `terrad` installed, you will need to set up your node to be part o
 
 ### Join the mainnet
 
-The following requirements are recommended for running a `columbus-5` mainnet node:
+The following requirements are recommended for running a mainnet node:
 
-- **4 or more** CPU cores
-- At least **2TB** of disk storage
-- At least **100mbps** network bandwidth
-- An Linux distribution
+- Four or more CPU cores
+- At least 32 GB of memory
+- At least 300 mbps of network bandwidth
+- At least 2 TB NVME SSD
+- A Linux distribution
 
-For configuration and migration instructions for setting up a Columbus-5 mainnet node, visit [The mainnet repo](https://github.com/terra-money/mainnet).
-
-**Terra Node Quick Start**
+#### Terra node quickstart
 ```
 terrad init nodename
 wget -O ~/.terra/config/genesis.json https://cloudflare-ipfs.com/ipfs/QmZAMcdu85Qr8saFuNpL9VaxVqqLGWNAs72RVFhchL9jWs
@@ -199,16 +222,15 @@ Several testnets might exist simultaneously. Ensure that your version of `terrad
 
 To set up a node on the latest testnet, visit [the testnet repo](https://github.com/terra-money/testnet).
 
-### Run a local testnet
+#### Run a local testnet
 
-The easiest way to set up a local testing environment is to run [LocalTerra](https://github.com/terra-money/LocalTerra), which automatically orchestrates a complete testing environment suited for development with zero configuration.
+The easiest way to set up a local testing environment is to run [LocalTerra](https://github.com/terra-money/LocalTerra), a zero-configuration complete testing environment. 
 
 ### Run a single node testnet
 
 You can also run a local testnet using a single node. On a local testnet, you will be the sole validator signing blocks.
 
-
-**Step 1. Create network and account**
+**Step 1: Create network and account**
 
 First, initialize your genesis file to bootstrap your network. Create a name for your local testnet and provide a moniker to refer to your node:
 
@@ -222,7 +244,7 @@ Next, create a Terra account by running the following command:
 terrad keys add <account_name>
 ```
 
-**Step 2. Add account to genesis**
+**Step 2: Add account to genesis**
 
 Next, add your account to genesis and set an initial balance to start. Run the following commands to add your account and set the initial balance:
 
@@ -232,7 +254,7 @@ terrad gentx <account_name> 10000000uluna --chain-id=<testnet_name>
 terrad collect-gentxs
 ```
 
-**Step 3. Run Terra daemon**
+**Step 3: Run terrad**
 
 Now you can start your private Terra network:
 
@@ -242,17 +264,15 @@ terrad start
 
 Your `terrad` node will be running a node on `tcp://localhost:26656`, listening for incoming transactions and signing blocks.
 
-Congratulations, you've successfully set up your local Terra network!
-
 ## Set up a production environment
 
-**NOTE**: This guide only covers general settings for a production-level full node. You can find further details on considerations for operating a validator node by visiting the [Terra validator guide](https://docs.terra.money/docs/full-node/manage-a-terra-validator/README.html).
+**Note**: This guide only covers general settings for a production-level full node. Visit the [Terra validator's guide](https://docs.terra.money/docs/full-node/manage-a-terra-validator/README.html) for more information.
 
-This guide has been tested against Linux distributions only. To ensure you successfully set up your production environment, consider setting it up on an Linux system.
+**This guide has been tested against Linux distributions only. To ensure you successfully set up your production environment, consider setting it up on an Linux system.**
 
-### Increase maximum open files
+### Step 1. Increase maximum open files
 
-`terrad` can't open more than 1024 files (the default maximum) concurrently.
+By default, `terrad` can't open more than 1024 files at once.
 
 You can increase this limit by modifying `/etc/security/limits.conf` and raising the `nofile` capability.
 
@@ -339,44 +359,26 @@ journalctl -t terrad -f
 
 ## Resources
 
-- Developer Tools
+Developer Tools:
+  - [Terra docs](https://docs.terra.money): Developer documentation.
+  - [Faucet](https://faucet.terra.money): Get testnet Luna.
+  - [LocalTerra](https://www.github.com/terra-money/LocalTerra): A dockerized local blockchain testnet. 
 
-  - Terra developer documentation(https://docs.terra.money)
-  - [TerraWiki.org](https://terrawiki.org) - The Terra community wiki.
-  - SDKs
-    - [Terra.js](https://www.github.com/terra-money/terra.js) for JavaScript
-    - [terra-sdk-python](https://www.github.com/terra-money/terra-sdk-python) for Python
-  - [Faucet](https://faucet.terra.money) can be used to get tokens for testnets
-  - [LocalTerra](https://www.github.com/terra-money/LocalTerra) can be used to set up a private local testnet with configurable world state
-
-- Developer Forums
+Developer Forums: 
   - [Terra Developer Discord](https://discord.com/channels/464241079042965516/591812948867940362)
-  - [Terra DEveloper Telegram room](https://t.me/+gCxCPohmVBkyNDRl)
+  - [Terra Developer Telegram room](https://t.me/+gCxCPohmVBkyNDRl)
 
+Block Explorer:
+  - [Terra Finder](https://finder.terra.money): Terra's basic block explorer.
 
-- Block Explorers
-
-  - [Terra Finder](https://finder.terra.money) - Terra's basic block explorer.
-  - [Terrascope](https://terrascope.info/) - A community-run block explorer with extra features.
-  - [Stake ID](https://terra.stake.id) - A block explorer made by Staking Fund
-  - [Hubble](https://hubble.figment.network/terra/chains/columbus-5) - by Figment
-
-- Wallets
-
-  - [Terra Station](https://station.terra.money) - The official Terra wallet.
-  - Terra Station Mobile
+Wallets:
+  - [Terra Station](https://station.terra.money): The official Terra wallet.
+  - Terra Station Mobile:
     - [iOS](https://apps.apple.com/us/app/terra-station/id1548434735)
     - [Android](https://play.google.com/store/apps/details?id=money.terra.station&hl=en_US&gl=US)
-    
-  - [Falcon Wallet](https://falconwallet.app/)
-  - [Leap Wallet](https://chrome.google.com/webstore/detail/leap-wallet/aijcbedoijmgnlmjeegjaglmepbmpkpi/?utm_source=Leap&utm_medium=Bio&utm_campaign=Leap)
-  - [XDeFi](https://chrome.google.com/webstore/detail/xdefi-wallet/hmeobnfnfcmdkdcmlblgagmfpfboieaf)
-  - [Liquality](https://liquality.io/)
 
-- Research
-
-  - [Agora](https://agora.terra.money) - Research forum
-  - [White Paper](https://assets.website-files.com/611153e7af981472d8da199c/618b02d13e938ae1f8ad1e45_Terra_White_paper.pdf)
+Research:
+  - [Agora](https://agora.terra.money): Research forum
 
 ## Community
 
@@ -392,16 +394,15 @@ If you are interested in contributing to Terra Core source, please review our [c
 
 ## License
 
-This software is licensed under the Apache 2.0 license. Read more about it [here](LICENSE).
+This software is [licensed under the Apache 2.0 license](LICENSE).
 
 © 2022 Terraform Labs, PTE LTD
-
-<hr/>
 
 <p>&nbsp;</p>
 <p align="center">
     <a href="https://terra.money/"><img src="https://assets.website-files.com/611153e7af981472d8da199c/61794f2b6b1c7a1cb9444489_symbol-terra-blue.svg" align="center" width=200/></a>
 </p>
 <div align="center">
-  <sub><em>Powering the innovation of money.</em></sub>
 </div>
+
+
