@@ -840,7 +840,7 @@ func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisStat
 	var authState authtypes.GenesisState
 	app.appCodec.MustUnmarshalJSON(genesisState[authtypes.ModuleName], &authState)
 
-	allValidators := app.StakingKeeper.GetValidators(ctx, app.StakingKeeper.MaxValidators(ctx))
+	allValidators := app.StakingKeeper.GetAllValidators(ctx)
 
 	// Filter out validators which have huge max commission than 20%
 	var validators []stakingtypes.Validator
