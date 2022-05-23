@@ -1,6 +1,22 @@
 ## Wasm Migration Guide from Terra Classic
 Terra Rebirth is now using wasm module of [wasmd](https://github.com/CosmWasm/wasmd) and it introduces minor compatibility issue with Terra Classic.
 
+### Contract Address
+Contract Address legnth will be different from normal account.
+```go
+// VerifyAddressLen ensures that the address matches the expected length
+// ContractAddrLen = 32
+// SDKAddrLen = 20
+func VerifyAddressLen() func(addr []byte) error {
+	return func(addr []byte) error {
+		if len(addr) != ContractAddrLen && len(addr) != SDKAddrLen {
+			return sdkerrors.ErrInvalidAddress
+		}
+		return nil
+	}
+}
+```
+
 ### Store
 
 #### Permission
