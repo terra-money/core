@@ -32,9 +32,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
-	terraapp "github.com/terra-money/core/app"
-	"github.com/terra-money/core/app/params"
-	"github.com/terra-money/core/app/wasmconfig"
+	terraapp "github.com/terra-money/core/v2/app"
+	"github.com/terra-money/core/v2/app/params"
+	"github.com/terra-money/core/v2/app/wasmconfig"
 )
 
 // missing flag from cosmos-sdk

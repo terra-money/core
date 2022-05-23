@@ -24,7 +24,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 
-	terraapp "github.com/terra-money/core/app"
+	terraapp "github.com/terra-money/core/v2/app"
 )
 
 const (

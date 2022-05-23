@@ -9,7 +9,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"github.com/terra-money/core/app/wasmconfig"
+	"github.com/terra-money/core/v2/app/wasmconfig"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 

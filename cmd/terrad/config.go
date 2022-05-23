@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/terra-money/core/app/wasmconfig"
+	"github.com/terra-money/core/v2/app/wasmconfig"
 
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 )
