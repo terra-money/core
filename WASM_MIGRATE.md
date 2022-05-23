@@ -2,7 +2,7 @@
 Terra Rebirth is now using wasm module of [wasmd](https://github.com/CosmWasm/wasmd) and it introduces minor compatibility issue with Terra Classic.
 
 ### Contract Address
-Contract Address legnth will be different from normal account.
+Contract Address length will be different from normal account.
 ```go
 // VerifyAddressLen ensures that the address matches the expected length
 // ContractAddrLen = 32
