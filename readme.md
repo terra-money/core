@@ -78,15 +78,15 @@ The easiest way to install the Terra Core is to download a pre-built binary. You
 
 **Step 1: Install Golang**
 
-Go v1.17+ or higher is required for The Terra Core.
+Go v1.18+ or higher is required for The Terra Core.
 
-1. Install [Go 1.17+ from the official site](https://go.dev/dl/). Ensure that your `GOPATH` and `GOBIN` environment variables are properly set up by using the following commands:
+1. Install [Go 1.18+ from the official site](https://go.dev/dl/). Ensure that your `GOPATH` and `GOBIN` environment variables are properly set up by using the following commands:
 
    For Windows:
 
    ```sh
-   wget <https://golang.org/dl/go1.17.1.linux-amd64.tar.gz>
-   sudo tar -C /usr/local -xzf go1.17.1.linux-amd64.tar.gz
+   wget <https://golang.org/dl/go1.18.2.linux-amd64.tar.gz>
+   sudo tar -C /usr/local -xzf go1.18.2.linux-amd64.tar.gz
    export PATH=$PATH:/usr/local/go/bin
    export PATH=$PATH:$(go env GOPATH)/bin
    ```
@@ -140,7 +140,7 @@ server_name: terrad
 version: <x.x.x>
 commit: <Commit hash>
 build_tags: netgo,ledger
-go: go version go1.17.x darwin/amd64
+go: go version go1.18.2 darwin/amd64
 ```
 
 ## `terrad`
@@ -246,10 +246,10 @@ terrad keys add <account_name>
 
 **Step 2: Add account to genesis**
 
-Next, add your account to genesis and set an initial balance to start. Run the following commands to add your account and set the initial balance:
+Add your account to genesis and set an initial balance to start. Run the following commands to add your account and set the initial balance:
 
 ```bash
-terrad add-genesis-account $(terrad keys show <account_name> -a) 100000000uluna,1000usd
+terrad add-genesis-account $(terrad keys show <account_name> -a) 100000000uluna
 terrad gentx <account_name> 10000000uluna --chain-id=<testnet_name>
 terrad collect-gentxs
 ```
