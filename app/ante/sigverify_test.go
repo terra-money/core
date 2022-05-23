@@ -10,7 +10,7 @@ import (
 	cosmosante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 
-	"github.com/terra-money/core/app/ante"
+	"github.com/terra-money/core/v2/app/ante"
 )
 
 func (suite *AnteTestSuite) TestSigVerification() {

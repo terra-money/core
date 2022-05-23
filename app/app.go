@@ -112,12 +112,12 @@ import (
 
 	tmjson "github.com/tendermint/tendermint/libs/json"
 
-	"github.com/terra-money/core/app/ante"
-	terraappparams "github.com/terra-money/core/app/params"
-	"github.com/terra-money/core/app/wasmconfig"
+	"github.com/terra-money/core/v2/app/ante"
+	terraappparams "github.com/terra-money/core/v2/app/params"
+	"github.com/terra-money/core/v2/app/wasmconfig"
 
 	// unnamed import of statik for swagger UI support
-	_ "github.com/terra-money/core/client/docs/statik"
+	_ "github.com/terra-money/core/v2/client/docs/statik"
 )
 
 // this line is used by starport scaffolding # stargate/wasm/app/enabledProposals
