@@ -14,7 +14,9 @@ Full-node software implementing the Terra protocol<br/><br/>
 <a href="https://goreportcard.com/report/github.com/terra-money/core">
     <img src="https://goreportcard.com/badge/github.com/terra-money/core">
 </a>
-<a href="https://discord.com/invite/terra-money"><img src="https://img.shields.io/discord/464241079042965516.svg?style=flat&label=Discord%20&color=7289DA%22"
+<a href="https://discord.com/invite/terra-money">
+    <img src="https://img.shields.io/discord/464241079042965516.svg?style=flat&label=Discord%20&color=7289DA%22">
+</a>
                                              
 </p>
 
