@@ -8,6 +8,9 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	icacontrollertypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/types"
+	icahosttypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host/types"
+	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 )
 
 // GenesisState - The genesis state of the blockchain is represented here as a map of raw json
@@ -24,28 +27,74 @@ func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
 	return ModuleBasics.DefaultGenesis(cdc)
 }
 
-// ConvertBondDenom generates the default state for the application.
-func (genState GenesisState) ConvertBondDenom(cdc codec.JSONCodec) GenesisState {
+// ConfigureBondDenom generates the default state for the application.
+func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom string) GenesisState {
 	// customize bond denom
 	var stakingGenState stakingtypes.GenesisState
 	cdc.MustUnmarshalJSON(genState[stakingtypes.ModuleName], &stakingGenState)
-	stakingGenState.Params.BondDenom = BondDenom
+	stakingGenState.Params.BondDenom = bondDenom
 	genState[stakingtypes.ModuleName] = cdc.MustMarshalJSON(&stakingGenState)
 
 	var crisisGenState crisistypes.GenesisState
 	cdc.MustUnmarshalJSON(genState[crisistypes.ModuleName], &crisisGenState)
-	crisisGenState.ConstantFee.Denom = BondDenom
+	crisisGenState.ConstantFee.Denom = bondDenom
 	genState[crisistypes.ModuleName] = cdc.MustMarshalJSON(&crisisGenState)
 
 	var govGenState govtypes.GenesisState
 	cdc.MustUnmarshalJSON(genState[govtypes.ModuleName], &govGenState)
-	govGenState.DepositParams.MinDeposit[0].Denom = BondDenom
+	govGenState.DepositParams.MinDeposit[0].Denom = bondDenom
 	genState[govtypes.ModuleName] = cdc.MustMarshalJSON(&govGenState)
 
 	var mintGenState minttypes.GenesisState
 	cdc.MustUnmarshalJSON(genState[minttypes.ModuleName], &mintGenState)
-	mintGenState.Params.MintDenom = BondDenom
+	mintGenState.Params.MintDenom = bondDenom
 	genState[minttypes.ModuleName] = cdc.MustMarshalJSON(&mintGenState)
+
+	return genState
+}
+
+func (genState GenesisState) ConfigureICA(cdc codec.JSONCodec) GenesisState {
+	// create ICS27 Controller submodule params
+	controllerParams := icacontrollertypes.Params{}
+
+	// create ICS27 Host submodule params
+	hostParams := icahosttypes.Params{
+		HostEnabled: true,
+		AllowMessages: []string{
+			authzMsgExec,
+			authzMsgGrant,
+			authzMsgRevoke,
+			bankMsgSend,
+			bankMsgMultiSend,
+			distrMsgSetWithdrawAddr,
+			distrMsgWithdrawValidatorCommission,
+			distrMsgFundCommunityPool,
+			distrMsgWithdrawDelegatorReward,
+			feegrantMsgGrantAllowance,
+			feegrantMsgRevokeAllowance,
+			govMsgVoteWeighted,
+			govMsgSubmitProposal,
+			govMsgDeposit,
+			govMsgVote,
+			stakingMsgEditValidator,
+			stakingMsgDelegate,
+			stakingMsgUndelegate,
+			stakingMsgBeginRedelegate,
+			stakingMsgCreateValidator,
+			vestingMsgCreateVestingAccount,
+			transferMsgTransfer,
+			wasmMsgStoreCode,
+			wasmMsgInstantiateContract,
+			wasmMsgExecuteContract,
+			wasmMsgMigrateContract,
+		},
+	}
+
+	var icaGenState icatypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[icatypes.ModuleName], &icaGenState)
+	icaGenState.ControllerGenesisState.Params = controllerParams
+	icaGenState.HostGenesisState.Params = hostParams
+	genState[icatypes.ModuleName] = cdc.MustMarshalJSON(&icaGenState)
 
 	return genState
 }

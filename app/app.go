@@ -120,20 +120,6 @@ import (
 	_ "github.com/terra-money/core/client/docs/statik"
 )
 
-const (
-	// AccountAddressPrefix is the prefix of bech32 encoded address
-	AccountAddressPrefix = "terra"
-
-	// AppName is the application name
-	AppName = "terra"
-
-	// CoinType is the LUNA coin type as defined in SLIP44 (https://github.com/satoshilabs/slips/blob/master/slip-0044.md)
-	CoinType = 330
-
-	// BondDenom staking denom
-	BondDenom = "uluna"
-)
-
 // this line is used by starport scaffolding # stargate/wasm/app/enabledProposals
 var (
 	// If EnabledSpecificProposals is "", and this is "true", then enable all x/wasm proposals.
