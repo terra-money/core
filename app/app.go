@@ -24,7 +24,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -640,20 +639,6 @@ func NewTerraApp(
 	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
 
-	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
-	if err != nil {
-		panic(err)
-	}
-
-	if upgradeInfo.Name == "moneta" && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		storeUpgrades := store.StoreUpgrades{
-			Added: []string{authz.ModuleName, feegrant.ModuleName, wasm.ModuleName},
-		}
-
-		// configure store loader that checks if version == upgradeHeight and applies store upgrades
-		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
-	}
-
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
 			tmos.Exit(err.Error())
@@ -855,7 +840,17 @@ func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisStat
 	var authState authtypes.GenesisState
 	app.appCodec.MustUnmarshalJSON(genesisState[authtypes.ModuleName], &authState)
 
-	validators := app.StakingKeeper.GetValidators(ctx, app.StakingKeeper.MaxValidators(ctx))
+	allValidators := app.StakingKeeper.GetValidators(ctx, app.StakingKeeper.MaxValidators(ctx))
+
+	// Filter out validators which have huge max commission than 20%
+	var validators []stakingtypes.Validator
+	maxCommissionCondition := sdk.NewDecWithPrec(20, 2)
+	for _, val := range allValidators {
+		if val.Commission.CommissionRates.MaxRate.LTE(maxCommissionCondition) {
+			validators = append(validators, val)
+		}
+	}
+
 	validatorLen := len(validators)
 
 	// ignore when validator len is zero

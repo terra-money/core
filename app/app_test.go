@@ -272,10 +272,10 @@ func TestSimAppEnforceStakingForVestingTokens(t *testing.T) {
 
 	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper)
 
-	// create validator with 50% commission
+	// create validator with 10% commission
 	pubkeys := simapp.CreateTestPubKeys(2)
 	valAddrs := simapp.ConvertAddrsToValAddrs([]sdk.AccAddress{addr3, addr4})
-	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(5, 1), sdk.NewDecWithPrec(5, 1), sdk.NewDec(0))
+	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(2, 1), sdk.NewDec(0))
 	tstaking.CreateValidator(sdk.ValAddress(addr3), pubkeys[0], sdk.NewInt(1_000_000), true)
 	tstaking.CreateValidator(sdk.ValAddress(addr4), pubkeys[1], sdk.NewInt(1_000_000), true)
 	vals := []stakingtypes.ValidatorI{app.StakingKeeper.Validator(ctx, valAddrs[0]), app.StakingKeeper.Validator(ctx, valAddrs[1])}
