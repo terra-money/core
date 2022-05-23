@@ -4,7 +4,7 @@ Terra Rebirth is now using wasm module of [wasmd](https://github.com/CosmWasm/wa
 ### Store
 
 #### Permission
-A code uploader can specify the permission of code instantiation
+A code uploader can specify the permission of code for instantiation
 ```go
 const (
 	// AccessTypeUnspecified placeholder for empty value
@@ -21,7 +21,7 @@ const (
 ### Instantiate 
 
 #### Reply
-The contracts are using reply to check instantiated contract address, 
+The contracts, which are using reply to check instantiated contract address, 
 should update the proto file to the following.
 
 ```protobuf
@@ -44,3 +44,20 @@ Now label is used to represent the contract info
 
 #### Burn Operation
 `CosmosMsg::Bank(BankMsg::Burn)` is enabled
+
+### Execute
+
+#### Event
+Event key for instantiated contract also should be changed from `execute`.`contract_address` to `execute`.`_contract_address`.
+
+
+### Migrate
+
+#### Event
+Event key for instantiated contract also should be changed from `migrate`.`contract_address` to `migrate`.`_contract_address`.
+
+### Reply
+
+#### Event
+Event key for instantiated contract also should be changed from `reply`.`contract_address` to `reply`.`_contract_address`.
+
