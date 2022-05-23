@@ -46,13 +46,13 @@ Visit the [migration guide](https://migrate.terra.money) to learn how to migrate
   - [From Source](#from-source)
   - [terrad](#terrad)
 - [Node Setup](#node-setup)
-  - [Terra node quickstart](#terra-node-quick-start)
+  - [Terra node quickstart](#terra-node-quickstart)
   - [Join the mainnet](#join-the-mainnet)
   - [Join a testnet](#join-a-testnet)
   - [Run a local testnet](#run-a-local-testnet)
   - [Run a single node testnet](#run-a-single-node-testnet)
 - [Set up a production environment](#set-up-a-production-environment)
-[Increase maximum open files](#step-increase-maximum-open-files)
+  - [Increase maximum open files](#increase-maximum-open-files)
   - [Create a dedicated user](#create-a-dedicated-user)
   - [Port configuration](#port-configuration)
   - [Run the server as a daemon](#run-the-server-as-a-daemon)
@@ -208,7 +208,7 @@ The following requirements are recommended for running a mainnet node:
 - At least 2 TB NVME SSD
 - A Linux distribution
 
-#### Terra node quickstart
+### Terra node quickstart
 ```
 terrad init nodename
 wget -O ~/.terra/config/genesis.json https://cloudflare-ipfs.com/ipfs/QmZAMcdu85Qr8saFuNpL9VaxVqqLGWNAs72RVFhchL9jWs
@@ -270,7 +270,7 @@ Your `terrad` node will be running a node on `tcp://localhost:26656`, listening 
 
 **This guide has been tested against Linux distributions only. To ensure you successfully set up your production environment, consider setting it up on an Linux system.**
 
-### Step 1. Increase maximum open files
+### Increase maximum open files
 
 By default, `terrad` can't open more than 1024 files at once.
 
