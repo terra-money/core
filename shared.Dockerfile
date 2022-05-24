@@ -1,4 +1,4 @@
-FROM golang:1.17-buster AS go-builder
+FROM golang:1.18.2-buster AS go-builder
 
 # Install minimum necessary dependencies, build Cosmos SDK, remove packages
 RUN apt update
@@ -11,7 +11,7 @@ COPY . /code/
 
 RUN LEDGER_ENABLED=false make build
 
-RUN cp /go/pkg/mod/github.com/\!cosm\!wasm/wasmvm@v*/api/libwasmvm.so /lib/libwasmvm.so
+RUN cp /go/pkg/mod/github.com/\!cosm\!wasm/wasmvm@v*/api/libwasmvm.`uname -m`.so /lib/libwasmvm.so
 
 FROM ubuntu:20.04
 
