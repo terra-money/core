@@ -127,7 +127,7 @@ build-linux:
 
 build-linux-with-shared-library:
 	mkdir -p $(BUILDDIR)
-	if [[ `uname -m` == "x86_64" ]]; then ARCH="x86_64"; else ARCH="aarch64"; fi
+	if [[ `uname -m` == "x86_64" ]]; then export ARCH="x86_64"; else export ARCH="aarch64"; fi
 	docker build --build-arg ARCH=$(ARCH) --tag terramoney/core-shared ./ -f ./shared.Dockerfile 
 	docker create --name temp terramoney/core-shared:latest
 	docker cp temp:/usr/local/bin/terrad $(BUILDDIR)/
