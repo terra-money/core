@@ -127,7 +127,7 @@ build-linux:
 
 build-linux-with-shared-library:
 	mkdir -p $(BUILDDIR)
-	docker build --tag terramoney/core-shared ./ -f ./shared.Dockerfile 
+	docker build --tag terramoney/core-shared ./ -f ./shared.Dockerfile
 	docker create --name temp terramoney/core-shared:latest
 	docker cp temp:/usr/local/bin/terrad $(BUILDDIR)/
 	docker cp temp:/lib/libwasmvm.so $(BUILDDIR)/
