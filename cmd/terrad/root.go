@@ -47,6 +47,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	sdkConfig := sdk.GetConfig()
 	sdkConfig.SetCoinType(terraapp.CoinType)
+	sdkConfig.SetFullFundraiserPath(terraapp.FullFundraiserPath)
 
 	accountPubKeyPrefix := terraapp.AccountAddressPrefix + "pub"
 	validatorAddressPrefix := terraapp.AccountAddressPrefix + "valoper"

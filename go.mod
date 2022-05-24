@@ -129,6 +129,7 @@ require (
 
 replace (
 	github.com/cosmos/iavl => github.com/cosmos/iavl v0.17.3
+	github.com/cosmos/ledger-cosmos-go => github.com/terra-money/ledger-terra-go v0.11.2
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/tendermint/tendermint => github.com/terra-money/tendermint v0.34.19-terra.2
 	github.com/tendermint/tm-db => github.com/terra-money/tm-db v0.6.7-terra.1

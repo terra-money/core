@@ -10,6 +10,9 @@ const (
 	// CoinType is the LUNA coin type as defined in SLIP44 (https://github.com/satoshilabs/slips/blob/master/slip-0044.md)
 	CoinType = 330
 
+	// FullFundraiserPath defines full fundraiser path for LUNA coin type
+	FullFundraiserPath = "44'/330'/0'/0/0"
+
 	// BondDenom staking denom
 	BondDenom = "uluna"
 
