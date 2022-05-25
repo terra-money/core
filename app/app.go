@@ -860,6 +860,7 @@ func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisStat
 
 	i := 0
 	stakeSplitCondition := sdk.NewInt(1_000_000_000_000)
+	powerReduction := app.StakingKeeper.PowerReduction(ctx)
 	for _, acc := range authState.GetAccounts() {
 		var account authtypes.AccountI
 		if err := app.InterfaceRegistry().UnpackAny(acc, &account); err != nil {
@@ -869,23 +870,35 @@ func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisStat
 		if vestingAcc, ok := account.(vestingexported.VestingAccount); ok {
 			amt := vestingAcc.GetOriginalVesting().AmountOf(app.StakingKeeper.BondDenom(ctx))
 
+			// to prevent staking multiple times over the same validator
+			// adjust split amount for the whale account
+			splitAmt := stakeSplitCondition
+			if amt.GT(stakeSplitCondition.MulRaw(int64(validatorLen))) {
+				splitAmt = amt.QuoRaw(int64(validatorLen))
+			}
+
 			// if a vesting account has more staking token than `stakeSplitCondition`,
 			// split staking balance to distribute staking power evenly
 			// Ex) 2_200_000_000_000
 			// stake 1_000_000_000_000 to val1
 			// stake 1_000_000_000_000 to val2
 			// stake 200_000_000_000 to val3
-			for ; amt.GTE(sdk.OneInt()); amt = amt.Sub(stakeSplitCondition) {
+			for ; amt.GTE(powerReduction); amt = amt.Sub(splitAmt) {
+				validator := validators[i%validatorLen]
 				if _, err := app.StakingKeeper.Delegate(
 					ctx,
 					vestingAcc.GetAddress(),
-					sdk.MinInt(amt, stakeSplitCondition),
+					sdk.MinInt(amt, splitAmt),
 					stakingtypes.Unbonded,
-					validators[i%validatorLen],
+					validator,
 					true,
 				); err != nil {
 					panic(err)
 				}
+
+				// reload validator to avoid power index problem
+				validator, _ = app.StakingKeeper.GetValidator(ctx, validator.GetOperator())
+				validators[i%validatorLen] = validator
 
 				// increase index only when staking happened
 				i++
