@@ -874,7 +874,7 @@ func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisStat
 		if vestingAcc, ok := account.(vestingexported.VestingAccount); ok {
 
 			// skip genesis staking if the vesting account is validator address
-			if _, ok := validatorAccAddressMap[account.GetAddress().String()]; ok {
+			if _, ok := validatorAccAddressMap[vestingAcc.GetAddress().String()]; ok {
 				continue
 			}
 
