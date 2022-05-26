@@ -842,13 +842,17 @@ func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisStat
 
 	allValidators := app.StakingKeeper.GetAllValidators(ctx)
 
-	// Filter out validators which have huge max commission than 20%
 	var validators []stakingtypes.Validator
+	validatorAccAddressMap := make(map[string]bool)
 	maxCommissionCondition := sdk.NewDecWithPrec(20, 2)
 	for _, val := range allValidators {
+
+		// Filter out validators which have huge max commission than 20%
 		if val.Commission.CommissionRates.MaxRate.LTE(maxCommissionCondition) {
 			validators = append(validators, val)
 		}
+
+		validatorAccAddressMap[sdk.AccAddress(val.GetOperator()).String()] = true
 	}
 
 	validatorLen := len(validators)
@@ -865,6 +869,11 @@ func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisStat
 		var account authtypes.AccountI
 		if err := app.InterfaceRegistry().UnpackAny(acc, &account); err != nil {
 			panic(err)
+		}
+
+		// skip genesis staking if the vesting account is validator address
+		if _, ok := validatorAccAddressMap[account.GetAddress().String()]; ok {
+			continue
 		}
 
 		if vestingAcc, ok := account.(vestingexported.VestingAccount); ok {
