@@ -124,6 +124,7 @@ func (suite *AnteTestSuite) TestSigVerification_ExplicitAmino() {
 				SignModeHandler: txConfig.SignModeHandler(),
 				SigGasConsumer:  cosmosante.DefaultSigVerificationGasConsumer,
 			},
+			Cdc: suite.app.AppCodec(),
 		},
 	)
 

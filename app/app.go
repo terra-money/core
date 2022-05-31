@@ -113,6 +113,7 @@ import (
 
 	"github.com/terra-money/core/v2/app/ante"
 	terraappparams "github.com/terra-money/core/v2/app/params"
+	appupgrade "github.com/terra-money/core/v2/app/upgrade"
 	"github.com/terra-money/core/v2/app/wasmconfig"
 
 	// unnamed import of statik for swagger UI support
@@ -627,6 +628,7 @@ func NewTerraApp(
 			IBCkeeper:         app.IBCKeeper,
 			TxCounterStoreKey: keys[wasm.StoreKey],
 			WasmConfig:        wasmConfig.ToWasmConfig(),
+			Cdc:               app.appCodec,
 		},
 	)
 	if err != nil {
@@ -788,7 +790,14 @@ func (app *TerraApp) RegisterTendermintService(clientCtx client.Context) {
 }
 
 // RegisterUpgradeHandlers returns upgrade handlers
-func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {}
+func (app *TerraApp) RegisterUpgradeHandlers(_ module.Configurator) {
+	app.UpgradeKeeper.SetUpgradeHandler(
+		appupgrade.UpgradeName,
+		appupgrade.CreateUpgradeHandler(
+			&app.StakingKeeper,
+		),
+	)
+}
 
 // RegisterSwaggerAPI registers swagger route with API Server
 func RegisterSwaggerAPI(rtr *mux.Router) {
