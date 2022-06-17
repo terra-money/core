@@ -10,6 +10,7 @@ import (
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	antekeeper "github.com/terra-money/core/v2/app/ante/keeper"
 )
 
 // HandlerOptions extends the SDK's AnteHandler options by requiring the IBC
@@ -17,7 +18,9 @@ import (
 type HandlerOptions struct {
 	ante.HandlerOptions
 
-	IBCkeeper         *ibckeeper.Keeper
+	IBCkeeper  *ibckeeper.Keeper
+	AnteKeeper *antekeeper.Keeper
+
 	TxCounterStoreKey sdk.StoreKey
 	WasmConfig        wasmTypes.WasmConfig
 	Cdc               codec.BinaryCodec
@@ -39,6 +42,14 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for ante builder")
 	}
 
+	if options.AnteKeeper == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "ante keeper is required for ante builder")
+	}
+
+	if options.IBCkeeper == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "IBC keeper is required for ante builder")
+	}
+
 	sigGasConsumer := options.SigGasConsumer
 	if sigGasConsumer == nil {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
@@ -46,7 +57,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
-		NewMinCommissionDecorator(options.Cdc),
+		NewMinCommissionDecorator(options.Cdc, options.AnteKeeper),
 		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit),
 		wasmkeeper.NewCountTXDecorator(options.TxCounterStoreKey),
 		ante.NewRejectExtensionOptionsDecorator(),

@@ -153,6 +153,14 @@
           "Params": "IBCTransferParams"
         }
       }
+    },
+    {
+      "url": "./tmp-swagger-gen/terra/ante/v2/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "AnteParams"
+        }
+      }
     }
   ]
 }

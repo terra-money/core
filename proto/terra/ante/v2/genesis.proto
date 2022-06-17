@@ -1,0 +1,13 @@
+syntax = "proto3";
+package terra.ante.v2;
+
+import "gogoproto/gogo.proto";
+import "terra/ante/v2/params.proto";
+
+option go_package = "github.com/terra-money/core/app/ante/types";
+
+// GenesisState defines the ante module's genesis state.
+message GenesisState {
+  // params defines all the paramaters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}

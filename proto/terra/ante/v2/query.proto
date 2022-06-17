@@ -1,0 +1,25 @@
+syntax = "proto3";
+package terra.ante.v2;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "terra/ante/v2/params.proto";
+
+option go_package = "github.com/terra-money/core/app/ante/types";
+
+// Query defines the gRPC querier service for ante.
+service Query {
+  // Params queries params of the ante.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/terra/ante/v2/params";
+  }
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params defines the parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}

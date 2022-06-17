@@ -1,0 +1,18 @@
+syntax = "proto3";
+package terra.ante.v2;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/terra-money/core/app/ante/types";
+
+// Params defines the parameters for the ante.
+message Params {
+    option (gogoproto.goproto_stringer)  = false;
+    option (gogoproto.equal)             = true;
+    bool minimum_commission_enforced     = 1 [(gogoproto.moretags) = "yaml:\"minimum_commission_enforced,omitempty\""];
+    string minimum_commission            = 2 [
+        (gogoproto.moretags)   = "yaml:\"minimum_commission\"",
+        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+        (gogoproto.nullable)   = false
+    ];
+}

@@ -38049,6 +38049,52 @@ paths:
                       format: byte
       tags:
         - Query
+  /terra/ante/v2/params:
+    get:
+      summary: Params queries params of the ante.
+      operationId: AnteParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: params defines the parameters of the module.
+                type: object
+                properties:
+                  minimum_commission_enforced:
+                    type: boolean
+                    format: boolean
+                  minimum_commission:
+                    type: string
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
 securityDefinitions:
   kms:
     type: basic
@@ -61638,4 +61684,26 @@ definitions:
               transfers to this
 
               chain.
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
+  terra.ante.v2.Params:
+    type: object
+    properties:
+      minimum_commission_enforced:
+        type: boolean
+        format: boolean
+      minimum_commission:
+        type: string
+    description: Params defines the parameters for the ante.
+  terra.ante.v2.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params defines the parameters of the module.
+        type: object
+        properties:
+          minimum_commission_enforced:
+            type: boolean
+            format: boolean
+          minimum_commission:
+            type: string
     description: QueryParamsResponse is the response type for the Query/Params RPC method.

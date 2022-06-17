@@ -112,6 +112,8 @@ import (
 	tmjson "github.com/tendermint/tendermint/libs/json"
 
 	"github.com/terra-money/core/v2/app/ante"
+	antekeeper "github.com/terra-money/core/v2/app/ante/keeper"
+	antetypes "github.com/terra-money/core/v2/app/ante/types"
 	terraappparams "github.com/terra-money/core/v2/app/params"
 	appupgrade "github.com/terra-money/core/v2/app/upgrade"
 	"github.com/terra-money/core/v2/app/wasmconfig"
@@ -206,6 +208,7 @@ var (
 		authzmodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 		wasm.AppModuleBasic{},
+		ante.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -279,8 +282,9 @@ type TerraApp struct {
 	ScopedICAHostKeeper  capabilitykeeper.ScopedKeeper
 
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
-	wasmKeeper       wasm.Keeper
-	scopedWasmKeeper capabilitykeeper.ScopedKeeper
+	WasmKeeper       wasm.Keeper
+	ScopedWasmKeeper capabilitykeeper.ScopedKeeper
+	AnteKeeper       antekeeper.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -447,7 +451,7 @@ func NewTerraApp(
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
 	supportedFeatures := "iterator,staking,stargate"
-	app.wasmKeeper = wasm.NewKeeper(
+	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,
 		keys[wasm.StoreKey],
 		app.GetSubspace(wasm.ModuleName),
@@ -467,15 +471,18 @@ func NewTerraApp(
 		GetWasmOpts(appOpts)...,
 	)
 
-	// register wasm gov proposal types
+	// Create ante keeper to store params
+	app.AnteKeeper = antekeeper.NewKeeper(app.GetSubspace(antetypes.ModuleName))
+
+	// Register wasm gov proposal types
 	enabledProposals := GetEnabledProposals()
 	if len(enabledProposals) != 0 {
-		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
+		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
 	}
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferIBCModule).
-		AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.wasmKeeper, app.IBCKeeper.ChannelKeeper)).
+		AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper)).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -518,7 +525,8 @@ func NewTerraApp(
 		icaModule,
 		routerModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
-		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		ante.NewAppModule(appCodec, app.AnteKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -548,6 +556,7 @@ func NewTerraApp(
 		icatypes.ModuleName,
 		routertypes.ModuleName,
 		wasm.ModuleName,
+		antetypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -573,6 +582,7 @@ func NewTerraApp(
 		icatypes.ModuleName,
 		routertypes.ModuleName,
 		wasm.ModuleName,
+		antetypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -603,6 +613,7 @@ func NewTerraApp(
 		icatypes.ModuleName,
 		routertypes.ModuleName,
 		wasm.ModuleName,
+		antetypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -626,6 +637,7 @@ func NewTerraApp(
 				SigGasConsumer:  cosmosante.DefaultSigVerificationGasConsumer,
 			},
 			IBCkeeper:         app.IBCKeeper,
+			AnteKeeper:        &app.AnteKeeper,
 			TxCounterStoreKey: keys[wasm.StoreKey],
 			WasmConfig:        wasmConfig.ToWasmConfig(),
 			Cdc:               app.appCodec,
@@ -659,7 +671,7 @@ func NewTerraApp(
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	// this line is used by starport scaffolding # stargate/app/beforeInitReturn
-	app.scopedWasmKeeper = scopedWasmKeeper
+	app.ScopedWasmKeeper = scopedWasmKeeper
 
 	return app
 }
@@ -838,6 +850,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 	paramsKeeper.Subspace(wasm.ModuleName)
+	paramsKeeper.Subspace(antetypes.ModuleName)
 
 	return paramsKeeper
 }

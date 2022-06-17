@@ -6,7 +6,7 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	"github.com/terra-money/core/v2/app/ante"
+	antetypes "github.com/terra-money/core/v2/app/ante/types"
 )
 
 // CreateUpgradeHandler make upgrade handler
@@ -15,8 +15,8 @@ func CreateUpgradeHandler(stakingKeeper *stakingkeeper.Keeper) upgradetypes.Upgr
 		allValidators := stakingKeeper.GetAllValidators(ctx)
 		for _, validator := range allValidators {
 			// increase commission rate
-			if validator.Commission.CommissionRates.Rate.LT(ante.MinimumCommissionRate) {
-				commission, err := stakingKeeper.UpdateValidatorCommission(ctx, validator, ante.MinimumCommissionRate)
+			if validator.Commission.CommissionRates.Rate.LT(antetypes.DefaultMinimumCommission) {
+				commission, err := stakingKeeper.UpdateValidatorCommission(ctx, validator, antetypes.DefaultMinimumCommission)
 				if err != nil {
 					return nil, err
 				}
@@ -28,8 +28,8 @@ func CreateUpgradeHandler(stakingKeeper *stakingkeeper.Keeper) upgradetypes.Upgr
 			}
 
 			// increase max commission rate
-			if validator.Commission.CommissionRates.MaxRate.LT(ante.MinimumCommissionRate) {
-				validator.Commission.MaxRate = ante.MinimumCommissionRate
+			if validator.Commission.CommissionRates.MaxRate.LT(antetypes.DefaultMinimumCommission) {
+				validator.Commission.MaxRate = antetypes.DefaultMinimumCommission
 			}
 
 			stakingKeeper.SetValidator(ctx, validator)

@@ -20,7 +20,7 @@ func (suite *AnteTestSuite) TestMinCommission() {
 	_, pub1, addr1 := testdata.KeyTestPubAddr()
 	_, _, addr2 := testdata.KeyTestPubAddr()
 
-	min := ante.NewMinCommissionDecorator(suite.app.AppCodec())
+	min := ante.NewMinCommissionDecorator(suite.app.AppCodec(), &suite.app.AnteKeeper)
 	lowCommission := sdk.NewDecWithPrec(2, 2)
 	highCommission := sdk.NewDecWithPrec(5, 2)
 
