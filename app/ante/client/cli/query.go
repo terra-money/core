@@ -11,17 +11,6 @@ import (
 	"github.com/terra-money/core/v2/app/ante/types"
 )
 
-const (
-	flagEvents = "events"
-	flagType   = "type"
-
-	typeHash   = "hash"
-	typeAccSeq = "acc_seq"
-	typeSig    = "signature"
-
-	eventFormat = "{eventType}.{eventAttribute}={value}"
-)
-
 // GetQueryCmd returns the transaction commands for this module
 func GetQueryCmd() *cobra.Command {
 	cmd := &cobra.Command{
