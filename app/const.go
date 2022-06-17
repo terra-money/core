@@ -39,4 +39,7 @@ const (
 	wasmMsgExecuteContract              = "/cosmwasm.wasm.v1.MsgExecuteContract"
 	wasmMsgInstantiateContract          = "/cosmwasm.wasm.v1.MsgInstantiateContract"
 	wasmMsgMigrateContract              = "/cosmwasm.wasm.v1.MsgMigrateContract"
+
+	// UpgradeName gov proposal name
+	UpgradeName = "MinCommission"
 )

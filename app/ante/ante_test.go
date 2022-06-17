@@ -24,6 +24,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	terraapp "github.com/terra-money/core/v2/app"
+	antetypes "github.com/terra-money/core/v2/app/ante/types"
 	"github.com/terra-money/core/v2/app/wasmconfig"
 )
 
@@ -47,6 +48,7 @@ func createTestApp(isCheckTx bool, tempDir string) (*terraapp.TerraApp, sdk.Cont
 	)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
+	app.AnteKeeper.SetParams(ctx, antetypes.DefaultParams())
 
 	return app, ctx
 }

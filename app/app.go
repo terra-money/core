@@ -115,7 +115,6 @@ import (
 	antekeeper "github.com/terra-money/core/v2/app/ante/keeper"
 	antetypes "github.com/terra-money/core/v2/app/ante/types"
 	terraappparams "github.com/terra-money/core/v2/app/params"
-	appupgrade "github.com/terra-money/core/v2/app/upgrade"
 	"github.com/terra-money/core/v2/app/wasmconfig"
 
 	// unnamed import of statik for swagger UI support
@@ -791,6 +790,16 @@ func (app *TerraApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIC
 	}
 }
 
+// GetModuleManager returns a reference of the module manager
+func (app *TerraApp) GetModuleManager() *module.Manager {
+	return app.mm
+}
+
+// GetConfigurator returns a copy of the module configurator
+func (app *TerraApp) GetConfigurator() module.Configurator {
+	return app.configurator
+}
+
 // RegisterTxService implements the Application.RegisterTxService method.
 func (app *TerraApp) RegisterTxService(clientCtx client.Context) {
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
@@ -804,10 +813,8 @@ func (app *TerraApp) RegisterTendermintService(clientCtx client.Context) {
 // RegisterUpgradeHandlers returns upgrade handlers
 func (app *TerraApp) RegisterUpgradeHandlers(_ module.Configurator) {
 	app.UpgradeKeeper.SetUpgradeHandler(
-		appupgrade.UpgradeName,
-		appupgrade.CreateUpgradeHandler(
-			&app.StakingKeeper,
-		),
+		UpgradeName,
+		app.CreateUpgradeHandler(),
 	)
 }
 

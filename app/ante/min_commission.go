@@ -29,8 +29,7 @@ func (min MinCommissionDecorator) AnteHandle(
 	ctx sdk.Context, tx sdk.Tx,
 	simulate bool, next sdk.AnteHandler,
 ) (newCtx sdk.Context, err error) {
-
-	if min.anteKeeper.MinimumCommissionEnforced(ctx) {
+	if min.anteKeeper != nil && min.anteKeeper.MinimumCommissionEnforced(ctx) {
 		minimumCommission := min.anteKeeper.MinimumCommission(ctx)
 
 		msgs := tx.GetMsgs()

@@ -48,6 +48,8 @@ import (
 	"github.com/strangelove-ventures/packet-forward-middleware/v2/router"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
+
+	"github.com/terra-money/core/v2/app/ante"
 )
 
 var (
@@ -150,6 +152,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 			"interchainaccounts":     ica.AppModule{}.ConsensusVersion(),
 			"packetfowardmiddleware": router.AppModule{}.ConsensusVersion(),
 			"vesting":                vesting.AppModule{}.ConsensusVersion(),
+			"ante":                   ante.AppModule{}.ConsensusVersion(),
 		},
 	)
 	require.NoError(t, err)
