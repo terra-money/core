@@ -100,9 +100,9 @@ func (AppModule) Name() string {
 // RegisterInvariants does nothing, there are no invariants to enforce
 func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
-// Route returns the message routing key for the staking module.
+// Route returns the message routing key for the ante module.
 func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, nil)
+	return sdk.Route{}
 }
 
 func (am AppModule) NewHandler() sdk.Handler {
