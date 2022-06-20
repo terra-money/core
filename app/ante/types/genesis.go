@@ -8,7 +8,7 @@ import (
 
 // Ante params default values
 var (
-	// Default maximum number of bonded validators
+	// Default minimum commission value
 	DefaultMinimumCommission sdk.Dec = sdk.NewDecWithPrec(10, 2) // 10%
 )
 
