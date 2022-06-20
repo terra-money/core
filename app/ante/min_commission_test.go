@@ -7,6 +7,7 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"github.com/terra-money/core/v2/app/ante"
+	"github.com/terra-money/core/v2/app/ante/types"
 )
 
 func (suite *AnteTestSuite) TestMinCommission() {
@@ -21,8 +22,8 @@ func (suite *AnteTestSuite) TestMinCommission() {
 	_, _, addr2 := testdata.KeyTestPubAddr()
 
 	min := ante.NewMinCommissionDecorator(suite.app.AppCodec(), &suite.app.AnteKeeper)
-	lowCommission := sdk.NewDecWithPrec(2, 2)
-	highCommission := sdk.NewDecWithPrec(5, 2)
+	lowCommission := types.DefaultMinimumCommission.QuoInt64(2)
+	highCommission := types.DefaultMinimumCommission
 
 	// create validator
 	createValidator, err := stakingtypes.NewMsgCreateValidator(
