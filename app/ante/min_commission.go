@@ -30,7 +30,7 @@ func (min MinCommissionDecorator) AnteHandle(
 	simulate bool, next sdk.AnteHandler,
 ) (newCtx sdk.Context, err error) {
 	if min.anteKeeper != nil && min.anteKeeper.MinimumCommissionEnforced(ctx) {
-		minimumCommission := min.anteKeeper.MinimumCommission(ctx)
+		minimumCommission := min.anteKeeper.GetMinimumCommission(ctx)
 
 		msgs := tx.GetMsgs()
 		validMsg := func(m sdk.Msg) error {

@@ -37961,6 +37961,46 @@ paths:
                       format: byte
       tags:
         - Query
+  /terra/ante/v2/minimum_commission:
+    get:
+      summary: MinimumCommission queries minimum commission rate for all validators.
+      operationId: MinimumCommission
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              minimum_commission:
+                type: string
+                title: minimum commission enforced to all validators
+            description: >-
+              QueryMinimumCommissionResponse is the response type for the
+              Query/MinimumCommission RPC method.
+        default:
+          description: An unexpected error response
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
   /terra/ante/v2/params:
     get:
       summary: Params queries params of the ante.
@@ -37978,8 +38018,6 @@ paths:
                   minimum_commission_enforced:
                     type: boolean
                     format: boolean
-                  minimum_commission:
-                    type: string
             description: >-
               QueryParamsResponse is the response type for the Query/Params RPC
               method.
@@ -61603,9 +61641,16 @@ definitions:
       minimum_commission_enforced:
         type: boolean
         format: boolean
+    description: Params defines the parameters for the ante.
+  terra.ante.v2.QueryMinimumCommissionResponse:
+    type: object
+    properties:
       minimum_commission:
         type: string
-    description: Params defines the parameters for the ante.
+        title: minimum commission enforced to all validators
+    description: >-
+      QueryMinimumCommissionResponse is the response type for the
+      Query/MinimumCommission RPC method.
   terra.ante.v2.QueryParamsResponse:
     type: object
     properties:
@@ -61616,6 +61661,4 @@ definitions:
           minimum_commission_enforced:
             type: boolean
             format: boolean
-          minimum_commission:
-            type: string
     description: QueryParamsResponse is the response type for the Query/Params RPC method.

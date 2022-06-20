@@ -49,6 +49,7 @@ func createTestApp(isCheckTx bool, tempDir string) (*terraapp.TerraApp, sdk.Cont
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	app.AnteKeeper.SetParams(ctx, antetypes.DefaultParams())
+	app.AnteKeeper.SetMinimumCommission(ctx, antetypes.DefaultMinimumCommission)
 
 	return app, ctx
 }

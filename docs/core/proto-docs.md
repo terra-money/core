@@ -989,7 +989,12 @@
 - [terra/ante/v2/genesis.proto](#terra/ante/v2/genesis.proto)
     - [GenesisState](#terra.ante.v2.GenesisState)
   
+- [terra/ante/v2/proposal.proto](#terra/ante/v2/proposal.proto)
+    - [MinimumCommissionUpdateProposal](#terra.ante.v2.MinimumCommissionUpdateProposal)
+  
 - [terra/ante/v2/query.proto](#terra/ante/v2/query.proto)
+    - [QueryMinimumCommissionRequest](#terra.ante.v2.QueryMinimumCommissionRequest)
+    - [QueryMinimumCommissionResponse](#terra.ante.v2.QueryMinimumCommissionResponse)
     - [QueryParamsRequest](#terra.ante.v2.QueryParamsRequest)
     - [QueryParamsResponse](#terra.ante.v2.QueryParamsResponse)
   
@@ -14458,7 +14463,6 @@ Params defines the parameters for the ante.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `minimum_commission_enforced` | [bool](#bool) |  |  |
-| `minimum_commission` | [string](#string) |  |  |
 
 
 
@@ -14490,6 +14494,41 @@ GenesisState defines the ante module's genesis state.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `params` | [Params](#terra.ante.v2.Params) |  | params defines all the paramaters of the module. |
+| `minimum_commission` | [string](#string) |  | minimum commission enforced to all validators |
+
+
+
+
+
+ <!-- end messages -->
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+ <!-- end services -->
+
+
+
+<a name="terra/ante/v2/proposal.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## terra/ante/v2/proposal.proto
+
+
+
+<a name="terra.ante.v2.MinimumCommissionUpdateProposal"></a>
+
+### MinimumCommissionUpdateProposal
+MinimumCommissionUpdateProposal is a gov Content type for initiating a minimum commission
+upgrade.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `title` | [string](#string) |  |  |
+| `description` | [string](#string) |  |  |
+| `minimum_commission` | [string](#string) |  |  |
 
 
 
@@ -14509,6 +14548,31 @@ GenesisState defines the ante module's genesis state.
 <p align="right"><a href="#top">Top</a></p>
 
 ## terra/ante/v2/query.proto
+
+
+
+<a name="terra.ante.v2.QueryMinimumCommissionRequest"></a>
+
+### QueryMinimumCommissionRequest
+QueryMinimumCommissionRequest is the request type for the Query/MinimumCommission RPC method.
+
+
+
+
+
+
+<a name="terra.ante.v2.QueryMinimumCommissionResponse"></a>
+
+### QueryMinimumCommissionResponse
+QueryMinimumCommissionResponse is the response type for the Query/MinimumCommission RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `minimum_commission` | [string](#string) |  | minimum commission enforced to all validators |
+
+
+
 
 
 
@@ -14551,6 +14615,7 @@ Query defines the gRPC querier service for ante.
 | Method Name | Request Type | Response Type | Description | HTTP Verb | Endpoint |
 | ----------- | ------------ | ------------- | ------------| ------- | -------- |
 | `Params` | [QueryParamsRequest](#terra.ante.v2.QueryParamsRequest) | [QueryParamsResponse](#terra.ante.v2.QueryParamsResponse) | Params queries params of the ante. | GET|/terra/ante/v2/params|
+| `MinimumCommission` | [QueryMinimumCommissionRequest](#terra.ante.v2.QueryMinimumCommissionRequest) | [QueryMinimumCommissionResponse](#terra.ante.v2.QueryMinimumCommissionResponse) | MinimumCommission queries minimum commission rate for all validators. | GET|/terra/ante/v2/minimum_commission|
 
  <!-- end services -->
 

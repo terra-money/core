@@ -40,6 +40,7 @@ func createTestApp(isCheckTx bool, tempDir string) (*terraapp.TerraApp, sdk.Cont
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	app.AnteKeeper.SetParams(ctx, types.DefaultParams())
+	app.AnteKeeper.SetMinimumCommission(ctx, types.DefaultMinimumCommission)
 
 	return app, ctx
 }
@@ -74,7 +75,7 @@ func (suite *KeeperTestSuite) TestParams() {
 	suite.True(expParams.Equal(resParams))
 
 	//modify a params, save, and retrieve
-	expParams.MinimumCommission = sdk.NewDecWithPrec(10, 2)
+	expParams.MinimumCommissionEnforced = false
 	app.AnteKeeper.SetParams(ctx, expParams)
 	resParams = app.AnteKeeper.GetParams(ctx)
 	suite.True(expParams.Equal(resParams))
@@ -95,6 +96,19 @@ func (suite *KeeperTestSuite) TestInitGenesis() {
 	exportedGenesis := app.AnteKeeper.ExportGenesis(ctx)
 	exportedParams := exportedGenesis.Params
 	suite.True(expParams.Equal(exportedParams))
+}
+
+func (suite *KeeperTestSuite) TestGetSetMinimumCommission() {
+	suite.SetupTest(true) // setup
+	app, ctx := suite.app, suite.ctx
+
+	expMinimumCommission := sdk.NewDecWithPrec(5, 2)
+
+	//check that the empty keeper loads the default
+	app.AnteKeeper.SetMinimumCommission(ctx, expMinimumCommission)
+	resMinimumCommission := app.AnteKeeper.GetMinimumCommission(ctx)
+
+	suite.True(expMinimumCommission.Equal(resMinimumCommission))
 }
 
 func TestKeeperTestSuite(t *testing.T) {

@@ -13,6 +13,11 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/terra/ante/v2/params";
   }
+
+  // MinimumCommission queries minimum commission rate for all validators.
+  rpc MinimumCommission(QueryMinimumCommissionRequest) returns (QueryMinimumCommissionResponse) {
+    option (google.api.http).get = "/terra/ante/v2/minimum_commission";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -22,4 +27,17 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params defines the parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryMinimumCommissionRequest is the request type for the Query/MinimumCommission RPC method.
+message QueryMinimumCommissionRequest {}
+
+// QueryMinimumCommissionResponse is the response type for the Query/MinimumCommission RPC method.
+message QueryMinimumCommissionResponse {
+  // minimum commission enforced to all validators
+  string minimum_commission            = 1 [
+    (gogoproto.moretags)   = "yaml:\"minimum_commission\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable)   = false
+  ];
 }

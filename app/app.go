@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -24,6 +25,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -113,6 +115,7 @@ import (
 	tmjson "github.com/tendermint/tendermint/libs/json"
 
 	"github.com/terra-money/core/v2/app/ante"
+	anteclient "github.com/terra-money/core/v2/app/ante/client"
 	antekeeper "github.com/terra-money/core/v2/app/ante/keeper"
 	antetypes "github.com/terra-money/core/v2/app/ante/types"
 	terraappparams "github.com/terra-money/core/v2/app/params"
@@ -173,6 +176,7 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		ibcclientclient.UpdateClientProposalHandler,
 		ibcclientclient.UpgradeProposalHandler,
 		// this line is used by starport scaffolding # stargate/app/govProposalHandler
+		anteclient.ProposalHandler,
 	)
 
 	return govProposalHandlers
@@ -323,7 +327,7 @@ func NewTerraApp(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey, routertypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
-		wasm.StoreKey,
+		wasm.StoreKey, antetypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -471,14 +475,22 @@ func NewTerraApp(
 		GetWasmOpts(appOpts)...,
 	)
 
-	// Create ante keeper to store params
-	app.AnteKeeper = antekeeper.NewKeeper(app.GetSubspace(antetypes.ModuleName))
-
 	// Register wasm gov proposal types
 	enabledProposals := GetEnabledProposals()
 	if len(enabledProposals) != 0 {
 		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
 	}
+
+	// Create ante keeper to store params
+	app.AnteKeeper = antekeeper.NewKeeper(
+		appCodec,
+		keys[antetypes.StoreKey],
+		app.GetSubspace(antetypes.ModuleName),
+	)
+
+	// Register ante gov proposal types
+	govRouter.AddRoute(antetypes.RouterKey, ante.NewMinimumCommissionUpdateProposalHandler(app.AnteKeeper, app.StakingKeeper))
+
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferIBCModule).
@@ -819,6 +831,20 @@ func (app *TerraApp) RegisterUpgradeHandlers(_ module.Configurator) {
 		UpgradeName,
 		app.CreateUpgradeHandler(),
 	)
+
+	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	if err != nil {
+		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+	}
+
+	if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Added: []string{antetypes.StoreKey},
+		}
+
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	}
 }
 
 // RegisterSwaggerAPI registers swagger route with API Server

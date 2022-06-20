@@ -1,19 +1,49 @@
 package types
 
+import (
+	fmt "fmt"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+// Ante params default values
+var (
+	// Default maximum number of bonded validators
+	DefaultMinimumCommission sdk.Dec = sdk.NewDecWithPrec(10, 2) // 10%
+)
+
 // NewGenesisState return new GenesisState instance
-func NewGenesisState(params Params) *GenesisState {
+func NewGenesisState(params Params, minimumCommission sdk.Dec) *GenesisState {
 	return &GenesisState{
-		Params: params,
+		Params:            params,
+		MinimumCommission: minimumCommission,
 	}
 }
 
 // DefaultGenesisState return default GenesisState
 func DefaultGenesisState() *GenesisState {
-	return NewGenesisState(DefaultParams())
+	return NewGenesisState(DefaultParams(), DefaultMinimumCommission)
 }
 
 // Validate performs basic validation of ante genesis data returning an
 // error for any failed validation criteria.
 func (genState GenesisState) Validate() error {
-	return genState.Params.Validate()
+
+	if err := genState.Params.Validate(); err != nil {
+		return err
+	}
+
+	if err := validateMinimumCommission(genState.MinimumCommission); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func validateMinimumCommission(minimumCommission sdk.Dec) error {
+	if minimumCommission.GT(sdk.OneDec()) || minimumCommission.IsNegative() {
+		return fmt.Errorf("minimum commission must be [0, 1]: %d", minimumCommission)
+	}
+
+	return nil
 }

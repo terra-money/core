@@ -1,0 +1,23 @@
+syntax = "proto3";
+package terra.ante.v2;
+
+import "gogoproto/gogo.proto";
+
+option go_package                      = "github.com/terra-money/core/app/ante/types";
+option (gogoproto.goproto_getters_all) = false;
+
+// MinimumCommissionUpdateProposal is a gov Content type for initiating a minimum commission
+// upgrade.
+message MinimumCommissionUpdateProposal {
+    option (gogoproto.equal)            = true;
+    option (gogoproto.goproto_stringer) = false;
+  
+    string title                         = 1;
+    string description                   = 2;
+    string minimum_commission            = 3 [
+        (gogoproto.moretags)   = "yaml:\"minimum_commission\"",
+        (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+        (gogoproto.nullable)   = false
+    ];
+  }
+  
