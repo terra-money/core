@@ -1,6 +1,6 @@
 module github.com/terra-money/core/v2
 
-go 1.17
+go 1.18
 
 require (
 	github.com/CosmWasm/wasmd v0.27.0
