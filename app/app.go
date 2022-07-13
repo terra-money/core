@@ -791,7 +791,12 @@ func (app *TerraApp) RegisterTendermintService(clientCtx client.Context) {
 }
 
 // RegisterUpgradeHandlers returns upgrade handlers
-func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {}
+func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {
+	app.UpgradeKeeper.SetUpgradeHandler(
+		UpgradeName,
+		NewUpgradeHandler(app).CreateUpgradeHandler(),
+	)
+}
 
 // RegisterSwaggerAPI registers swagger route with API Server
 func RegisterSwaggerAPI(rtr *mux.Router) {
