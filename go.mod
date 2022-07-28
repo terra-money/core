@@ -128,6 +128,7 @@ require (
 )
 
 replace (
+	github.com/CosmWasm/wasmd => github.com/terra-money/wasmd v0.27.0-terra.1
 	github.com/cosmos/cosmos-sdk => github.com/terra-money/cosmos-sdk v0.45.6-terra.1
 	github.com/cosmos/iavl => github.com/cosmos/iavl v0.17.3
 	github.com/cosmos/ledger-cosmos-go => github.com/terra-money/ledger-terra-go v0.11.2
