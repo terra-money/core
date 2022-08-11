@@ -1,3 +1,8 @@
+# Changelog
+
+## [Unreleased]
+- [#69](https://github.com/terra-money/core/pull/69) Bump SDK to fix [the issue](https://github.com/cosmos/cosmos-sdk/issues/12902).
+
 ## 2.1.0
 
 ### Improvements
