@@ -1,11 +1,16 @@
 package app
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec/types"
@@ -669,6 +674,123 @@ func (app *TerraApp) Name() string { return app.BaseApp.Name() }
 // BeginBlocker application updates every begin block
 func (app *TerraApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
+}
+
+var cdc = MakeEncodingConfig()
+
+type Event struct {
+	Type       string           `json:"type,omitempty"`
+	Attributes []EventAttribute `json:"attributes,omitempty"`
+}
+
+type EventAttribute struct {
+	Key   string `json:"key,omitempty"`
+	Value string `json:"value,omitempty"`
+}
+
+type ResponseDeliverTx struct {
+	Code      uint32  `json:"code"`
+	Data      []byte  `json:"data,omitempty"`
+	Log       string  `json:"log,omitempty"`
+	Info      string  `json:"info,omitempty"`
+	GasWanted int64   `json:"gas_wanted,omitempty"`
+	GasUsed   int64   `json:"gas_used,omitempty"`
+	Events    []Event `json:"events,omitempty"`
+	Codespace string  `json:"codespace,omitempty"`
+}
+
+type TxEvent struct {
+	Code      uint32          `json:"code"`
+	Codespace string          `json:"codespace"`
+	GasUsed   int64           `json:"gas_used"`
+	GasWanted int64           `json:"gas_wanted"`
+	Height    int64           `json:"height"`
+	RawLog    string          `json:"raw_log"`
+	Logs      json.RawMessage `json:"logs"`
+	TxHash    string          `json:"txhash"`
+	Timestamp time.Time       `json:"timestamp"`
+	Tx        json.RawMessage `json:"tx"`
+}
+
+func ToResponseDeliverTxJSON(responseDeliverTx *abci.ResponseDeliverTx) *ResponseDeliverTx {
+	result := &ResponseDeliverTx{}
+	result.Code = responseDeliverTx.Code
+	result.Data = responseDeliverTx.Data
+	result.Log = responseDeliverTx.Log
+	result.Info = responseDeliverTx.Info
+	result.GasWanted = responseDeliverTx.GasWanted
+	result.GasUsed = responseDeliverTx.GasUsed
+	result.Codespace = responseDeliverTx.Codespace
+	result.Events = []Event{}
+
+	for _, event := range responseDeliverTx.Events {
+		nEvent := Event{}
+		nEvent.Type = event.Type
+		for _, attribute := range event.Attributes {
+			nAttribute := EventAttribute{
+				Key:   string(attribute.Key),
+				Value: string(attribute.Value),
+			}
+
+			nEvent.Attributes = append(nEvent.Attributes, nAttribute)
+		}
+
+		result.Events = append(result.Events, nEvent)
+	}
+
+	return result
+}
+
+func (app *TerraApp) DeliverTx(req abci.RequestDeliverTx) abci.ResponseDeliverTx {
+	res := app.BaseApp.DeliverTx(req)
+
+	txDecoder := cdc.TxConfig.TxDecoder()
+
+	// https://github.dev/terra-money/mantlemint/blob/main/indexer/tx/tx.go
+	tx, err := txDecoder(req.Tx)
+	jsonEncoder := cdc.TxConfig.TxJSONEncoder()
+
+	if err != nil {
+		return res
+	}
+	hash := sha256.Sum256(req.Tx)
+	bzHash := hash[:]
+	hashString := hex.EncodeToString(bzHash)
+
+	fmt.Printf("Parsing Transaction %v\n", hashString)
+
+	// encode tx to JSON for max compat & shave deserialization cost at serving
+	txJSON, _ := jsonEncoder(tx)
+
+	response := ToResponseDeliverTxJSON(&res)
+
+	payload := TxEvent{
+		Code:      response.Code,
+		Codespace: response.Codespace,
+		GasUsed:   response.GasUsed,
+		GasWanted: response.GasWanted,
+		// Height:    0,
+		RawLog: response.Log,
+		Logs: func() json.RawMessage {
+			if response.Code == 0 {
+				return []byte(response.Log)
+			} else {
+				out, _ := json.Marshal([]string{})
+				return out
+			}
+		}(),
+		TxHash: fmt.Sprintf("%X", hash),
+		// Timestamp: block.Time,
+		Tx: txJSON,
+	}
+
+	payloadJSON, err := tmjson.Marshal(payload)
+	if err != nil {
+		return res
+	}
+
+	fmt.Printf("DELIVERYTX %v\n", string(payloadJSON))
+	return res
 }
 
 // EndBlocker application updates every end block
