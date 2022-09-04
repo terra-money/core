@@ -62,10 +62,10 @@ func (h UpgradeHandler) vestingScheduleUpdateHandler(ctx sdk.Context, genesisTim
 		}
 
 		// 2 year vesting with 6 month cliff
-		vestingAccount.StartTime = genesisTime + 60*60*24*30*6
+		vestingAccount.StartTime = genesisTime + 6*24*30*6
 		vestingAccount.VestingPeriods = vestingtypes.Periods{
 			{
-				Length: 60 * 60 * 24 * 365 * 2,
+				Length: 6 * 24 * 30 * 6,
 				Amount: vestingAccount.OriginalVesting,
 			},
 		}
