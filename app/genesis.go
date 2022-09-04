@@ -92,8 +92,8 @@ func (genState GenesisState) ConfigureICA(cdc codec.JSONCodec) GenesisState {
 
 	var icaGenState icatypes.GenesisState
 	cdc.MustUnmarshalJSON(genState[icatypes.ModuleName], &icaGenState)
-	icaGenState.ControllerGenesisState.Params = controllerParams
-	icaGenState.HostGenesisState.Params = hostParams
+	icaGenState.ControllerGenesisState.Params = controllerParams {1}
+	icaGenState.HostGenesisState.Params = hostParams {1}
 	genState[icatypes.ModuleName] = cdc.MustMarshalJSON(&icaGenState)
 
 	return genState
