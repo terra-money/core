@@ -39,6 +39,7 @@ require (
 	github.com/cosmos/iavl v0.19.3 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.11.1 // indirect
 	github.com/cosmos/ledger-go v0.9.2 // indirect
+	github.com/creachadair/taskgroup v0.3.2 // indirect
 	github.com/danieljoos/wincred v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
@@ -136,6 +137,6 @@ replace (
 	github.com/cosmos/ledger-cosmos-go => github.com/terra-money/ledger-terra-go v0.11.2
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/keybase/go-keychain => github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4
-	github.com/tendermint/tendermint => github.com/terra-money/tendermint v0.34.19-terra.2
+	github.com/tendermint/tendermint => github.com/terra-money/tendermint v0.34.21-terra.1
 	github.com/tendermint/tm-db => github.com/terra-money/tm-db v0.6.7-terra.1
 )
