@@ -133,7 +133,7 @@ require (
 replace (
 	github.com/CosmWasm/wasmd => github.com/terra-money/wasmd v0.27.0-terra.1
 	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
-	github.com/cosmos/cosmos-sdk => github.com/terra-money/cosmos-sdk v0.45.9-terra.1
+	github.com/cosmos/cosmos-sdk => github.com/terra-money/cosmos-sdk v0.45.9-terra.2
 	github.com/cosmos/ledger-cosmos-go => github.com/terra-money/ledger-terra-go v0.11.2
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/keybase/go-keychain => github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4
