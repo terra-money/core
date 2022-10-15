@@ -139,4 +139,5 @@ replace (
 	github.com/keybase/go-keychain => github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4
 	github.com/tendermint/tendermint => github.com/terra-money/tendermint v0.34.21-terra.1
 	github.com/tendermint/tm-db => github.com/terra-money/tm-db v0.6.7-terra.1
+	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )
