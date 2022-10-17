@@ -169,15 +169,14 @@ Available Commands:
   help                Help about any command
   init                Initialize private validator, p2p, genesis, and application configuration files
   keys                Manage your application's keys
-  migrate             Migrate genesis to a specified target version
   query               Querying subcommands
+  rollback            rollback cosmos-sdk and tendermint state by one height
   rosetta             spin up a rosetta server
   start               Run the full node
   status              Query remote node for status
   tendermint          Tendermint subcommands
   testnet             Initialize files for a terrad testnet
   tx                  Transactions subcommands
-  unsafe-reset-all    Resets the blockchain database, removes address book files, and resets data/priv_validator_state.json to the genesis state
   validate-genesis    validates the genesis file at the default location or at the location passed as an arg
   version             Print the application binary version information
 
@@ -209,10 +208,25 @@ The following requirements are recommended for running a mainnet node:
 - A Linux distribution
 
 ### Terra node quickstart
+
+**Initialize node**
 ```
-terrad init nodename
+terrad init [your_node_moniker] --chain-id "phoenix-1"
+```
+
+**Download genesis**
+```
 wget -O ~/.terra/config/genesis.json https://cloudflare-ipfs.com/ipfs/QmZAMcdu85Qr8saFuNpL9VaxVqqLGWNAs72RVFhchL9jWs
-curl https://network.terra.dev/addrbook.json > ~/.terrad/config/addrbook.json
+```
+
+**Add seed**
+```
+seeds="ade4d8bc8cbe014af6ebdf3cb7b1e9ad36f412c0@seeds.polkachu.com:11756,86bd5cb6e762f673f1706e5889e039d5406b4b90@terra.seed.node75.org:10856,fc608a9a117d8d2302bcd181aec34eec6bb4fa96@terra2-seed.blockpane.com:26656"
+sed -i.bak -e "s/^seeds *=.*/seeds = \"$seeds\"/" $HOME/.terra/config/config.toml;
+```
+
+**Start Terra binary**
+```
 terrad start
 ```
 
