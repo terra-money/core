@@ -225,6 +225,12 @@ seeds="ade4d8bc8cbe014af6ebdf3cb7b1e9ad36f412c0@seeds.polkachu.com:11756,86bd5cb
 sed -i.bak -e "s/^seeds *=.*/seeds = \"$seeds\"/" $HOME/.terra/config/config.toml;
 ```
 
+**Address book**
+```
+wget -O "$HOME/addrbook.json" https://snapshots.polkachu.com/addrbook/terra/addrbook.json
+mv "$HOME/addrbook.json" "$HOME/.terra/config/"
+```
+
 **Start Terra binary**
 ```
 terrad start
