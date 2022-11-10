@@ -41,11 +41,5 @@ const (
 	wasmMsgMigrateContract              = "/cosmwasm.wasm.v1.MsgMigrateContract"
 
 	// UpgradeName gov proposal name
-	UpgradeName = "2.1.0"
-
-	// MainnetChainID Terra v2 mainnet chain ID
-	MainnetChainID = "phoenix-1"
-
-	// MainnetGenesisTime Terra v2 mainnet genesis time for vesting account calculation
-	MainnetGenesisTime = int64(1653717600)
+	UpgradeName = "2.2.0"
 )
