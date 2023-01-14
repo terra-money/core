@@ -1,26 +1,30 @@
+run:
+  tests: true
+  timeout: 10m
+  sort-results: true
+  allow-parallel-runners: true
+  exclude-dir: testutil/testdata_pulsar
+  concurrency: 4
+
 linters:
   disable-all: true
   enable:
-    - errcheck
-    - golint
-    - ineffassign
-    - unconvert
-    - misspell
-    - govet
-    # - unused
-    # - deadcode
+    - depguard
+    - dogsled
+    - exportloopref
     - goconst
+    - gocritic
+    - gofumpt
     - gosec
-    # - staticcheck
-linters-settings:
-  gocyclo:
-    min-complexity: 11
-  errcheck:
-    ignore: fmt:.*,io/ioutil:^Read.*,github.com/spf13/cobra:MarkFlagRequired,github.com/spf13/viper:BindPFlag
-  golint:
-    min-confidence: 1.1
-issues:
-  exclude:
-    - composite
-run:
-  tests: false
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - nolintlint
+    - staticcheck
+    - revive
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unused
