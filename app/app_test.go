@@ -42,10 +42,10 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 
-	ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
-	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
-	ibc "github.com/cosmos/ibc-go/v3/modules/core"
-	"github.com/strangelove-ventures/packet-forward-middleware/v2/router"
+	ica "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts"
+	"github.com/cosmos/ibc-go/v4/modules/apps/transfer"
+	ibc "github.com/cosmos/ibc-go/v4/modules/core"
+	"github.com/strangelove-ventures/packet-forward-middleware/v4/router"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 )
