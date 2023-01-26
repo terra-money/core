@@ -34,7 +34,7 @@ echo "trust_hash: $TRUST_HASH"
 # Export state sync variables.
 export TERRAD_STATESYNC_ENABLE=true
 export TERRAD_P2P_MAX_NUM_OUTBOUND_PEERS=200
-export TERRAD_STATESYNC_RPC_SERVERS="https://rpc-juno-ia.notional.ventures:443,https://juno-rpc.polkachu.com:443"
+export TERRAD_STATESYNC_RPC_SERVERS="https://terra-rpc.polkachu.com:443,https://terra-rpc.polkachu.com:443"
 export TERRAD_STATESYNC_TRUST_HEIGHT=$BLOCK_HEIGHT
 export TERRAD_STATESYNC_TRUST_HASH=$TRUST_HASH
 
