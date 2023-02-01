@@ -130,7 +130,7 @@ require (
 
 replace (
 	github.com/CosmWasm/wasmd => github.com/terra-money/wasmd v0.27.0-terra.1
-	github.com/cosmos/cosmos-sdk => github.com/notional-labs/cosmos-sdk v0.45.12-terra.2
+	github.com/cosmos/cosmos-sdk => github.com/terra-money/cosmos-sdk v0.45.12-terra.1
 	github.com/cosmos/ledger-cosmos-go => github.com/terra-money/ledger-terra-go v0.11.2
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/tendermint/tendermint => github.com/terra-money/tendermint v0.34.21-terra.1
