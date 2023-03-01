@@ -1,8 +1,6 @@
 package app
 
 import (
-	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	ibcfee "github.com/cosmos/ibc-go/v6/modules/apps/29-fee"
 	"io"
 	"net/http"
 	"os"
@@ -61,23 +59,29 @@ import (
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	govtypesv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
+
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
@@ -90,9 +94,10 @@ import (
 	icahostkeeper "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/host/keeper"
 	icahosttypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/host/types"
 	icatypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/types"
+	ibcfee "github.com/cosmos/ibc-go/v6/modules/apps/29-fee"
 	ibcfeekeeper "github.com/cosmos/ibc-go/v6/modules/apps/29-fee/keeper"
 	ibcfeetypes "github.com/cosmos/ibc-go/v6/modules/apps/29-fee/types"
-	transfer "github.com/cosmos/ibc-go/v6/modules/apps/transfer"
+	ibctransfer "github.com/cosmos/ibc-go/v6/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v6/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v6/modules/core"
@@ -103,8 +108,13 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v6/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v6/modules/core/keeper"
 	"github.com/strangelove-ventures/packet-forward-middleware/v6/router"
+
 	routerkeeper "github.com/strangelove-ventures/packet-forward-middleware/v6/router/keeper"
 	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v6/router/types"
+
+	ibchooks "github.com/terra-money/core/v2/x/ibc-hooks"
+	ibchookskeeper "github.com/terra-money/core/v2/x/ibc-hooks/keeper"
+	ibchookstypes "github.com/terra-money/core/v2/x/ibc-hooks/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
@@ -209,13 +219,14 @@ var (
 		feegrantmodule.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
 		evidence.AppModuleBasic{},
-		transfer.AppModuleBasic{},
+		ibctransfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		ica.AppModuleBasic{},
 		router.AppModuleBasic{},
 		authzmodule.AppModuleBasic{},
 		tokenfactory.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
+		ibchooks.AppModuleBasic{},
 		wasm.AppModuleBasic{},
 	)
 
@@ -230,6 +241,7 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
+		ibcfeetypes.ModuleName:       nil,
 		wasm.ModuleName:              {authtypes.Burner},
 		tokenfactorytypes.ModuleName: {authtypes.Burner, authtypes.Minter},
 	}
@@ -287,6 +299,12 @@ type TerraApp struct {
 	RouterKeeper       routerkeeper.Keeper
 	TokenFactoryKeeper tokenfactorykeeper.Keeper
 
+	// IBC hooks
+	IBCHooksKeeper   *ibchookskeeper.Keeper
+	TransferStack    *ibchooks.IBCMiddleware
+	Ics20WasmHooks   *ibchooks.WasmHooks
+	HooksICS4Wrapper ibchooks.ICS4Middleware
+
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
@@ -332,7 +350,7 @@ func NewTerraApp(
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey, routertypes.StoreKey,
-		tokenfactorytypes.StoreKey, wasm.StoreKey,
+		tokenfactorytypes.StoreKey, wasm.StoreKey, ibcfeetypes.StoreKey, ibchookstypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -441,8 +459,23 @@ func NewTerraApp(
 		app.BankKeeper,
 		scopedTransferKeeper,
 	)
-	transferModule := transfer.NewAppModule(app.TransferKeeper)
-	transferIBCModule := transfer.NewIBCModule(app.TransferKeeper)
+	transferIBCModule := ibctransfer.NewIBCModule(app.TransferKeeper)
+
+	// Configure the hooks keeper
+	hooksKeeper := ibchookskeeper.NewKeeper(
+		keys[ibchookstypes.StoreKey],
+	)
+	app.IBCHooksKeeper = &hooksKeeper
+	wasmHooks := ibchooks.NewWasmHooks(&hooksKeeper, nil, AccountAddressPrefix) // The contract keeper needs to be set later
+	app.Ics20WasmHooks = &wasmHooks
+	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
+		app.IBCKeeper.ChannelKeeper,
+		app.Ics20WasmHooks,
+	)
+
+	// Hooks Middleware
+	hooksTransferStack := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
+	app.TransferStack = &hooksTransferStack
 
 	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(
 		appCodec, keys[ibcfeetypes.StoreKey],
@@ -461,7 +494,6 @@ func NewTerraApp(
 		scopedICAHostKeeper,
 		app.MsgServiceRouter(),
 	)
-	icaModule := ica.NewAppModule(nil, &app.ICAHostKeeper)
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
 
 	app.RouterKeeper = *routerkeeper.NewKeeper(
@@ -509,6 +541,9 @@ func NewTerraApp(
 		GetWasmOpts(app, appOpts)...,
 	)
 
+	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(app.wasmKeeper)
+	app.Ics20WasmHooks.ContractKeeper = contractKeeper
+
 	// register wasm gov proposal types
 	enabledProposals := GetEnabledProposals()
 	if len(enabledProposals) != 0 {
@@ -522,7 +557,8 @@ func NewTerraApp(
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter().
-		AddRoute(ibctransfertypes.ModuleName, transferIBCModule).
+		// This is set to use the transfer module with ibc hooks
+		AddRoute(ibctransfertypes.ModuleName, hooksTransferStack).
 		AddRoute(wasm.ModuleName, wasmStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
@@ -569,11 +605,12 @@ func NewTerraApp(
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
-		transferModule,
-		icaModule,
+		ibctransfer.NewAppModule(app.TransferKeeper),
+		ica.NewAppModule(nil, &app.ICAHostKeeper),
 		router.NewAppModule(&app.RouterKeeper),
 		// this line is used by starport scaffolding # stargate/app/appModule
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		ibchooks.NewAppModule(app.AccountKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -658,6 +695,7 @@ func NewTerraApp(
 		icatypes.ModuleName,
 		routertypes.ModuleName,
 		tokenfactorytypes.ModuleName,
+		ibchookstypes.ModuleName,
 		wasm.ModuleName,
 	)
 
