@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/terra-money/core/v2/app/rpc"
 	"io"
 	"net/http"
 	"os"
@@ -854,8 +855,8 @@ func (app *TerraApp) GetSubspace(moduleName string) paramstypes.Subspace {
 // API server.
 func (app *TerraApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
 	clientCtx := apiSvr.ClientCtx
-	// TODO: Add healthcheck route
 
+	rpc.RegisterHealthcheckRoute(clientCtx, apiSvr.Router)
 	// Register new tx routes from grpc-gateway.
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 	// Register new tendermint queries routes from grpc-gateway.
