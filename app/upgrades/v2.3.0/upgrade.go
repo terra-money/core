@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/terra-money/core/v2/app"
+	"github.com/terra-money/core/v2/app/config"
 )
 
 func CreateUpgradeHandler(
@@ -19,7 +19,7 @@ func CreateUpgradeHandler(
 		// Init token factory with the correct denom
 		tokenFactoryKeeper.InitGenesis(ctx, tokenfactorytypes.GenesisState{
 			Params: tokenfactorytypes.Params{
-				DenomCreationFee: sdk.NewCoins(sdk.NewCoin(app.BondDenom, sdk.NewInt(10_000_000))),
+				DenomCreationFee: sdk.NewCoins(sdk.NewCoin(config.BondDenom, sdk.NewInt(10_000_000))),
 			},
 			FactoryDenoms: []tokenfactorytypes.GenesisDenom{},
 		})

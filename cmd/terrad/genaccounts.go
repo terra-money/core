@@ -5,9 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/terra-money/core/v2/app"
-
 	"github.com/spf13/cobra"
+	terraappconfig "github.com/terra-money/core/v2/app/config"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -61,7 +60,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 				}
 
 				// attempt to lookup address from Keybase if no address was provided
-				kb, err := keyring.New(app.AppName, keyringBackend, clientCtx.HomeDir, inBuf, cdc)
+				kb, err := keyring.New(terraappconfig.AppName, keyringBackend, clientCtx.HomeDir, inBuf, cdc)
 				if err != nil {
 					return err
 				}

@@ -1,8 +1,6 @@
 package app
 
 import (
-	v2_2_0 "github.com/terra-money/core/v2/app/upgrades/v2.2.0"
-	v2_3_0 "github.com/terra-money/core/v2/app/upgrades/v2.3.0"
 	"io"
 	"net/http"
 	"os"
@@ -145,8 +143,12 @@ import (
 	tmjson "github.com/tendermint/tendermint/libs/json"
 
 	"github.com/terra-money/core/v2/app/ante"
+	terraappconfig "github.com/terra-money/core/v2/app/config"
 	terraappparams "github.com/terra-money/core/v2/app/params"
 	"github.com/terra-money/core/v2/app/wasmconfig"
+
+	v2_2_0 "github.com/terra-money/core/v2/app/upgrades/v2.2.0"
+	v2_3_0 "github.com/terra-money/core/v2/app/upgrades/v2.3.0"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/terra-money/core/v2/client/docs/statik"
@@ -271,7 +273,7 @@ func init() {
 		panic(err)
 	}
 
-	DefaultNodeHome = filepath.Join(userHomeDir, "."+AppName)
+	DefaultNodeHome = filepath.Join(userHomeDir, "."+terraappconfig.AppName)
 }
 
 // TerraApp extends an ABCI application, but with most of its parameters exported.
@@ -357,7 +359,7 @@ func NewTerraApp(
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
-	bApp := baseapp.NewBaseApp(AppName, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
+	bApp := baseapp.NewBaseApp(terraappconfig.AppName, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
@@ -406,7 +408,7 @@ func NewTerraApp(
 
 	// add keepers
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
-		appCodec, keys[authtypes.StoreKey], app.GetSubspace(authtypes.ModuleName), authtypes.ProtoBaseAccount, maccPerms, AccountAddressPrefix,
+		appCodec, keys[authtypes.StoreKey], app.GetSubspace(authtypes.ModuleName), authtypes.ProtoBaseAccount, maccPerms, terraappconfig.AccountAddressPrefix,
 	)
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
@@ -487,7 +489,7 @@ func NewTerraApp(
 		keys[ibchookstypes.StoreKey],
 	)
 	app.IBCHooksKeeper = &hooksKeeper
-	wasmHooks := ibchooks.NewWasmHooks(&hooksKeeper, nil, AccountAddressPrefix) // The contract keeper needs to be set later
+	wasmHooks := ibchooks.NewWasmHooks(&hooksKeeper, nil, terraappconfig.AccountAddressPrefix) // The contract keeper needs to be set later
 	app.Ics20WasmHooks = &wasmHooks
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
@@ -950,11 +952,11 @@ func (app *TerraApp) RegisterTendermintService(clientCtx client.Context) {
 // RegisterUpgradeHandlers returns upgrade handlers
 func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 	app.UpgradeKeeper.SetUpgradeHandler(
-		Upgrade2_2_0,
+		terraappconfig.Upgrade2_2_0,
 		v2_2_0.CreateUpgradeHandler(app.mm, app.configurator),
 	)
 	app.UpgradeKeeper.SetUpgradeHandler(
-		Upgrade2_3_0,
+		terraappconfig.Upgrade2_3_0,
 		v2_3_0.CreateUpgradeHandler(app.mm, app.configurator, app.TokenFactoryKeeper),
 	)
 }

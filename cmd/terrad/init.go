@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	terraappconfig "github.com/terra-money/core/v2/app/config"
 	"os"
 	"path/filepath"
 
@@ -117,7 +118,7 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 
 			appState, err := json.MarshalIndent(
 				terraapp.GenesisState(mbm.DefaultGenesis(cdc)).
-					ConfigureBondDenom(cdc, terraapp.BondDenom).
+					ConfigureBondDenom(cdc, terraappconfig.BondDenom).
 					ConfigureICA(cdc), "", " ",
 			)
 			if err != nil {

@@ -16,7 +16,7 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/config"
+	sdkconfig "github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
@@ -35,6 +35,7 @@ import (
 	tmcfg "github.com/tendermint/tendermint/config"
 
 	terraapp "github.com/terra-money/core/v2/app"
+	config "github.com/terra-money/core/v2/app/config"
 	"github.com/terra-money/core/v2/app/params"
 	"github.com/terra-money/core/v2/app/wasmconfig"
 )
@@ -48,15 +49,15 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := terraapp.MakeEncodingConfig()
 
 	sdkConfig := sdk.GetConfig()
-	sdkConfig.SetCoinType(terraapp.CoinType)
+	sdkConfig.SetCoinType(config.CoinType)
 
-	accountPubKeyPrefix := terraapp.AccountAddressPrefix + "pub"
-	validatorAddressPrefix := terraapp.AccountAddressPrefix + "valoper"
-	validatorPubKeyPrefix := terraapp.AccountAddressPrefix + "valoperpub"
-	consNodeAddressPrefix := terraapp.AccountAddressPrefix + "valcons"
-	consNodePubKeyPrefix := terraapp.AccountAddressPrefix + "valconspub"
+	accountPubKeyPrefix := config.AccountAddressPrefix + "pub"
+	validatorAddressPrefix := config.AccountAddressPrefix + "valoper"
+	validatorPubKeyPrefix := config.AccountAddressPrefix + "valoperpub"
+	consNodeAddressPrefix := config.AccountAddressPrefix + "valcons"
+	consNodePubKeyPrefix := config.AccountAddressPrefix + "valconspub"
 
-	sdkConfig.SetBech32PrefixForAccount(terraapp.AccountAddressPrefix, accountPubKeyPrefix)
+	sdkConfig.SetBech32PrefixForAccount(config.AccountAddressPrefix, accountPubKeyPrefix)
 	sdkConfig.SetBech32PrefixForValidator(validatorAddressPrefix, validatorPubKeyPrefix)
 	sdkConfig.SetBech32PrefixForConsensusNode(consNodeAddressPrefix, consNodePubKeyPrefix)
 	sdkConfig.SetAddressVerifier(wasmtypes.VerifyAddressLen())
@@ -88,7 +89,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			// unsafe-reset-all is not working without viper set
 			viper.Set(tmcli.HomeFlag, initClientCtx.HomeDir)
 
-			initClientCtx, err = config.ReadFromClientConfig(initClientCtx)
+			initClientCtx, err = sdkconfig.ReadFromClientConfig(initClientCtx)
 			if err != nil {
 				return err
 			}

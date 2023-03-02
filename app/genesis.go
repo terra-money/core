@@ -3,9 +3,8 @@ package app
 import (
 	"encoding/json"
 	tokenfactorytypes "github.com/CosmWasm/wasmd/x/tokenfactory/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
@@ -15,6 +14,7 @@ import (
 	icagenesistypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/genesis/types"
 	icahosttypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/host/types"
 	icatypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/types"
+	"github.com/terra-money/core/v2/app/config"
 )
 
 // GenesisState - The genesis state of the blockchain is represented here as a map of raw json
@@ -70,32 +70,32 @@ func (genState GenesisState) ConfigureICA(cdc codec.JSONCodec) GenesisState {
 	hostParams := icahosttypes.Params{
 		HostEnabled: true,
 		AllowMessages: []string{
-			authzMsgExec,
-			authzMsgGrant,
-			authzMsgRevoke,
-			bankMsgSend,
-			bankMsgMultiSend,
-			distrMsgSetWithdrawAddr,
-			distrMsgWithdrawValidatorCommission,
-			distrMsgFundCommunityPool,
-			distrMsgWithdrawDelegatorReward,
-			feegrantMsgGrantAllowance,
-			feegrantMsgRevokeAllowance,
-			govMsgVoteWeighted,
-			govMsgSubmitProposal,
-			govMsgDeposit,
-			govMsgVote,
-			stakingMsgEditValidator,
-			stakingMsgDelegate,
-			stakingMsgUndelegate,
-			stakingMsgBeginRedelegate,
-			stakingMsgCreateValidator,
-			vestingMsgCreateVestingAccount,
-			transferMsgTransfer,
-			wasmMsgStoreCode,
-			wasmMsgInstantiateContract,
-			wasmMsgExecuteContract,
-			wasmMsgMigrateContract,
+			config.AuthzMsgExec,
+			config.AuthzMsgGrant,
+			config.AuthzMsgRevoke,
+			config.BankMsgSend,
+			config.BankMsgMultiSend,
+			config.DistrMsgSetWithdrawAddr,
+			config.DistrMsgWithdrawValidatorCommission,
+			config.DistrMsgFundCommunityPool,
+			config.DistrMsgWithdrawDelegatorReward,
+			config.FeegrantMsgGrantAllowance,
+			config.FeegrantMsgRevokeAllowance,
+			config.GovMsgVoteWeighted,
+			config.GovMsgSubmitProposal,
+			config.GovMsgDeposit,
+			config.GovMsgVote,
+			config.StakingMsgEditValidator,
+			config.StakingMsgDelegate,
+			config.StakingMsgUndelegate,
+			config.StakingMsgBeginRedelegate,
+			config.StakingMsgCreateValidator,
+			config.VestingMsgCreateVestingAccount,
+			config.TransferMsgTransfer,
+			config.WasmMsgStoreCode,
+			config.WasmMsgInstantiateContract,
+			config.WasmMsgExecuteContract,
+			config.WasmMsgMigrateContract,
 		},
 	}
 
