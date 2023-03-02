@@ -1,6 +1,8 @@
 package app
 
 import (
+	v2_2_0 "github.com/terra-money/core/v2/app/upgrades/v2.2.0"
+	v2_3_0 "github.com/terra-money/core/v2/app/upgrades/v2.3.0"
 	"io"
 	"net/http"
 	"os"
@@ -948,8 +950,12 @@ func (app *TerraApp) RegisterTendermintService(clientCtx client.Context) {
 // RegisterUpgradeHandlers returns upgrade handlers
 func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 	app.UpgradeKeeper.SetUpgradeHandler(
-		UpgradeName,
-		NewUpgradeHandler(app).CreateUpgradeHandler(),
+		Upgrade2_2_0,
+		v2_2_0.CreateUpgradeHandler(app.mm, app.configurator),
+	)
+	app.UpgradeKeeper.SetUpgradeHandler(
+		Upgrade2_3_0,
+		v2_3_0.CreateUpgradeHandler(app.mm, app.configurator, app.TokenFactoryKeeper),
 	)
 }
 
