@@ -652,6 +652,7 @@ func NewTerraApp(
 		// this line is used by starport scaffolding # stargate/app/appModule
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		ibchooks.NewAppModule(app.AccountKeeper),
+		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -683,6 +684,7 @@ func NewTerraApp(
 		routertypes.ModuleName,
 		ibchookstypes.ModuleName,
 		wasm.ModuleName,
+		tokenfactorytypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -710,6 +712,7 @@ func NewTerraApp(
 		routertypes.ModuleName,
 		ibchookstypes.ModuleName,
 		wasm.ModuleName,
+		tokenfactorytypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
