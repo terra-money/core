@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+
 	tokenfactorytypes "github.com/CosmWasm/wasmd/x/tokenfactory/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"

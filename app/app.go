@@ -96,7 +96,6 @@ import (
 	icacontroller "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller/types"
-	icagenesistypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/genesis/types"
 	icahost "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/host"
 	icahostkeeper "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/host/keeper"
 	icahosttypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/host/types"
@@ -828,23 +827,6 @@ func (app *TerraApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abc
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
-
-	icaRawGenesisState := genesisState[icatypes.ModuleName]
-
-	var icaGenesisState icagenesistypes.GenesisState
-	if err := app.appCodec.UnmarshalJSON(icaRawGenesisState, &icaGenesisState); err != nil {
-		panic(err)
-	}
-
-	icaGenesisState.HostGenesisState.Params.AllowMessages = []string{"*"} // allow all messages
-
-	genesisJSON, err := app.appCodec.MarshalJSON(&icaGenesisState)
-	if err != nil {
-		panic(err)
-	}
-
-	genesisState[icatypes.ModuleName] = genesisJSON
-	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 	res := app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 
 	// stake all vesting tokens
