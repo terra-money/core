@@ -78,15 +78,15 @@ The easiest way to install the Terra Core is to download a pre-built binary. You
 
 **Step 1: Install Golang**
 
-Go v1.18+ or higher is required for The Terra Core.
+Go v1.20+ or higher is required for The Terra Core.
 
-1. Install [Go 1.18+ from the official site](https://go.dev/dl/). Ensure that your `GOPATH` and `GOBIN` environment variables are properly set up by using the following commands:
+1. Install [Go 1.20+ from the official site](https://go.dev/dl/). Ensure that your `GOPATH` and `GOBIN` environment variables are properly set up by using the following commands:
 
-   For Windows:
+   For Linux:
 
    ```sh
-   wget <https://golang.org/dl/go1.18.2.linux-amd64.tar.gz>
-   sudo tar -C /usr/local -xzf go1.18.2.linux-amd64.tar.gz
+   wget <https://dl.google.com/go/go1.20.1.linux-amd64.tar.gz>
+   sudo tar -C /usr/local -xzf go1.20.1.linux-amd64.tar.gz
    export PATH=$PATH:/usr/local/go/bin
    export PATH=$PATH:$(go env GOPATH)/bin
    ```
@@ -120,7 +120,6 @@ git checkout main
 Run the following command to install `terrad` to your `GOPATH` and build the Terra Core. `terrad` is the node daemon and CLI for interacting with a Terra node.
 
 ```bash
-# COSMOS_BUILD_OPTIONS=rocksdb make install
 make install
 ```
 
@@ -135,12 +134,13 @@ terrad version --long
 A successful installation will return the following:
 
 ```bash
+build_tags: netgo ledger,
+commit: ...
+cosmos_sdk_version: v0.46.10
+go: go version go1.20 linux/amd64
 name: terra
 server_name: terrad
-version: <x.x.x>
-commit: <Commit hash>
-build_tags: netgo,ledger
-go: go version go1.18.2 darwin/amd64
+version: ...
 ```
 
 ## `terrad`
@@ -152,8 +152,6 @@ To view various subcommands and their expected arguments, use the following comm
 ``` sh
 $ terrad --help
 ```
-
-
 ```
 Stargate Terra App
 
@@ -175,14 +173,13 @@ Available Commands:
   start               Run the full node
   status              Query remote node for status
   tendermint          Tendermint subcommands
-  testnet             Initialize files for a terrad testnet
   tx                  Transactions subcommands
   validate-genesis    validates the genesis file at the default location or at the location passed as an arg
   version             Print the application binary version information
 
 Flags:
   -h, --help                help for terrad
-      --home string         directory for config and data (default "/Users/evan/.terra")
+      --home string         directory for config and data (default "/home/emi/.terra")
       --log_format string   The logging format (json|plain) (default "plain")
       --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic) (default "info")
       --trace               print out full stack trace on errors
@@ -190,7 +187,7 @@ Flags:
 Use "terrad [command] --help" for more information about a command.
 ```
 
-Visit the [terrad documentation page](https://docs.terra.money/docs/develop/how-to/terrad/README.html) for more info on usage. 
+Visit the [terrad documentation page](https://docs.terra.money/full-node) for more info on usage. 
 
 
 ## Node Setup
@@ -244,7 +241,9 @@ To set up a node on the latest testnet, visit [the testnet repo](https://github.
 
 #### Run a local testnet
 
-The easiest way to set up a local testing environment is to run [LocalTerra](https://github.com/terra-money/LocalTerra), a zero-configuration complete testing environment. 
+The easiest way to set up a local testing environment is to run [LocalTerra](https://github.com/terra-money/LocalTerra), a zero-configuration complete testing environment. But if you want something more sofisticated you can run `make init-ica-demo` which will start two local nodes connected with a relayer.
+
+> The `scripts/ica-demo/delegate.sh` script can help to setup an interchain account, transfer funds to that account and delegate to a validator thru IBC.
 
 ### Run a single node testnet
 
@@ -424,5 +423,3 @@ This software is [licensed under the Apache 2.0 license](LICENSE).
 </p>
 <div align="center">
 </div>
-
-

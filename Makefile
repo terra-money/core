@@ -147,6 +147,25 @@ update-swagger-docs: statik
 
 .PHONY: build build-linux install update-swagger-docs
 
+
+###############################################################################
+###                                ICA-DEMO                                 ###
+###############################################################################
+
+init-ica-demo: remove-ica-demo-data install
+	@echo "Initializing both blockchains..."
+	./scripts/ica-demo/init.sh
+	./scripts/ica-demo/start.sh
+	@echo "Initializing relayer..."
+	./scripts/ica-demo/relayer/interchain-acc-config/rly-init.sh
+	@echo "Starting relayers..."
+	./scripts/ica-demo/relayer/interchain-acc-config/rly-start.sh
+
+remove-ica-demo-data:
+	@echo "Killing terrad and removing previous data"
+	-@rm -rf ./data
+	-@killall terrad 2>/dev/null
+
 ###############################################################################
 ###                                Protobuf                                 ###
 ###############################################################################
