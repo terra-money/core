@@ -2,6 +2,8 @@ package app
 
 import (
 	"encoding/json"
+	tokenfactorytypes "github.com/CosmWasm/wasmd/x/tokenfactory/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
@@ -51,6 +53,11 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	cdc.MustUnmarshalJSON(genState[minttypes.ModuleName], &mintGenState)
 	mintGenState.Params.MintDenom = bondDenom
 	genState[minttypes.ModuleName] = cdc.MustMarshalJSON(&mintGenState)
+
+	var tokenFactoryGenState tokenfactorytypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[tokenfactorytypes.ModuleName], &tokenFactoryGenState)
+	tokenFactoryGenState.Params.DenomCreationFee = sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(10000000)))
+	genState[tokenfactorytypes.ModuleName] = cdc.MustMarshalJSON(&tokenFactoryGenState)
 
 	return genState
 }
