@@ -54,6 +54,7 @@ require (
 	github.com/cosmos/cosmos-proto v1.0.0-beta.1 // indirect
 	github.com/cosmos/gogoproto v1.4.4 // indirect
 	github.com/cosmos/iavl v0.19.5 // indirect
+	github.com/cosmos/interchain-accounts v0.4.3 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.12.2 // indirect
 	github.com/cosmos/ledger-go v0.9.2 // indirect
 	github.com/creachadair/taskgroup v0.3.2 // indirect
