@@ -782,6 +782,25 @@ func NewTerraApp(
 	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
 
+	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	if err != nil {
+		panic(err)
+	}
+
+	// Add stores for new modules
+	if upgradeInfo.Name == terraappconfig.Upgrade2_3_0 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Added: []string{
+				intertxtypes.StoreKey,
+				icacontrollertypes.StoreKey,
+				tokenfactorytypes.StoreKey,
+				ibcfeetypes.StoreKey,
+				ibchookstypes.StoreKey,
+			},
+		}
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	}
+
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
 			tmos.Exit(err.Error())
