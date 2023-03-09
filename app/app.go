@@ -454,6 +454,17 @@ func NewTerraApp(
 	// upgrade handlers
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 
+	app.AllianceKeeper = alliancekeeper.NewKeeper(
+		appCodec,
+		keys[alliancetypes.StoreKey],
+		app.GetSubspace(alliancetypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		&app.StakingKeeper,
+		app.DistrKeeper,
+	)
+	app.BankKeeper.RegisterKeepers(app.AllianceKeeper, &stakingKeeper)
+
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
@@ -468,17 +479,6 @@ func NewTerraApp(
 		app.BankKeeper,
 		app.DistrKeeper,
 	)
-
-	app.AllianceKeeper = alliancekeeper.NewKeeper(
-		appCodec,
-		keys[alliancetypes.StoreKey],
-		app.GetSubspace(alliancetypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		&app.StakingKeeper,
-		app.DistrKeeper,
-	)
-	app.BankKeeper.RegisterKeepers(app.AllianceKeeper, &stakingKeeper)
 
 	// Create IBC Keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(
