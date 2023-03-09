@@ -17,4 +17,9 @@ if ! [ -x "$(command -v $BINARY)" ]; then
 fi
 
 echo "Starting to listen relayer..."
-$BINARY start test1-test2 -p events -b 100 --home $CHAIN_DIR/$RELAYER_DIR
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    screen -L -dmS node1 $BINARY start test1-test2 -p events -b 100 --home $CHAIN_DIR/$RELAYER_DIR
+else
+    screen -L -Logfile $CHAIN_HOME/$RELAYER_DIR/log-screen.log -dmS node1 $BINARY start test1-test2 -p events -b 100 --home $CHAIN_DIR/$RELAYER_DIR
+fi

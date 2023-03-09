@@ -160,6 +160,8 @@ init-ica-demo: remove-ica-demo-data install
 	./scripts/ica-demo/relayer/interchain-acc-config/rly-init.sh
 	@echo "Starting relayers..."
 	./scripts/ica-demo/relayer/interchain-acc-config/rly-start.sh
+	@echo "Delegating using a ICA..."
+	./scripts/ica-demo/delegate.sh
 
 remove-ica-demo-data:
 	@echo "Killing terrad and removing previous data"
