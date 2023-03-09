@@ -153,6 +153,22 @@
           "Params": "IBCTransferParams"
         }
       }
+    },
+    {
+      "url": "./tmp-swagger-gen/alliance/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "AllianceParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmwasm/tokenfactory/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "TokenFactoryParams"
+        }
+      }
     }
   ]
 }
