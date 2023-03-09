@@ -155,6 +155,30 @@
       }
     },
     {
+      "url": "./tmp-swagger-gen/ibc/applications/fee/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCFee"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/interchain_accounts/controller/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "ICAController"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/interchain_accounts/host/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "ICAHost"
+        }
+      }
+    },
+    {
       "url": "./tmp-swagger-gen/alliance/query.swagger.json",
       "operationIds": {
         "rename": {
