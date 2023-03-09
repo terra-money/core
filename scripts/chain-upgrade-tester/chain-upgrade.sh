@@ -1,7 +1,6 @@
 #!/bin/bash
 
 OLD_VERSION=v2.2.1
-NEW_VERSION=upgrade/cosmos46
 UPGRADE_HEIGHT=30
 CHAIN_ID=pisco-1
 CHAIN_HOME=.testnet
@@ -33,7 +32,6 @@ fi
 if ! command -v _build/new/terrad &> /dev/null
 then
   mkdir -p _build/new
-  git checkout $NEW_VERSION
   make build
   cp build/terrad _build/new
 fi
