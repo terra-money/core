@@ -59,23 +59,18 @@ sed -i -e 's/swagger = false/swagger = true/g' $CHAIN_HOME/config/app.toml
 
 
 # run old node
+echo "Starting old binary on a separate process"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     screen -L -dmS node1 $OLD_BINARY start --log_level trace --log_format json --home $CHAIN_HOME --pruning=nothing
 else
     screen -L -Logfile $CHAIN_HOME/log-screen.log -dmS node1 $OLD_BINARY start --log_level trace --log_format json --home $CHAIN_HOME --pruning=nothing
 fi
 #
-sleep 10
+sleep 15
 #
-$OLD_BINARY tx gov submit-proposal software-upgrade "$SOFTWARE_UPGRADE_NAME" --upgrade-height $UPGRADE_HEIGHT --upgrade-info "temp" --title "upgrade" --description "upgrade"  --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME -y
-#
-sleep 5
-#
-$OLD_BINARY tx gov deposit 1 "20000000${DENOM}" --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME -y
-#
-sleep 5
-#
-$OLD_BINARY tx gov vote 1 yes --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME -y
+$OLD_BINARY tx gov submit-proposal software-upgrade "$SOFTWARE_UPGRADE_NAME" --upgrade-height $UPGRADE_HEIGHT --upgrade-info "temp" --title "upgrade" --description "upgrade"  --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME --broadcast-mode block -y
+$OLD_BINARY tx gov deposit 1 "20000000${DENOM}" --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME --broadcast-mode block -y
+$OLD_BINARY tx gov vote 1 yes --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME --broadcast-mode block -y
 #
 ## determine block_height to halt
 while true; do
