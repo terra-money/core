@@ -16,7 +16,6 @@
     "output-format": "json",
     "sign-mode": "direct",
     "trusting-period": "330h",
-    "gas":900000
+    "gas": 900000
   }
 }
-

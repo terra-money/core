@@ -152,7 +152,7 @@ update-swagger-docs: statik
 ###                                ICA-DEMO                                 ###
 ###############################################################################
 
-integration-test-all: init-test-framework test-relayer test-ica remove-ica-data
+integration-test-all: init-test-framework test-relayer test-ica test-ibc-hooks remove-ica-data
 
 init-test-framework: remove-ica-data install
 	@echo "Initializing both blockchains..."
@@ -165,6 +165,10 @@ test-relayer:
 test-ica: 
 	@echo "Testing ica..."
 	./scripts/tests/ica-demo/delegate.sh
+
+test-ibc-hooks: 
+	@echo "Testing ibc hooks..."
+	./scripts/tests/ibc-hooks/increment.sh
 
 remove-ica-data:
 	@echo "Killing terrad and removing previous data"

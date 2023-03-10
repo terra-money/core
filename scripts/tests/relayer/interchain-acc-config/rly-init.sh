@@ -36,6 +36,9 @@ $BINARY keys restore $CHAINID_2 testkey "$MNEMONIC_2" --home $CHAIN_DIR/$RELAYER
 echo "Creating clients and a connection..."
 $BINARY tx connection test1-test2 --home $CHAIN_DIR/$RELAYER_DIR
 
+echo "Creating a channel..."
+$BINARY tx channel test1-test2 --home $CHAIN_DIR/$RELAYER_DIR
+
 echo "Starting to listen relayer..."
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
