@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BINARY=terrad
-CHAIN_DIR=./data
+CHAIN_DIR=$(pwd)/data
 CHAINID_1=test-1
 CHAINID_2=test-2
 
@@ -22,6 +22,10 @@ RESTPORT_1=1316
 RESTPORT_2=1317
 ROSETTA_1=8080
 ROSETTA_2=8081
+GRPCPORT_1=8090
+GRPCPORT_2=9090
+GRPCWEB_1=8091
+GRPCWEB_2=9091
 
 # Stop if it is already running 
 if pgrep -x "$BINARY" >/dev/null; then
@@ -94,3 +98,11 @@ sed -i -e 's/enable = false/enable = true/g' $CHAIN_DIR/$CHAINID_2/config/app.to
 sed -i -e 's/swagger = false/swagger = true/g' $CHAIN_DIR/$CHAINID_2/config/app.toml
 sed -i -e 's#"tcp://0.0.0.0:1317"#"tcp://0.0.0.0:'"$RESTPORT_2"'"#g' $CHAIN_DIR/$CHAINID_2/config/app.toml
 sed -i -e 's#":8080"#":'"$ROSETTA_2"'"#g' $CHAIN_DIR/$CHAINID_2/config/app.toml
+
+echo "Starting $CHAINID_1 in $CHAIN_DIR..."
+echo "Creating log file at $CHAIN_DIR/$CHAINID_1.log"
+$BINARY start --log_level trace --log_format json --home $CHAIN_DIR/$CHAINID_1 --pruning=nothing --grpc.address="0.0.0.0:$GRPCPORT_1" --grpc-web.address="0.0.0.0:$GRPCWEB_1" > $CHAIN_DIR/$CHAINID_1.log 2>&1 &
+
+echo "Starting $CHAINID_2 in $CHAIN_DIR..."
+echo "Creating log file at $CHAIN_DIR/$CHAINID_2.log"
+$BINARY start --log_level trace --log_format json --home $CHAIN_DIR/$CHAINID_2 --pruning=nothing --grpc.address="0.0.0.0:$GRPCPORT_2" --grpc-web.address="0.0.0.0:$GRPCWEB_2" > $CHAIN_DIR/$CHAINID_2.log 2>&1 &

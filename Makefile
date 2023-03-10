@@ -152,18 +152,21 @@ update-swagger-docs: statik
 ###                                ICA-DEMO                                 ###
 ###############################################################################
 
-init-ica-demo: remove-ica-demo-data install
-	@echo "Initializing both blockchains..."
-	./scripts/ica-demo/init.sh
-	./scripts/ica-demo/start.sh
-	@echo "Initializing relayer..."
-	./scripts/ica-demo/relayer/interchain-acc-config/rly-init.sh
-	@echo "Starting relayers..."
-	./scripts/ica-demo/relayer/interchain-acc-config/rly-start.sh
-	@echo "Delegating using a ICA..."
-	./scripts/ica-demo/delegate.sh
+integration-test-all: init-test-framework test-relayer test-ica remove-ica-data
 
-remove-ica-demo-data:
+init-test-framework: remove-ica-data install
+	@echo "Initializing both blockchains..."
+	./scripts/tests/start.sh
+
+test-relayer:
+	@echo "Testing relayer..."
+	./scripts/tests/relayer/interchain-acc-config/rly-init.sh
+
+test-ica: 
+	@echo "Testing ica..."
+	./scripts/tests/ica-demo/delegate.sh
+
+remove-ica-data:
 	@echo "Killing terrad and removing previous data"
 	-@rm -rf ./data
 	-@killall terrad 2>/dev/null
