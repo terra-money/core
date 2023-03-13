@@ -155,7 +155,7 @@ update-swagger-docs: statik
 ###                        Integration Tests                                ###
 ###############################################################################
 
-integration-test-all: init-test-framework test-relayer test-ica test-ibc-hooks remove-ica-data
+integration-test-all: init-test-framework test-relayer test-ica test-ibc-hooks test-alliance remove-ica-data
 
 init-test-framework: remove-ica-data install
 	@echo "Initializing both blockchains..."
@@ -172,6 +172,10 @@ test-ica:
 test-ibc-hooks: 
 	@echo "Testing ibc hooks..."
 	./scripts/tests/ibc-hooks/increment.sh
+
+test-alliance: 
+	@echo "Testing alliance module..."
+	./scripts/tests/alliance/delegate.sh
 
 remove-ica-data:
 	@echo "Killing terrad and removing previous data"

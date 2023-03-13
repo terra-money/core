@@ -13,14 +13,14 @@ WALLET_1=$($BINARY keys show wallet1 -a --keyring-backend test --home $CHAIN_DIR
 WALLET_3=$($BINARY keys show wallet3 -a --keyring-backend test --home $CHAIN_DIR/test-2)
 
 echo "Registering ICA on chain test-1"
-$BINARY tx interchain-accounts controller register connection-0 --from $WALLET_1 --chain-id test-1 --home $CHAIN_DIR/test-1 --node tcp://localhost:16657 --keyring-backend test --broadcast-mode block -y --gas 10000000
+ICA_REGISTER_RESPONSE=$($BINARY tx interchain-accounts controller register connection-0 --from $WALLET_1 --chain-id test-1 --home $CHAIN_DIR/test-1 --node tcp://localhost:16657 --keyring-backend test --broadcast-mode block -y --gas 10000000)
 
 ICS_TX_RESULT="Error:"
 ICS_TX_ERROR="Error:"
 while [[ "$ICS_TX_ERROR" == "$ICS_TX_RESULT"* ]]; do 
     echo "Waiting for the transaction to be relayed..."
-    sleep 1
     ICS_TX_RESULT=$($BINARY query interchain-accounts controller interchain-account $WALLET_1 connection-0 --home $CHAIN_DIR/test-1 --chain-id test-1 --node tcp://localhost:16657 -o json | jq -r '.address')
+    sleep 1
 done
 
 echo "Sending tokens to ICA on chain test-2"
