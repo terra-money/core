@@ -149,7 +149,7 @@ update-swagger-docs: statik
 
 
 ###############################################################################
-###                                ICA-DEMO                                 ###
+###                        Integration Tests                                ###
 ###############################################################################
 
 integration-test-all: init-test-framework test-relayer test-ica test-ibc-hooks remove-ica-data
@@ -164,7 +164,7 @@ test-relayer:
 
 test-ica: 
 	@echo "Testing ica..."
-	./scripts/tests/ica-demo/delegate.sh
+	./scripts/tests/ica/delegate.sh
 
 test-ibc-hooks: 
 	@echo "Testing ibc hooks..."
