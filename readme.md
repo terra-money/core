@@ -241,9 +241,7 @@ To set up a node on the latest testnet, visit [the testnet repo](https://github.
 
 #### Run a local testnet
 
-The easiest way to set up a local testing environment is to run [LocalTerra](https://github.com/terra-money/LocalTerra), a zero-configuration complete testing environment. But if you want something more sofisticated you can run `make init-ica-demo` which will start two local nodes connected with a relayer.
-
-> The `scripts/ica-demo/delegate.sh` script can help to setup an interchain account, transfer funds to that account and delegate to a validator thru IBC.
+The easiest way to set up a local testing environment is to run [LocalTerra](https://github.com/terra-money/LocalTerra), a zero-configuration complete testing environment. But if you want something more sofisticated you can run `make init-test-framework` which will start two local nodes connected with a relayer.
 
 ### Run a single node testnet
 

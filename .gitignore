@@ -52,3 +52,6 @@ dependency-graph.png
 *.aux
 *.out
 *.synctex.gz
+
+# CosmWasm
+scripts/tests/ibc-hooks/counter/target

@@ -1,8 +1,14 @@
 #!/bin/bash
 
+echo ""
+echo "##################"
+echo "# Create relayer #"
+echo "##################"
+echo ""
+
 # Configure predefined mnemonic pharses
 BINARY=rly
-CHAIN_DIR=./data
+CHAIN_DIR=$(pwd)/data
 CHAINID_1=test-1
 CHAINID_2=test-2
 RELAYER_DIR=./relayer
@@ -20,8 +26,8 @@ echo "Initializing $BINARY..."
 $BINARY config init --home $CHAIN_DIR/$RELAYER_DIR
 
 echo "Adding configurations for both chains..."
-$BINARY chains add-dir ./scripts/ica-demo/relayer/interchain-acc-config/chains --home $CHAIN_DIR/$RELAYER_DIR
-$BINARY paths add $CHAINID_1 $CHAINID_2 test1-test2 --file ./scripts/ica-demo/relayer/interchain-acc-config/paths/test1-test2.json --home $CHAIN_DIR/$RELAYER_DIR
+$BINARY chains add-dir ./scripts/tests/relayer/interchain-acc-config/chains --home $CHAIN_DIR/$RELAYER_DIR
+$BINARY paths add $CHAINID_1 $CHAINID_2 test1-test2 --file ./scripts/tests/relayer/interchain-acc-config/paths/test1-test2.json --home $CHAIN_DIR/$RELAYER_DIR
 
 echo "Restoring accounts..."
 $BINARY keys restore $CHAINID_1 testkey "$MNEMONIC_1" --home $CHAIN_DIR/$RELAYER_DIR
@@ -29,3 +35,20 @@ $BINARY keys restore $CHAINID_2 testkey "$MNEMONIC_2" --home $CHAIN_DIR/$RELAYER
 
 echo "Creating clients and a connection..."
 $BINARY tx connection test1-test2 --home $CHAIN_DIR/$RELAYER_DIR
+
+echo "Creating a channel..."
+$BINARY tx channel test1-test2 --home $CHAIN_DIR/$RELAYER_DIR
+
+echo "Starting to listen relayer..."
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    screen -L -dmS node1 $BINARY start test1-test2 -p events -b 100 --home $CHAIN_DIR/$RELAYER_DIR
+else
+    screen -L -Logfile $CHAIN_HOME/$RELAYER_DIR/log-screen.log -dmS node1 $BINARY start test1-test2 -p events -b 100 --home $CHAIN_DIR/$RELAYER_DIR
+fi
+
+echo ""
+echo "############################"
+echo "# SUCCESS: Relayer created #"
+echo "############################"
+echo ""

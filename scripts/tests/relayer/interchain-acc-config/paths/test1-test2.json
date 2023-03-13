@@ -1,0 +1,18 @@
+{
+  "src": {
+    "chain-id": "test-1",
+    "client-id": "",
+    "connection-id": "",
+    "channel-id": ""
+  },
+  "dst": {
+    "chain-id": "test-2",
+    "client-id": "",
+    "connection-id": "",
+    "channel-id": ""
+  },
+  "src-channel-filter": {
+    "rule": "",
+    "channel-list": []
+  }
+}
