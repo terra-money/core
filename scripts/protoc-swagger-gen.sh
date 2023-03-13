@@ -24,7 +24,7 @@ if [ -d $temp_dir ]; then
   mv ./$temp_dir ./vendor
 fi
 
-proto_dirs=$(find "$cosmos_sdk_dir"/proto "$alliance_dir"/proto "$wasm_dir"/proto "$ibc_dir"/proto -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
+proto_dirs=$(find $cosmos_sdk_dir/proto $alliance_dir/proto $wasm_dir/proto $ibc_dir/proto -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 for dir in $proto_dirs; do
   # generate swagger files (filter query files)
   query_file=$(find "${dir}" -maxdepth 1 \( -name 'query.proto' -o -name 'service.proto' \))
@@ -33,9 +33,9 @@ for dir in $proto_dirs; do
     -I "$cosmos_sdk_dir/proto" \
     -I "$alliance_dir/proto" \
     -I "$ibc_dir/proto" \
-    -I "$wasm_dir"/proto \
+    -I "$wasm_dir/proto" \
     -I "$gogo_proto_dir" \
-    -I "$google_api_dir"/third_party/googleapis \
+    -I "$google_api_dir/third_party/googleapis" \
     -I "$cosmos_proto_dir/proto" \
     -I "third_party/proto" \
       "$query_file" \
@@ -47,7 +47,7 @@ for dir in $proto_dirs; do
 done
 
 npm install -g swagger-combine
-swagger-combine ./client/docs/config.json -o ./client/docs/swagger-ui/swagger.yaml -f yaml --continueOnConflictingPaths true --includeDefinitions true
+npx swagger-combine ./client/docs/config.json -o ./client/docs/swagger-ui/swagger.yaml -f yaml --continueOnConflictingPaths true --includeDefinitions true
 
 # clean swagger files
 rm -rf ./tmp-swagger-gen
