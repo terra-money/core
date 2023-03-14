@@ -22,7 +22,7 @@ while [ "$ACCOUNT_BALANCE" == "" ]; do
     if [ "$IBC_DENOM" != "uluna" ]; then
         ACCOUNT_BALANCE=$($BINARY q bank balances $VAL_WALLET_2 --chain-id test-2 --node tcp://localhost:26657 -o json | jq -r '.balances[0].amount')
     fi
-    sleep 1
+    sleep 2
 done
 
 echo "Creating an alliance with the denom $IBC_DENOM"
@@ -32,8 +32,9 @@ VOTE_RES=$($BINARY tx gov vote $PROPOSAL_ID yes --from=$VAL_WALLET_2 --home $CHA
 
 ALLIANCE="null"
 while [ "$ALLIANCE" == "null" ]; do
+    echo "Waiting for alliance with denom $IBC_DENOM to be created..."
     ALLIANCE=$($BINARY q alliance alliances --chain-id test-2 --node tcp://localhost:26657 -o json | jq -r '.alliances[0]')
-    sleep 1
+    sleep 2
 done
 
 echo "Delegating 10000000 to the alliance $IBC_DENOM"
@@ -43,7 +44,7 @@ DELEGATE_RES=$($BINARY tx alliance delegate $VAL_ADDR 10000000$IBC_DENOM --from=
 DELEGATION=""
 while [ "$DELEGATION" == "" ]; do
     DELEGATION=$($BINARY query alliance delegation $VAL_WALLET_2 $VAL_ADDR $IBC_DENOM --chain-id test-2 --node tcp://localhost:26657 -o json | jq -r '.delegation.balance.amount')
-    sleep 1
+    sleep 2
 done
 
 echo ""
