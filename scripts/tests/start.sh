@@ -48,35 +48,43 @@ if ! mkdir -p $CHAIN_DIR/$CHAINID_2 2>/dev/null; then
     exit 1
 fi
 
-echo "Initializing $CHAINID_1..."
-echo "Initializing $CHAINID_2..."
-$BINARY init test --home $CHAIN_DIR/$CHAINID_1 --chain-id=$CHAINID_1
-$BINARY init test --home $CHAIN_DIR/$CHAINID_2 --chain-id=$CHAINID_2
+echo "Initializing $CHAINID_1 & $CHAINID_2..."
+$BINARY init test --home $CHAIN_DIR/$CHAINID_1 --chain-id=$CHAINID_1 &> /dev/null
+$BINARY init test --home $CHAIN_DIR/$CHAINID_2 --chain-id=$CHAINID_2 &> /dev/null
 
 echo "Adding genesis accounts..."
 echo $VAL_MNEMONIC_1 | $BINARY keys add val1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
 echo $VAL_MNEMONIC_2 | $BINARY keys add val2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
 echo $WALLET_MNEMONIC_1 | $BINARY keys add wallet1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
-echo $WALLET_MNEMONIC_2 | $BINARY keys add wallet2 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
-echo $WALLET_MNEMONIC_3 | $BINARY keys add wallet3 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_2 | $BINARY keys add wallet2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_3 | $BINARY keys add wallet3 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
 echo $WALLET_MNEMONIC_4 | $BINARY keys add wallet4 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
 echo $RLY_MNEMONIC_1 | $BINARY keys add rly1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test 
 echo $RLY_MNEMONIC_2 | $BINARY keys add rly2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test 
 
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_1 keys show val1 --keyring-backend test -a) 100000000000uluna  --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_2 keys show val2 --keyring-backend test -a) 100000000000uluna  --home $CHAIN_DIR/$CHAINID_2
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_1 keys show wallet1 --keyring-backend test -a) 100000000000uluna  --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_1 keys show wallet2 --keyring-backend test -a) 100000000000uluna  --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_2 keys show wallet3 --keyring-backend test -a) 100000000000uluna  --home $CHAIN_DIR/$CHAINID_2
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_2 keys show wallet4 --keyring-backend test -a) 100000000000uluna  --home $CHAIN_DIR/$CHAINID_2
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_1 keys show rly1 --keyring-backend test -a) 100000000000uluna  --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID_2 keys show rly2 --keyring-backend test -a) 100000000000uluna  --home $CHAIN_DIR/$CHAINID_2
+VAL1_ADDR=$($BINARY keys show val1 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+VAL2_ADDR=$($BINARY keys show val2 --home $CHAIN_DIR/$CHAINID_2 --keyring-backend test -a)
+WALLET1_ADDR=$($BINARY keys show wallet1 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET2_ADDR=$($BINARY keys show wallet2 --home $CHAIN_DIR/$CHAINID_2 --keyring-backend test -a)
+WALLET3_ADDR=$($BINARY keys show wallet3 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET4_ADDR=$($BINARY keys show wallet4 --home $CHAIN_DIR/$CHAINID_2 --keyring-backend test -a)
+RLY1_ADDR=$($BINARY keys show rly1 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+RLY2_ADDR=$($BINARY keys show rly2 --home $CHAIN_DIR/$CHAINID_2 --keyring-backend test -a)
+
+$BINARY add-genesis-account $VAL1_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-genesis-account $VAL2_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_2
+$BINARY add-genesis-account $WALLET1_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-genesis-account $WALLET2_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_2
+$BINARY add-genesis-account $WALLET3_ADDR 100000000000uluna --vesting-amount 10000000000uluna --vesting-start-time $(date +%s) --vesting-end-time $(date --date="+10 minutes" '+%s') --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-genesis-account $WALLET4_ADDR 100000000000uluna --vesting-amount 10000000000uluna --vesting-start-time $(date +%s) --vesting-end-time $(date --date="+10 minutes" '+%s') --home $CHAIN_DIR/$CHAINID_2
+$BINARY add-genesis-account $RLY1_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-genesis-account $RLY2_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_2
 
 echo "Creating and collecting gentx..."
 $BINARY gentx val1 7000000000uluna --home $CHAIN_DIR/$CHAINID_1 --chain-id $CHAINID_1 --keyring-backend test
 $BINARY gentx val2 7000000000uluna --home $CHAIN_DIR/$CHAINID_2 --chain-id $CHAINID_2 --keyring-backend test
-$BINARY collect-gentxs --home $CHAIN_DIR/$CHAINID_1
-$BINARY collect-gentxs --home $CHAIN_DIR/$CHAINID_2
+$BINARY collect-gentxs --home $CHAIN_DIR/$CHAINID_1 &> /dev/null
+$BINARY collect-gentxs --home $CHAIN_DIR/$CHAINID_2 &> /dev/null
 
 echo "Changing defaults and ports in app.toml and config.toml files..."
 sed -i -e 's#"tcp://0.0.0.0:26656"#"tcp://0.0.0.0:'"$P2PPORT_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/config.toml

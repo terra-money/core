@@ -9,14 +9,14 @@ echo ""
 BINARY=terrad
 CHAIN_DIR=$(pwd)/data
 WALLET_1=$($BINARY keys show wallet1 -a --keyring-backend test --home $CHAIN_DIR/test-1)
-WALLET_3=$($BINARY keys show wallet3 -a --keyring-backend test --home $CHAIN_DIR/test-2)
+WALLET_2=$($BINARY keys show wallet2 -a --keyring-backend test --home $CHAIN_DIR/test-2)
 
 echo "Deploying counter contract"
-CODE_ID=$($BINARY tx wasm store $(pwd)/scripts/tests/ibc-hooks/counter/artifacts/counter.wasm --from $WALLET_3 --chain-id test-2 --home $CHAIN_DIR/test-2 --node tcp://localhost:26657 --keyring-backend test --broadcast-mode block  -y --gas 10000000 -o json | jq -r '.logs[0].events[1].attributes[1].value')
+CODE_ID=$($BINARY tx wasm store $(pwd)/scripts/tests/ibc-hooks/counter/artifacts/counter.wasm --from $WALLET_2 --chain-id test-2 --home $CHAIN_DIR/test-2 --node tcp://localhost:26657 --keyring-backend test --broadcast-mode block  -y --gas 10000000 -o json | jq -r '.logs[0].events[1].attributes[1].value')
 
 echo "Instantiating counter contract"
 RANDOM_HASH=$(hexdump -vn16 -e'4/4 "%08X" 1 "\n"' /dev/urandom)
-CONTRACT_ADDRESS=$($BINARY tx wasm instantiate2 $CODE_ID '{"count": 0}' $RANDOM_HASH --no-admin --label="Label with $RANDOM_HASH" --from $WALLET_3 --chain-id test-2 --home $CHAIN_DIR/test-2 --node tcp://localhost:26657 --keyring-backend test --broadcast-mode block  -y --gas 10000000 -o json | jq -r '.logs[0].events[0].attributes[0].value')
+CONTRACT_ADDRESS=$($BINARY tx wasm instantiate2 $CODE_ID '{"count": 0}' $RANDOM_HASH --no-admin --label="Label with $RANDOM_HASH" --from $WALLET_2 --chain-id test-2 --home $CHAIN_DIR/test-2 --node tcp://localhost:26657 --keyring-backend test --broadcast-mode block  -y --gas 10000000 -o json | jq -r '.logs[0].events[0].attributes[0].value')
 
 echo "Executing the IBC Hook to increment the counter"
 # First increment create the entry in the smart contract with the sender address ...
@@ -28,12 +28,10 @@ export WALLET_1_WASM_SENDER=$($BINARY q ibchooks wasm-sender channel-0 "$WALLET_
 COUNT_RES=""
 COUNT_FUNDS_RES=""
 while [ "$COUNT_RES" != "1" ] || [ "$COUNT_FUNDS_RES" != "2" ]; do
-    sleep 1
+    sleep 2
     COUNT_RES=$($BINARY query wasm contract-state smart "$CONTRACT_ADDRESS" '{"get_count": {"addr": "'"$WALLET_1_WASM_SENDER"'"}}' --chain-id test-2 --home $CHAIN_DIR/test-2 --node tcp://localhost:26657 -o json |  jq -r '.data.count')
     COUNT_FUNDS_RES=$($BINARY query wasm contract-state smart "$CONTRACT_ADDRESS" '{"get_total_funds": {"addr": "'"$WALLET_1_WASM_SENDER"'"}}' --chain-id test-2 --home $CHAIN_DIR/test-2 --node tcp://localhost:26657 -o json |  jq -r '.data.total_funds[0].amount')
-
-    echo "count res: $COUNT_RES"
-    echo "count funds: $COUNT_FUNDS_RES"
+    echo "relayed count: $COUNT_RES relayed funds: $COUNT_FUNDS_RES"
 done
 
 echo ""

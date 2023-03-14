@@ -53,5 +53,6 @@ dependency-graph.png
 *.out
 *.synctex.gz
 
-# CosmWasm
+# Tests
 scripts/tests/ibc-hooks/counter/target
+scripts/tests/vesting-accounts/.vesting-periods.json

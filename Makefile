@@ -152,9 +152,16 @@ update-swagger-docs: statik
 ###                        Integration Tests                                ###
 ###############################################################################
 
-integration-test-all: init-test-framework test-relayer test-ica test-ibc-hooks remove-ica-data
+integration-test-all: init-test-framework \
+	test-relayer \
+	test-ica \
+	test-ibc-hooks \
+	test-vesting-accounts \
+#	test-tokenfactory
+	-@rm -rf ./data
+	-@killall terrad 2>/dev/null
 
-init-test-framework: remove-ica-data install
+init-test-framework: clean-testing-data install
 	@echo "Initializing both blockchains..."
 	./scripts/tests/start.sh
 
@@ -170,10 +177,20 @@ test-ibc-hooks:
 	@echo "Testing ibc hooks..."
 	./scripts/tests/ibc-hooks/increment.sh
 
-remove-ica-data:
+test-vesting-accounts: 
+	@echo "Testing vesting accounts..."
+	./scripts/tests/vesting-accounts/validate-vesting.sh
+
+test-tokenfactory: 
+	@echo "Testing tokenfactory..."
+	./scripts/tests/tokenfactory/tokenfactory.sh
+
+clean-testing-data:
 	@echo "Killing terrad and removing previous data"
 	-@rm -rf ./data
 	-@killall terrad 2>/dev/null
+
+.PHONY: integration-test-all init-test-framework test-relayer test-ica test-ibc-hooks test-vesting-accounts test-tokenfactory clean-testing-data
 
 ###############################################################################
 ###                                Protobuf                                 ###
