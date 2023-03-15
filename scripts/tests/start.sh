@@ -75,8 +75,8 @@ $BINARY add-genesis-account $VAL1_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAI
 $BINARY add-genesis-account $VAL2_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_2
 $BINARY add-genesis-account $WALLET1_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_1
 $BINARY add-genesis-account $WALLET2_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_2
-$BINARY add-genesis-account $WALLET3_ADDR 100000000000uluna --vesting-amount 10000000000uluna --vesting-start-time $(date +%s) --vesting-end-time $(date --date="+10 minutes" '+%s') --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $WALLET4_ADDR 100000000000uluna --vesting-amount 10000000000uluna --vesting-start-time $(date +%s) --vesting-end-time $(date --date="+10 minutes" '+%s') --home $CHAIN_DIR/$CHAINID_2
+$BINARY add-genesis-account $WALLET3_ADDR 100000000000uluna --vesting-amount 10000000000uluna --vesting-start-time $(date +%s) --vesting-end-time $(($(date '+%s') + 100000023)) --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-genesis-account $WALLET4_ADDR 100000000000uluna --vesting-amount 10000000000uluna --vesting-start-time $(date +%s) --vesting-end-time $(($(date '+%s') + 100000023)) --home $CHAIN_DIR/$CHAINID_2
 $BINARY add-genesis-account $RLY1_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_1
 $BINARY add-genesis-account $RLY2_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_2
 

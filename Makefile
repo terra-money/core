@@ -157,7 +157,7 @@ integration-test-all: init-test-framework \
 	test-ica \
 	test-ibc-hooks \
 	test-vesting-accounts \
-#	test-tokenfactory
+	test-tokenfactory
 	-@rm -rf ./data
 	-@killall terrad 2>/dev/null
 

@@ -14,7 +14,6 @@ HIDDEN_VESTING_FILE=$(pwd)/scripts/tests/vesting-accounts/.vesting-periods.json
 WALLET_3=$($BINARY keys show wallet3 -a --keyring-backend test --home $CHAIN_DIR/test-1)
 WALLET_4=$($BINARY keys show wallet4 -a --keyring-backend test --home $CHAIN_DIR/test-2)
 
-
 echo "Checking the delegated vesting balance of wallet3 on chain test-2 to 90000000000 since 10000000000 is vesting"
 WALLET_4_BALANCES=$($BINARY query bank balances $WALLET_4 --chain-id test-2 --node tcp://localhost:26657 -o json | jq -r '.balances[-1].amount')
 if [[ "$WALLET_4_BALANCES" != "90000000000" ]]; then
