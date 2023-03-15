@@ -160,8 +160,8 @@ integration-test-all: init-test-framework \
 	test-ica \
 	test-ibc-hooks \
 	test-vesting-accounts \
-	test-alliance 
-#	test-tokenfactory
+	test-alliance \
+	test-tokenfactory
 	-@rm -rf ./data
 	-@killall terrad 2>/dev/null
 
