@@ -71,14 +71,14 @@ WALLET4_ADDR=$($BINARY keys show wallet4 --home $CHAIN_DIR/$CHAINID_2 --keyring-
 RLY1_ADDR=$($BINARY keys show rly1 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
 RLY2_ADDR=$($BINARY keys show rly2 --home $CHAIN_DIR/$CHAINID_2 --keyring-backend test -a)
 
-$BINARY add-genesis-account $VAL1_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $VAL2_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_2
-$BINARY add-genesis-account $WALLET1_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $WALLET2_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_2
-$BINARY add-genesis-account $WALLET3_ADDR 100000000000uluna --vesting-amount 10000000000uluna --vesting-start-time $(date +%s) --vesting-end-time $(($(date '+%s') + 100000023)) --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $WALLET4_ADDR 100000000000uluna --vesting-amount 10000000000uluna --vesting-start-time $(date +%s) --vesting-end-time $(($(date '+%s') + 100000023)) --home $CHAIN_DIR/$CHAINID_2
-$BINARY add-genesis-account $RLY1_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_1
-$BINARY add-genesis-account $RLY2_ADDR 100000000000uluna --home $CHAIN_DIR/$CHAINID_2
+$BINARY add-genesis-account $VAL1_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-genesis-account $VAL2_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
+$BINARY add-genesis-account $WALLET1_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-genesis-account $WALLET2_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
+$BINARY add-genesis-account $WALLET3_ADDR 1000000000000uluna --vesting-amount 10000000000uluna --vesting-start-time $(date +%s) --vesting-end-time $(($(date '+%s') + 100000023)) --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-genesis-account $WALLET4_ADDR 1000000000000uluna --vesting-amount 10000000000uluna --vesting-start-time $(date +%s) --vesting-end-time $(($(date '+%s') + 100000023)) --home $CHAIN_DIR/$CHAINID_2
+$BINARY add-genesis-account $RLY1_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY add-genesis-account $RLY2_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
 
 echo "Creating and collecting gentx..."
 $BINARY gentx val1 7000000000uluna --home $CHAIN_DIR/$CHAINID_1 --chain-id $CHAINID_1 --keyring-backend test
