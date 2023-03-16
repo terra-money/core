@@ -44,13 +44,21 @@ if [[ "$CREATE_VESTING_ACCOUNT_MSG_RES" != "/cosmos.vesting.v1beta1.MsgCreatePer
 fi
 
 echo "Waiting 4 seconds for address $RANDOM_VESTING_WALLET to have spendable balance"
-sleep 4
-SPENDABLE_BALANCE=$(curl -s -X GET "http://localhost:1316/cosmos/bank/v1beta1/spendable_balances/$RANDOM_VESTING_WALLET" -H "accept: application/json" | jq -r '.balances[-1].amount')
-if [[ 0 -gt $SPENDABLE_BALANCE ]]; then
-    echo "Error: Expected a vested balance greater than 0, got $SPENDABLE_BALANCE"
-    exit 1
-fi  
-echo "Spendable balance of $RANDOM_VESTING_WALLET is $SPENDABLE_BALANCE"
+
+PREV_SPENDABLE_BALANCE="0"
+CURRENT_SPENDABLE_BALANCE="0"
+for i in {0..4};do
+    sleep 3
+    CURRENT_SPENDABLE_BALANCE=$(curl -s -X GET "http://localhost:1316/cosmos/bank/v1beta1/spendable_balances/$RANDOM_VESTING_WALLET" -H "accept: application/json" | jq -r '.balances[-1].amount')
+
+    if [[ $PREV_SPENDABLE_BALANCE -ge $CURRENT_SPENDABLE_BALANCE ]]; then
+        echo "Error: Expected a current block spendable balance ($CURRENT_SPENDABLE_BALANCE) greater than prev block ($PREV_SPENDABLE_BALANCE)"
+        exit 1
+    fi
+
+    PREV_SPENDABLE_BALANCE=$CURRENT_SPENDABLE_BALANCE
+    echo "Spendable balance of $RANDOM_VESTING_WALLET is $CURRENT_SPENDABLE_BALANCE on iteration $i"
+done
 
 rm -rf $HIDDEN_VESTING_FILE
 
