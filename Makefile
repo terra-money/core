@@ -136,6 +136,9 @@ build-linux-with-shared-library:
 install: go.sum 
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/terrad
 
+gen-swagger-docs:
+	bash scripts/protoc-swagger-gen.sh
+
 update-swagger-docs: statik
 	$(BINDIR)/statik -src=client/docs/swagger-ui -dest=client/docs -f -m
 	@if [ -n "$(git status --porcelain)" ]; then \
@@ -157,6 +160,7 @@ integration-test-all: init-test-framework \
 	test-ica \
 	test-ibc-hooks \
 	test-vesting-accounts \
+	test-alliance \
 	test-tokenfactory
 	-@rm -rf ./data
 	-@killall terrad 2>/dev/null
@@ -176,6 +180,10 @@ test-ica:
 test-ibc-hooks: 
 	@echo "Testing ibc hooks..."
 	./scripts/tests/ibc-hooks/increment.sh
+
+test-alliance: 
+	@echo "Testing alliance module..."
+	./scripts/tests/alliance/delegate.sh
 
 test-vesting-accounts: 
 	@echo "Testing vesting accounts..."
@@ -269,7 +277,7 @@ lint-fix:
 .PHONY: lint lint-fix
 
 format:
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' | xargs gofmt -w -s
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' | xargs misspell -w
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' | xargs goimports -w -local github.com/cosmos/cosmos-sdk
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' -not -path "./_build/*" | xargs gofmt -w -s
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' -not -path "./_build/*" | xargs misspell -w
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' -not -path "./_build/*" | xargs goimports -w -local github.com/cosmos/cosmos-sdk
 .PHONY: format

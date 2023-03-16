@@ -16,8 +16,8 @@ WALLET_4=$($BINARY keys show wallet4 -a --keyring-backend test --home $CHAIN_DIR
 
 echo "Checking the delegated vesting balance of wallet3 on chain test-2 to 90000000000 since 10000000000 is vesting"
 WALLET_4_BALANCES=$($BINARY query bank balances $WALLET_4 --chain-id test-2 --node tcp://localhost:26657 -o json | jq -r '.balances[-1].amount')
-if [[ "$WALLET_4_BALANCES" != "90000000000" ]]; then
-    echo "Error: Expected a balance of 90000000000, got $WALLET_4_BALANCES"
+if [[ "$WALLET_4_BALANCES" != "990000000000" ]]; then
+    echo "Error: Expected a balance of 990000000000, got $WALLET_4_BALANCES"
     exit 1
 fi
 
