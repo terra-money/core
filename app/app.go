@@ -9,8 +9,6 @@ import (
 
 	"github.com/terra-money/core/v2/app/rpc"
 
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
@@ -18,6 +16,9 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
+
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -41,7 +42,6 @@ import (
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/capability"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
@@ -137,6 +137,13 @@ import (
 	tokenfactorykeeper "github.com/CosmWasm/wasmd/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/CosmWasm/wasmd/x/tokenfactory/types"
 
+	alliancebank "github.com/terra-money/alliance/custom/bank"
+	bankkeeper "github.com/terra-money/alliance/custom/bank/keeper"
+	"github.com/terra-money/alliance/x/alliance"
+	allianceclient "github.com/terra-money/alliance/x/alliance/client"
+	alliancekeeper "github.com/terra-money/alliance/x/alliance/keeper"
+	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
+
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -187,7 +194,7 @@ func GetWasmOpts(app *TerraApp, appOpts servertypes.AppOptions) []wasm.Option {
 	if cast.ToBool(appOpts.Get("telemetry.enabled")) {
 		wasmOpts = append(wasmOpts, wasmkeeper.WithVMCacheMetrics(prometheus.DefaultRegisterer))
 	}
-	wasmOpts = append(wasmOpts, tokenfactorybindings.RegisterCustomPlugins(&app.BankKeeper, &app.TokenFactoryKeeper)...)
+	wasmOpts = append(wasmOpts, tokenfactorybindings.RegisterCustomPlugins(&app.BankKeeper.BaseKeeper, &app.TokenFactoryKeeper)...)
 
 	return wasmOpts
 }
@@ -204,6 +211,9 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		upgradeclient.LegacyCancelProposalHandler,
 		ibcclientclient.UpdateClientProposalHandler,
 		ibcclientclient.UpgradeProposalHandler,
+		allianceclient.CreateAllianceProposalHandler,
+		allianceclient.UpdateAllianceProposalHandler,
+		allianceclient.DeleteAllianceProposalHandler,
 		// this line is used by starport scaffolding # stargate/app/govProposalHandler
 	)
 
@@ -244,6 +254,7 @@ var (
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 		ibchooks.AppModuleBasic{},
 		wasm.AppModuleBasic{},
+		alliance.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -257,9 +268,11 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
-		ibcfeetypes.ModuleName:       nil,
-		wasm.ModuleName:              {authtypes.Burner},
-		tokenfactorytypes.ModuleName: {authtypes.Burner, authtypes.Minter},
+		ibcfeetypes.ModuleName:        nil,
+		wasm.ModuleName:               {authtypes.Burner},
+		tokenfactorytypes.ModuleName:  {authtypes.Burner, authtypes.Minter},
+		alliancetypes.ModuleName:      {authtypes.Burner, authtypes.Minter},
+		alliancetypes.RewardsPoolName: nil,
 	}
 )
 
@@ -295,7 +308,7 @@ type TerraApp struct {
 
 	// keepers
 	AccountKeeper       authkeeper.AccountKeeper
-	BankKeeper          bankkeeper.BaseKeeper
+	BankKeeper          bankkeeper.Keeper
 	CapabilityKeeper    *capabilitykeeper.Keeper
 	StakingKeeper       stakingkeeper.Keeper
 	SlashingKeeper      slashingkeeper.Keeper
@@ -316,6 +329,7 @@ type TerraApp struct {
 	IBCFeeKeeper        ibcfeekeeper.Keeper
 	RouterKeeper        routerkeeper.Keeper
 	TokenFactoryKeeper  tokenfactorykeeper.Keeper
+	AllianceKeeper      alliancekeeper.Keeper
 
 	// IBC hooks
 	IBCHooksKeeper   *ibchookskeeper.Keeper
@@ -371,7 +385,7 @@ func NewTerraApp(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		intertxtypes.StoreKey, authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey, routertypes.StoreKey, tokenfactorytypes.StoreKey, wasm.StoreKey,
-		ibcfeetypes.StoreKey, ibchookstypes.StoreKey,
+		ibcfeetypes.StoreKey, ibchookstypes.StoreKey, alliancetypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -411,11 +425,12 @@ func NewTerraApp(
 		appCodec, keys[authtypes.StoreKey], app.GetSubspace(authtypes.ModuleName), authtypes.ProtoBaseAccount, maccPerms, terraappconfig.AccountAddressPrefix,
 	)
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
-		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
+		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.BlockedModuleAccountAddrs(),
 	)
 	stakingKeeper := stakingkeeper.NewKeeper(
 		appCodec, keys[stakingtypes.StoreKey], app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName),
 	)
+
 	app.MintKeeper = mintkeeper.NewKeeper(
 		appCodec, keys[minttypes.StoreKey], app.GetSubspace(minttypes.ModuleName), &stakingKeeper,
 		app.AccountKeeper, app.BankKeeper, authtypes.FeeCollectorName,
@@ -439,10 +454,21 @@ func NewTerraApp(
 	// upgrade handlers
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 
+	app.AllianceKeeper = alliancekeeper.NewKeeper(
+		appCodec,
+		keys[alliancetypes.StoreKey],
+		app.GetSubspace(alliancetypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		&app.StakingKeeper,
+		app.DistrKeeper,
+	)
+	app.BankKeeper.RegisterKeepers(app.AllianceKeeper, &stakingKeeper)
+
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
-		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
+		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks(), app.AllianceKeeper.StakingHooks()),
 	)
 
 	// ... other modules keepers
@@ -468,7 +494,8 @@ func NewTerraApp(
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
+		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
+		AddRoute(alliancetypes.RouterKey, alliance.NewAllianceProposalHandler(app.AllianceKeeper))
 
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
@@ -631,7 +658,7 @@ func NewTerraApp(
 		),
 		auth.NewAppModule(appCodec, app.AccountKeeper, nil),
 		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper, app.DistrKeeper, app.StakingKeeper),
-		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
+		alliancebank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
@@ -654,6 +681,7 @@ func NewTerraApp(
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		ibchooks.NewAppModule(app.AccountKeeper),
 		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
+		alliance.NewAppModule(appCodec, app.AllianceKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -687,6 +715,7 @@ func NewTerraApp(
 		ibchookstypes.ModuleName,
 		wasm.ModuleName,
 		tokenfactorytypes.ModuleName,
+		alliancetypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -716,6 +745,7 @@ func NewTerraApp(
 		ibchookstypes.ModuleName,
 		wasm.ModuleName,
 		tokenfactorytypes.ModuleName,
+		alliancetypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -750,6 +780,7 @@ func NewTerraApp(
 		tokenfactorytypes.ModuleName,
 		ibchookstypes.ModuleName,
 		wasm.ModuleName,
+		alliancetypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -801,6 +832,7 @@ func NewTerraApp(
 				tokenfactorytypes.StoreKey,
 				ibcfeetypes.StoreKey,
 				ibchookstypes.StoreKey,
+				alliancetypes.StoreKey,
 			},
 		}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
@@ -865,11 +897,12 @@ func (app *TerraApp) LoadHeight(height int64) error {
 }
 
 // ModuleAccountAddrs returns all the app's module account addresses.
-func (app *TerraApp) ModuleAccountAddrs() map[string]bool {
+func (app *TerraApp) BlockedModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
 	}
+	delete(modAccAddrs, authtypes.NewModuleAddress(alliancetypes.ModuleName).String())
 
 	return modAccAddrs
 }
@@ -1008,6 +1041,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(routertypes.ModuleName).WithKeyTable(routertypes.ParamKeyTable())
 	paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
+	paramsKeeper.Subspace(alliancetypes.ModuleName)
 
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 	paramsKeeper.Subspace(wasm.ModuleName)
