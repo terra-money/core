@@ -197,6 +197,7 @@ clean-testing-data:
 	@echo "Killing terrad and removing previous data"
 	-@rm -rf ./data
 	-@killall terrad 2>/dev/null
+	-@killall rly 2>/dev/null
 
 .PHONY: integration-test-all init-test-framework test-relayer test-ica test-ibc-hooks test-vesting-accounts test-tokenfactory clean-testing-data
 
