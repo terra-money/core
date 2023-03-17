@@ -164,6 +164,7 @@ integration-test-all: init-test-framework \
 	test-tokenfactory
 	-@rm -rf ./data
 	-@killall terrad 2>/dev/null
+	-@killall rly 2>/dev/null
 
 init-test-framework: clean-testing-data install
 	@echo "Initializing both blockchains..."

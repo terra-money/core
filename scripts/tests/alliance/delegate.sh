@@ -33,7 +33,7 @@ while [ "$ACCOUNT_BALANCE" == "" ]; do
 done
 
 echo "Creating an alliance with the denom $IBC_DENOM"
-PROPOSAL_HEIGHT=$($BINARY tx gov submit-legacy-proposal create-alliance $IBC_DENOM 0.5 0 1 0 0.1 1s --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --deposit 10000000000$ULUNA_DENOM --node tcp://localhost:26657 -o json --keyring-backend test --broadcast-mode block --gas 1000000 -y | jq -r '.height')
+PROPOSAL_HEIGHT=$($BINARY tx gov submit-legacy-proposal create-alliance $IBC_DENOM 5 0 5 0 0.99 1s --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --deposit 10000000000$ULUNA_DENOM --node tcp://localhost:26657 -o json --keyring-backend test --broadcast-mode block --gas 1000000 -y | jq -r '.height')
 PROPOSAL_ID=$($BINARY query gov proposals --home $CHAIN_DIR/test-2 --count-total --node tcp://localhost:26657 -o json --output json --chain-id=test-2 | jq .proposals[-1].id -r)
 VOTE_RES=$($BINARY tx gov vote $PROPOSAL_ID yes --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --keyring-backend=test --broadcast-mode=block --gas 1000000 --chain-id=test-2 --node tcp://localhost:26657 -o json -y)
 
