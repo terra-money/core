@@ -266,7 +266,7 @@ benchmark:
 simulate:
 	@go test  -bench BenchmarkSimulation ./app -NumBlocks=200 -BlockSize 50 -Commit=true -Verbose=true -Enabled=true -Seed 1
 
-.PHONY: test test-all test-cover test-unit test-race
+.PHONY: test test-all test-cover test-unit test-race simulate
 
 ###############################################################################
 ###                                Linting                                  ###
