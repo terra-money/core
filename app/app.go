@@ -584,8 +584,7 @@ func NewTerraApp(
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
-	// TODO: look into `cosmwasm_1_1`
-	supportedFeatures := "iterator,staking,stargate,token_factory"
+	supportedFeatures := "iterator,staking,stargate,token_factory,cosmwasm_1_1"
 	app.wasmKeeper = wasm.NewKeeper(
 		appCodec,
 		keys[wasm.StoreKey],
