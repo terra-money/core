@@ -1,6 +1,8 @@
 package app_test
 
 import (
+	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
 	"os"
 	"testing"
 
@@ -89,4 +91,24 @@ func BenchmarkSimulation(b *testing.B) {
 	if config.Commit {
 		simapp.PrintStats(db)
 	}
+}
+
+func TestSimulationManager(t *testing.T) {
+	db := dbm.NewMemDB()
+	encoding := app.MakeEncodingConfig()
+
+	simApp := app.NewTerraApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db,
+		nil,
+		true,
+		map[int64]bool{},
+		app.DefaultNodeHome,
+		0,
+		encoding,
+		simapp.EmptyAppOptions{},
+		wasmconfig.DefaultConfig(),
+	)
+	sm := simApp.SimulationManager()
+	require.NotNil(t, sm)
 }
