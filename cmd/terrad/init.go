@@ -4,9 +4,10 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	terraappconfig "github.com/terra-money/core/v2/app/config"
 	"os"
 	"path/filepath"
+
+	terraappconfig "github.com/terra-money/core/v2/app/config"
 
 	"github.com/cosmos/go-bip39"
 	"github.com/pkg/errors"
@@ -81,14 +82,20 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 			config := serverCtx.Config
 			config.SetRoot(clientCtx.HomeDir)
 
-			chainID, _ := cmd.Flags().GetString(flags.FlagChainID)
+			chainID, err := cmd.Flags().GetString(flags.FlagChainID)
+			if err != nil {
+				return err
+			}
 			if chainID == "" {
 				chainID = fmt.Sprintf("test-chain-%v", tmrand.Str(6))
 			}
 
 			// Get bip39 mnemonic
 			var mnemonic string
-			recover, _ := cmd.Flags().GetBool(FlagRecover)
+			recover, err := cmd.Flags().GetBool(FlagRecover)
+			if err != nil {
+				return err
+			}
 			if recover {
 				inBuf := bufio.NewReader(cmd.InOrStdin())
 				value, err := input.GetString("Enter your bip39 mnemonic", inBuf)
@@ -110,7 +117,10 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 			config.Moniker = args[0]
 
 			genFile := config.GenesisFile()
-			overwrite, _ := cmd.Flags().GetBool(FlagOverwrite)
+			overwrite, err := cmd.Flags().GetBool(FlagOverwrite)
+			if err != nil {
+				return err
+			}
 
 			if !overwrite && tmos.FileExists(genFile) {
 				return fmt.Errorf("genesis.json file already exists: %v", genFile)

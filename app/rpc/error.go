@@ -1,9 +1,10 @@
 package rpc
 
 import (
+	"net/http"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
-	"net/http"
 )
 
 // ErrorResponse defines the attributes of a JSON error response.
@@ -17,7 +18,10 @@ type ErrorResponse struct {
 func WriteErrorResponse(w http.ResponseWriter, status int, err string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	_, _ = w.Write(legacy.Cdc.MustMarshalJSON(NewErrorResponse(0, err)))
+	_, err1 := w.Write(legacy.Cdc.MustMarshalJSON(NewErrorResponse(0, err)))
+	if err1 != nil {
+		panic(err1)
+	}
 }
 
 // NewErrorResponse creates a new ErrorResponse instance.
@@ -62,5 +66,8 @@ func PostProcessResponseBare(w http.ResponseWriter, ctx client.Context, body int
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	_, _ = w.Write(resp)
+	_, err = w.Write(resp)
+	if err != nil {
+		panic(err)
+	}
 }

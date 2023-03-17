@@ -259,7 +259,8 @@ func TestSimAppEnforceStakingForVestingTokens(t *testing.T) {
 
 	// generate validator private/public key
 	privVal := mock.NewPV()
-	pubKey, _ := privVal.GetPubKey()
+	pubKey, err := privVal.GetPubKey()
+	require.NoError(t, err, "PubKey should not have an error")
 	validator := tmtypes.NewValidator(pubKey, 1)
 	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
 

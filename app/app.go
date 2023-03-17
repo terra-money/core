@@ -898,9 +898,12 @@ func (app *TerraApp) LoadHeight(height int64) error {
 // ModuleAccountAddrs returns all the app's module account addresses.
 func (app *TerraApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
+
+	/* #nosec */
 	for acc := range maccPerms {
 		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
 	}
+
 	delete(modAccAddrs, authtypes.NewModuleAddress(alliancetypes.ModuleName).String())
 
 	return modAccAddrs
@@ -952,7 +955,11 @@ func (app *TerraApp) GetMemKey(storeKey string) *storetypes.MemoryStoreKey {
 //
 // NOTE: This is solely to be used for testing purposes.
 func (app *TerraApp) GetSubspace(moduleName string) paramstypes.Subspace {
-	subspace, _ := app.ParamsKeeper.GetSubspace(moduleName)
+	subspace, found := app.ParamsKeeper.GetSubspace(moduleName)
+	if !found {
+		panic("Module with '" + moduleName + "' name does not exist")
+	}
+
 	return subspace
 }
 
