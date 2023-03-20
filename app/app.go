@@ -223,9 +223,7 @@ var (
 	}
 )
 
-var (
-	_ servertypes.Application = (*TerraApp)(nil)
-)
+var _ servertypes.Application = (*TerraApp)(nil)
 
 func init() {
 	userHomeDir, err := os.UserHomeDir()
@@ -844,7 +842,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 // enforceStakingForVestingTokens enforce vesting tokens to be staked
 // CONTRACT: validator's gentx account must not be a vesting account
 func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisState GenesisState) {
-
 	var authState authtypes.GenesisState
 	app.appCodec.MustUnmarshalJSON(genesisState[authtypes.ModuleName], &authState)
 
