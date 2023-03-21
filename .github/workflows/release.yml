@@ -7,30 +7,7 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+-rc*' # Push events to matching v*, i.e. v1.0-rc1, v20.15.10-rc5
 
 jobs:
-  # changelog:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     version: ${{ steps.changelog.outputs.version }}
-  #     body: ${{ steps.changelog.outputs.clean_changelog }}
-  #     tag: ${{ steps.changelog.outputs.tag }}
-  #     skipped: ${{ steps.changelog.outputs.skipped }}
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f
-  #     - name: Create changelog
-  #       id: changelog
-  #       uses: TriPSs/conventional-changelog-action@858fe562a4d01987825f5e96b2a541f53b22c8b6
-  #       with:
-  #         github-token: ${{ secrets.github_token }}
-  #         skip-version-file: 'true'
-  #         output-file: 'false'
-  #         skip-commit: 'true'
-  #         #set to false if we want to create the tag
-  #         skip-tag: 'true'
-  #         skip-on-empty: 'true'
-  #         git-push: 'false'
   artifacts:
-    #    needs: changelog
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -45,14 +22,6 @@ jobs:
       - name: Set up Docker
         if: ${{matrix.build_type == 'build-release-arm64' }}
         uses: crazy-max/ghaction-setup-docker@v1
-        # - name: Install docker on MacOS
-        #   if: ${{matrix.build_type == 'build-release-arm64' }}
-        #   run: |
-        #     brew install docker colima
-        #     colima start || true
-        # - name: Set up Docker Buildx for MacOS
-        #   if: ${{matrix.build_type == 'build-release-arm64' }}
-        # uses: docker/setup-buildx-action@v2
       - name: Create build directory
         run: mkdir -p build/release
       - name: Build ${{matrix.build_type}}

@@ -6,7 +6,8 @@ LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
 BUILDDIR ?= $(CURDIR)/build
 DOCKER := $(shell which docker)
-
+SHA256_CMD = sha256sum
+GO_VERSION ?= "1.20"
 # don't override user values
 ifeq (,$(VERSION))
   VERSION := $(shell git describe --tags)
@@ -133,6 +134,41 @@ build-linux-with-shared-library:
 	docker cp temp:/lib/libwasmvm.so $(BUILDDIR)/
 	docker rm temp
 
+build-release: build-release-amd64 build-release-arm64
+
+build-release-amd64: go.sum $(BUILDDIR)/
+	$(DOCKER) buildx create --name core-builder || true
+	$(DOCKER) buildx use core-builder
+	$(DOCKER) buildx build \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg GIT_VERSION=$(VERSION) \
+		--build-arg GIT_COMMIT=$(COMMIT) \
+    --build-arg BUILDPLATFORM=linux/amd64 \
+		-t core:local-amd64 \
+		--load \
+		-f Dockerfile .
+	$(DOCKER) rm -f core-builder || true
+	$(DOCKER) create -ti --name core-builder core:local-amd64
+	$(DOCKER) cp core-builder:/usr/local/bin/terrad $(BUILDDIR)/release/terrad && tar -czvf $(BUILDDIR)/release/terra_$(VERSION)_$(shell uname)_$(shell uname -m).tar.gz $(BUILDDIR)/release/terrad && rm $(BUILDDIR)/release/terrad
+	$(SHA256_CMD) $(BUILDDIR)/release/terra_$(VERSION)_$(shell uname)_$(shell uname -m).tar.gz > $(BUILDDIR)/release/terra_$(VERSION)_$(shell uname)_$(shell uname -m).tar.gz.checksum
+	$(DOCKER) rm -f core-builder
+
+build-release-arm64: go.sum $(BUILDDIR)/
+	$(DOCKER) buildx create --name core-builder  || true
+	$(DOCKER) buildx use core-builder 
+	$(DOCKER) buildx build \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg GIT_VERSION=$(VERSION) \
+		--build-arg GIT_COMMIT=$(COMMIT) \
+    --build-arg BUILDPLATFORM=linux/arm64 \
+		-t core:local-arm64 \
+		--load \
+		-f Dockerfile .
+	$(DOCKER) rm -f core-builder || true
+	$(DOCKER) create -ti --name core-builder core:local-arm64
+	$(DOCKER) cp core-builder:/usr/local/bin/terrad $(BUILDDIR)/release/terrad && tar -czvf $(BUILDDIR)/release/terra_$(VERSION)_$(shell uname)_$(shell uname -m).tar.gz $(BUILDDIR)/release/terrad  && rm $(BUILDDIR)/release/terrad
+	$(SHA256_CMD) $(BUILDDIR)/release/terra_$(VERSION)_$(shell uname)_$(shell uname -m).tar.gz > $(BUILDDIR)/release/terra_$(VERSION)_$(shell uname)_$(shell uname -m).tar.gz.checksum
+	$(DOCKER) rm -f core-builder
 install: go.sum 
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/terrad
 
