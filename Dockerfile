@@ -4,7 +4,6 @@ ARG GO_VERSION="1.20"
 ARG ALPINE_VERSION="3.16"
 ARG BUILDPLATFORM=linux/amd64
 ARG BASE_IMAGE="golang:${GO_VERSION}-alpine${ALPINE_VERSION}"
-
 FROM --platform=${BUILDPLATFORM} ${BASE_IMAGE} as base
 
 ###############################################################################
@@ -66,6 +65,12 @@ RUN set -eux &&\
 ###############################################################################
 
 FROM builder-stage-1 as builder-stage-2
+
+ARG GOOS=linux \
+    GOARCH=amd64
+
+ENV GOOS=$GOOS \ 
+    GOARCH=$GOARCH
 
 # Copy the remaining files
 COPY . .

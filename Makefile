@@ -144,13 +144,15 @@ build-release-amd64: go.sum $(BUILDDIR)/
 		--build-arg GIT_VERSION=$(VERSION) \
 		--build-arg GIT_COMMIT=$(COMMIT) \
     --build-arg BUILDPLATFORM=linux/amd64 \
+    --build-arg GOOS=linux \
+    --build-arg GOARCH=amd64 \
 		-t core:local-amd64 \
 		--load \
 		-f Dockerfile .
 	$(DOCKER) rm -f core-builder || true
 	$(DOCKER) create -ti --name core-builder core:local-amd64
-	$(DOCKER) cp core-builder:/usr/local/bin/terrad $(BUILDDIR)/release/terrad && tar -czvf $(BUILDDIR)/release/terra_$(VERSION)_$(shell uname)_$(shell uname -m).tar.gz $(BUILDDIR)/release/terrad && rm $(BUILDDIR)/release/terrad
-	$(SHA256_CMD) $(BUILDDIR)/release/terra_$(VERSION)_$(shell uname)_$(shell uname -m).tar.gz > $(BUILDDIR)/release/terra_$(VERSION)_$(shell uname)_$(shell uname -m).tar.gz.checksum
+	$(DOCKER) cp core-builder:/usr/local/bin/terrad $(BUILDDIR)/release/terrad && tar -czvf $(BUILDDIR)/release/terra_$(VERSION)_Linux_x86_64.tar.gz $(BUILDDIR)/release/terrad && rm $(BUILDDIR)/release/terrad
+	$(SHA256_CMD) $(BUILDDIR)/release/terra_$(VERSION)_Linux_x86_64.tar.gz > $(BUILDDIR)/release/terra_$(VERSION)_Linux_x86_64.tar.gz.checksum
 	$(DOCKER) rm -f core-builder
 
 build-release-arm64: go.sum $(BUILDDIR)/
@@ -161,13 +163,15 @@ build-release-arm64: go.sum $(BUILDDIR)/
 		--build-arg GIT_VERSION=$(VERSION) \
 		--build-arg GIT_COMMIT=$(COMMIT) \
     --build-arg BUILDPLATFORM=linux/arm64 \
+    --build-arg GOOS=darwin \
+    --build-arg GOARCH=arm64 \
 		-t core:local-arm64 \
 		--load \
 		-f Dockerfile .
 	$(DOCKER) rm -f core-builder || true
 	$(DOCKER) create -ti --name core-builder core:local-arm64
-	$(DOCKER) cp core-builder:/usr/local/bin/terrad $(BUILDDIR)/release/terrad && tar -czvf $(BUILDDIR)/release/terra_$(VERSION)_$(shell uname)_$(shell uname -m).tar.gz $(BUILDDIR)/release/terrad  && rm $(BUILDDIR)/release/terrad
-	$(SHA256_CMD) $(BUILDDIR)/release/terra_$(VERSION)_$(shell uname)_$(shell uname -m).tar.gz > $(BUILDDIR)/release/terra_$(VERSION)_$(shell uname)_$(shell uname -m).tar.gz.checksum
+	$(DOCKER) cp core-builder:/usr/local/bin/terrad $(BUILDDIR)/release/terrad && tar -czvf $(BUILDDIR)/release/terra_$(VERSION)_Darwin_arm64.tar.gz $(BUILDDIR)/release/terrad  && rm $(BUILDDIR)/release/terrad
+	$(SHA256_CMD) $(BUILDDIR)/release/terra_$(VERSION)_Darwin_arm64.tar.gz > $(BUILDDIR)/release/terra_$(VERSION)_Darwin_arm64.tar.gz.checksum
 	$(DOCKER) rm -f core-builder
 install: go.sum 
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/terrad
