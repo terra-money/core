@@ -15,6 +15,11 @@ FROM base as builder-stage-1
 ARG GIT_COMMIT
 ARG GIT_VERSION
 ARG BUILDPLATFORM
+ARG GOOS=linux \
+    GOARCH=amd64
+
+ENV GOOS=$GOOS \ 
+    GOARCH=$GOARCH
 
 # NOTE: add libusb-dev to run with LEDGER_ENABLED=true
 RUN set -eux &&\
@@ -51,6 +56,8 @@ RUN set -eux &&\
     wget ${WASMVM_DOWNLOADS}/checksums.txt -O /tmp/checksums.txt; \
     if [ ${BUILDPLATFORM} = "linux/amd64" ]; then \
         WASMVM_URL="${WASMVM_DOWNLOADS}/libwasmvm_muslc.x86_64.a"; \
+    # elif [ ${GOOS} = "darwin" ] -a [ ${GOARCH} = "arm64" ]; then \
+    #     WASMVM_URL="${WASMVM_DOWNLOADS}/libwasmvm.dylib"; \        
     elif [ ${BUILDPLATFORM} = "linux/arm64" ]; then \
         WASMVM_URL="${WASMVM_DOWNLOADS}/libwasmvm_muslc.aarch64.a"; \
     else \
@@ -86,8 +93,8 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
             '-L/go/src/mimalloc/build -lmimalloc -Wl,-z,muldefs -static' \
             -X github.com/cosmos/cosmos-sdk/version.Name='terrad' \
             -X github.com/cosmos/cosmos-sdk/version.AppName='terrad' \
-            #-X github.com/cosmos/cosmos-sdk/version.Version=${GIT_VERSION} \
-            #-X github.com/cosmos/cosmos-sdk/version.Commit=${GIT_COMMIT} \
+            -X github.com/cosmos/cosmos-sdk/version.Version=${GIT_VERSION} \
+            -X github.com/cosmos/cosmos-sdk/version.Commit=${GIT_COMMIT} \
             -X github.com/cosmos/cosmos-sdk/version.BuildTags='netgo,muslc' \
         " \
         -trimpath \
