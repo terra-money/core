@@ -65,6 +65,6 @@ jobs:
         with:
           push: ${{ github.event_name != 'pull_request' }}
           file: Dockerfile
-          platforms: linux/amd64,linux/arm64, darwin/aarch64
+          platforms: linux/amd64,linux/arm64
           tags: ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
           labels: ${{ env.DOCKER_METADATA_OUTPUT_LABELS }}
