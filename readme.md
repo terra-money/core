@@ -1,4 +1,4 @@
-er
+<p>&nbsp;</p>
 <p align="center">
     <a href="https://terra.money/"><img src="core_logo.svg" width=500>
     </a>
