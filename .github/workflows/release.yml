@@ -27,4 +27,4 @@ jobs:
         run: make ${{matrix.build_type}}
       - name: Create release for ${{github.ref_name}}
         if: startsWith(github.ref, 'refs/tags/')
-        run: gh release create ${{github.ref_name}} ./build/release/* --draft --generate-notes
+        run: gh release create ${{github.ref_name}} ./build/release/* --prerelease --generate-notes
