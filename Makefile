@@ -154,7 +154,6 @@ build-release-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) cp core-builder:/usr/local/bin/terrad $(BUILDDIR)/release/terrad
 	tar -czvf $(BUILDDIR)/release/terra_$(VERSION)_Linux_x86_64.tar.gz -C $(BUILDDIR)/release/ terrad
 	rm $(BUILDDIR)/release/terrad
-	$(SHA256_CMD) $(BUILDDIR)/release/terra_$(VERSION)_Linux_x86_64.tar.gz > $(BUILDDIR)/release/terra_$(VERSION)_Linux_x86_64.tar.gz.checksum
 	$(DOCKER) rm -f core-builder
 
 build-release-arm64: go.sum $(BUILDDIR)/
@@ -175,7 +174,6 @@ build-release-arm64: go.sum $(BUILDDIR)/
 	$(DOCKER) cp core-builder:/usr/local/bin/terrad $(BUILDDIR)/release/terrad 
 	tar -czvf $(BUILDDIR)/release/terra_$(VERSION)_Linux_arm64.tar.gz -C $(BUILDDIR)/release/ terrad 
 	rm $(BUILDDIR)/release/terrad
-	$(SHA256_CMD) $(BUILDDIR)/release/terra_$(VERSION)_Linux_arm64.tar.gz > $(BUILDDIR)/release/terra_$(VERSION)_Linux_arm64.tar.gz.checksum
 	$(DOCKER) rm -f core-builder
 install: go.sum 
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/terrad
