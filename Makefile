@@ -165,7 +165,7 @@ build-release-arm64: go.sum $(BUILDDIR)/
 		--build-arg GIT_VERSION=$(VERSION) \
 		--build-arg GIT_COMMIT=$(COMMIT) \
     --build-arg BUILDPLATFORM=linux/arm64 \
-    --build-arg GOOS=darwin \
+    --build-arg GOOS=linux \
     --build-arg GOARCH=arm64 \
 		-t core:local-arm64 \
 		--load \
