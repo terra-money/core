@@ -57,5 +57,7 @@ jobs:
         run: |
           cd build/release
           sha256sum *.tar.gz > checksum.txt
+      - name: Display checksums
+        run: cat build/release/checksum.txt
       - name: Upload the checksum to release
-        run: gh release upload ${{github.ref_name}} checksum.txt
+        run: gh release upload ${{github.ref_name}} build/release/checksum.txt
