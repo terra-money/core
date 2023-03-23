@@ -13,10 +13,8 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: Create release for ${{github.ref_name}}
-        run: gh release create ${{github.ref_name}} --prerelease --generate-notes
+        run: gh release create ${{github.ref_name}} --prerelease --generate-notes --repo ${{github.repository}}
 
   artifacts:
     if: startsWith(github.ref, 'refs/tags/')
@@ -46,12 +44,10 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: Create build directory
         run: mkdir -p build/release
       - name: Download artifacts
-        run: gh release download ${{github.ref_name}} --pattern '*.tar.gz' --dir build/release
+        run: gh release download ${{github.ref_name}} --pattern '*.tar.gz' --dir build/release --repo ${{github.repository}}
       - name: Create checksums
         run: |
           cd build/release
@@ -59,4 +55,4 @@ jobs:
       - name: Display checksums
         run: cat build/release/checksum.txt
       - name: Upload the checksum to release
-        run: gh release upload ${{github.ref_name}} build/release/checksum.txt
+        run: gh release upload ${{github.ref_name}} build/release/checksum.txt --repo ${{github.repository}}
