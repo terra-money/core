@@ -98,6 +98,7 @@ If you are interested in contributing to the Terra Core source code, please revi
     <br />
     <br />
     © 2023 Terraform Labs, PTE LTD
+
     <br />
     <a href="LICENSE">This software is licensed under the Apache 2.0 license.</a>
 </p>
