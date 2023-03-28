@@ -184,13 +184,15 @@ gen-swagger-docs:
 update-swagger-docs: statik
 	$(BINDIR)/statik -src=client/docs/swagger-ui -dest=client/docs -f -m
 	@if [ -n "$(git status --porcelain)" ]; then \
-        echo "\033[91mSwagger docs are out of sync!!!\033[0m";\
+        echo "Swagger docs are out of sync!";\
         exit 1;\
     else \
-        echo "\033[92mSwagger docs are in sync\033[0m";\
+        echo "Swagger docs are in sync!";\
     fi
 
-.PHONY: build build-linux install update-swagger-docs
+apply-swagger: gen-swagger-docs update-swagger-docs
+
+.PHONY: build build-linux install update-swagger-docs apply-swagger
 
 
 ###############################################################################
@@ -248,7 +250,7 @@ clean-testing-data:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-proto-all: proto-swagger-gen proto-gen
+proto-all: proto-gen
 
 proto-gen:
 	@echo "Generating Protobuf files"

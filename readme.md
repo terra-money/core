@@ -97,7 +97,8 @@ If you are interested in contributing to the Terra Core source code, please revi
     <a href="https://terra.money/"><img src="https://assets.website-files.com/611153e7af981472d8da199c/61794f2b6b1c7a1cb9444489_symbol-terra-blue.svg" align="center" width=200/></a>
     <br />
     <br />
-    © 2022 Terraform Labs, PTE LTD
+    © 2023 Terraform Labs, PTE LTD
+
     <br />
     <a href="LICENSE">This software is licensed under the Apache 2.0 license.</a>
 </p>
