@@ -131,11 +131,8 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/prometheus/client_golang/prometheus"
-
 	// Token Factory for sdk 46
 	"github.com/CosmWasm/wasmd/x/tokenfactory"
-	tokenfactorybindings "github.com/CosmWasm/wasmd/x/tokenfactory/bindings"
 	tokenfactorykeeper "github.com/CosmWasm/wasmd/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/CosmWasm/wasmd/x/tokenfactory/types"
 
@@ -188,17 +185,6 @@ func GetEnabledProposals() []wasm.ProposalType {
 		panic(err)
 	}
 	return proposals
-}
-
-// GetWasmOpts build wasm options
-func GetWasmOpts(app *TerraApp, appOpts servertypes.AppOptions) []wasm.Option {
-	var wasmOpts []wasm.Option
-	if cast.ToBool(appOpts.Get("telemetry.enabled")) {
-		wasmOpts = append(wasmOpts, wasmkeeper.WithVMCacheMetrics(prometheus.DefaultRegisterer))
-	}
-	wasmOpts = append(wasmOpts, tokenfactorybindings.RegisterCustomPlugins(&app.BankKeeper.BaseKeeper, &app.TokenFactoryKeeper)...)
-
-	return wasmOpts
 }
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
