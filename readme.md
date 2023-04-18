@@ -68,6 +68,10 @@ To start developing on Terra, visit the [Developer's guide](https://docs.terra.m
 - [Faucet](https://faucet.terra.money): Get testnet Luna.
 - [Finder](https://finder.terra.money): Block explorer.
 
+## Set up a testing environment
+
+The easiest way to set up a local testing environment is to run [LocalTerra](https://github.com/terra-money/LocalTerra), a zero-configuration complete testing environment. If you want something more sophisticated, use the `make init-test-framework` command which will start two local nodes connected with a relayer.
+
 ## Community
 
 <p align="center">
