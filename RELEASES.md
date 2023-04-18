@@ -4,13 +4,11 @@ The `#validators-private` channel on discord will be used for all communications
 
 **The core team will endeavour to always make sure there is 48-72 hours notice of an impending upgrade, unless there is no alternative.**
 
-Most of our validator communications is done on the [Terra Validator Discord](https://discord.com/invite/xfZK6RMFFx). You should join, and change your server name to `nick | validator-name`, then ask a mod for permission to see the private validator channels.
+Most validator communications is done on the [Terra Validator Discord](https://discord.gg/k6DNPx5FCP). You should join, and change your server name to `nick | validator-name`, then ask a mod for permission to see the private validator channels.
 
 ## Release versioning
 
 **If a change crosses a major version number, i.e. `1.x.x -> 2.x.x` then it is definitely consensus-breaking.**
-
-In the past, some releases have been consensus-breaking but only incremented a minor version, if clearly indicated. In future we will look to be clearer. 
 
 **Only patch versions, i.e. `x.x.1 -> x.x.2`, or `1.1.0 -> 1.1.1` are guaranteed to be non-consensus breaking.**
 
@@ -18,8 +16,8 @@ In the past, some releases have been consensus-breaking but only incremented a m
 
 For a SoftwareUpgradeProposal via governance:
 
-1. Validators will be told via announcements channel when the prop is live
-2. Validators will be told via announcements channel if it passes
+1. Validators will be told via announcements channel when the prop is live.
+2. Validators will be told via announcements channel if it passes. 
 3. Validators will be told via announcements channel when the upgrade instructions are available, and the upgrade will be coordinated in the private validators channel as the target upgrade block nears.
 
 ## Emergency upgrade or security patch
