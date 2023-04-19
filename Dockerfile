@@ -34,7 +34,8 @@ RUN set -eux &&\
 # install mimalloc for musl
 WORKDIR ${GOPATH}/src/mimalloc
 RUN set -eux &&\
-    git clone --depth 1 https://github.com/microsoft/mimalloc . &&\
+    git clone --depth 1 --branch v2.0.9 \
+        https://github.com/microsoft/mimalloc . &&\
     mkdir -p build &&\
     cd build &&\
     cmake .. &&\
@@ -56,10 +57,12 @@ RUN set -eux &&\
     wget ${WASMVM_DOWNLOADS}/checksums.txt -O /tmp/checksums.txt; \
     if [ ${BUILDPLATFORM} = "linux/amd64" ]; then \
         WASMVM_URL="${WASMVM_DOWNLOADS}/libwasmvm_muslc.x86_64.a"; \
-    # elif [ ${GOOS} = "darwin" ] -a [ ${GOARCH} = "arm64" ]; then \
-    #     WASMVM_URL="${WASMVM_DOWNLOADS}/libwasmvm.dylib"; \        
     elif [ ${BUILDPLATFORM} = "linux/arm64" ]; then \
         WASMVM_URL="${WASMVM_DOWNLOADS}/libwasmvm_muslc.aarch64.a"; \
+    # elif [ ${BUILDPLATFORM} = "darwin/amd64" ]; then \
+    #     WASMVM_URL="${WASMVM_DOWNLOADS}/libwasmvm.dylib"; \        
+    # elif [ ${BUILDPLATFORM} = "darwin/arm64" ]; then \
+    #     WASMVM_URL="${WASMVM_DOWNLOADS}/libwasmvm.dylib"; \        
     else \
         echo "Unsupported Build Platfrom ${BUILDPLATFORM}"; \
         exit 1; \
