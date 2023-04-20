@@ -8,6 +8,7 @@
 .vscode
 .idea
 *.code-workspace
+data
 
 # Build
 bin
@@ -51,3 +52,7 @@ dependency-graph.png
 *.aux
 *.out
 *.synctex.gz
+
+# Tests
+scripts/tests/ibc-hooks/counter/target
+scripts/tests/vesting-accounts/.vesting-periods.json

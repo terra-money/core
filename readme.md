@@ -68,6 +68,10 @@ To start developing on Terra, visit the [Developer's guide](https://docs.terra.m
 - [Faucet](https://faucet.terra.money): Get testnet Luna.
 - [Finder](https://finder.terra.money): Block explorer.
 
+## Set up a testing environment
+
+The easiest way to set up a local testing environment is to run [LocalTerra](https://github.com/terra-money/LocalTerra), a zero-configuration complete testing environment. If you want something more sophisticated, use the `make init-test-framework` command which will start two local nodes connected with a relayer.
+
 ## Community
 
 <p align="center">
@@ -97,7 +101,7 @@ If you are interested in contributing to the Terra Core source code, please revi
     <a href="https://terra.money/"><img src="https://assets.website-files.com/611153e7af981472d8da199c/61794f2b6b1c7a1cb9444489_symbol-terra-blue.svg" align="center" width=200/></a>
     <br />
     <br />
-    © 2022 Terraform Labs, PTE LTD
+    © 2023 Terraform Labs, PTE LTD
     <br />
     <a href="LICENSE">This software is licensed under the Apache 2.0 license.</a>
 </p>

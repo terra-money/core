@@ -6,7 +6,8 @@ LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
 BUILDDIR ?= $(CURDIR)/build
 DOCKER := $(shell which docker)
-
+SHA256_CMD = sha256sum
+GO_VERSION ?= "1.20"
 # don't override user values
 ifeq (,$(VERSION))
   VERSION := $(shell git describe --tags)
@@ -133,35 +134,129 @@ build-linux-with-shared-library:
 	docker cp temp:/lib/libwasmvm.so $(BUILDDIR)/
 	docker rm temp
 
+build-release: build-release-amd64 build-release-arm64
+
+build-release-amd64: go.sum $(BUILDDIR)/
+	$(DOCKER) buildx create --name core-builder || true
+	$(DOCKER) buildx use core-builder
+	$(DOCKER) buildx build \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg GIT_VERSION=$(VERSION) \
+		--build-arg GIT_COMMIT=$(COMMIT) \
+    --build-arg BUILDPLATFORM=linux/amd64 \
+    --build-arg GOOS=linux \
+    --build-arg GOARCH=amd64 \
+		-t core:local-amd64 \
+		--load \
+		-f Dockerfile .
+	$(DOCKER) rm -f core-builder || true
+	$(DOCKER) create -ti --name core-builder core:local-amd64
+	$(DOCKER) cp core-builder:/usr/local/bin/terrad $(BUILDDIR)/release/terrad
+	tar -czvf $(BUILDDIR)/release/terra_$(VERSION)_Linux_x86_64.tar.gz -C $(BUILDDIR)/release/ terrad
+	rm $(BUILDDIR)/release/terrad
+	$(DOCKER) rm -f core-builder
+
+build-release-arm64: go.sum $(BUILDDIR)/
+	$(DOCKER) buildx create --name core-builder  || true
+	$(DOCKER) buildx use core-builder 
+	$(DOCKER) buildx build \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg GIT_VERSION=$(VERSION) \
+		--build-arg GIT_COMMIT=$(COMMIT) \
+    --build-arg BUILDPLATFORM=linux/arm64 \
+    --build-arg GOOS=linux \
+    --build-arg GOARCH=arm64 \
+		-t core:local-arm64 \
+		--load \
+		-f Dockerfile .
+	$(DOCKER) rm -f core-builder || true
+	$(DOCKER) create -ti --name core-builder core:local-arm64
+	$(DOCKER) cp core-builder:/usr/local/bin/terrad $(BUILDDIR)/release/terrad 
+	tar -czvf $(BUILDDIR)/release/terra_$(VERSION)_Linux_arm64.tar.gz -C $(BUILDDIR)/release/ terrad 
+	rm $(BUILDDIR)/release/terrad
+	$(DOCKER) rm -f core-builder
 install: go.sum 
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/terrad
+
+gen-swagger-docs:
+	bash scripts/protoc-swagger-gen.sh
 
 update-swagger-docs: statik
 	$(BINDIR)/statik -src=client/docs/swagger-ui -dest=client/docs -f -m
 	@if [ -n "$(git status --porcelain)" ]; then \
-        echo "\033[91mSwagger docs are out of sync!!!\033[0m";\
+        echo "Swagger docs are out of sync!";\
         exit 1;\
     else \
-        echo "\033[92mSwagger docs are in sync\033[0m";\
+        echo "Swagger docs are in sync!";\
     fi
 
-.PHONY: build build-linux install update-swagger-docs
+apply-swagger: gen-swagger-docs update-swagger-docs
+
+.PHONY: build build-linux install update-swagger-docs apply-swagger
+
+
+###############################################################################
+###                        Integration Tests                                ###
+###############################################################################
+
+integration-test-all: init-test-framework \
+	test-relayer \
+	test-ica \
+	test-ibc-hooks \
+	test-vesting-accounts \
+	test-alliance \
+	test-tokenfactory
+	-@rm -rf ./data
+	-@killall terrad 2>/dev/null
+	-@killall rly 2>/dev/null
+
+init-test-framework: clean-testing-data install
+	@echo "Initializing both blockchains..."
+	./scripts/tests/start.sh
+
+test-relayer:
+	@echo "Testing relayer..."
+	./scripts/tests/relayer/interchain-acc-config/rly-init.sh
+
+test-ica: 
+	@echo "Testing ica..."
+	./scripts/tests/ica/delegate.sh
+
+test-ibc-hooks: 
+	@echo "Testing ibc hooks..."
+	./scripts/tests/ibc-hooks/increment.sh
+
+test-alliance: 
+	@echo "Testing alliance module..."
+	./scripts/tests/alliance/delegate.sh
+
+test-vesting-accounts: 
+	@echo "Testing vesting accounts..."
+	./scripts/tests/vesting-accounts/validate-vesting.sh
+
+test-tokenfactory: 
+	@echo "Testing tokenfactory..."
+	./scripts/tests/tokenfactory/tokenfactory.sh
+
+clean-testing-data:
+	@echo "Killing terrad and removing previous data"
+	-@rm -rf ./data
+	-@killall terrad 2>/dev/null
+	-@killall rly 2>/dev/null
+
+.PHONY: integration-test-all init-test-framework test-relayer test-ica test-ibc-hooks test-vesting-accounts test-tokenfactory clean-testing-data
 
 ###############################################################################
 ###                                Protobuf                                 ###
 ###############################################################################
 
-proto-all: proto-swagger-gen proto-gen
+proto-all: proto-gen
 
 proto-gen:
 	@echo "Generating Protobuf files"
 	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen:v0.3 sh ./scripts/protocgen.sh
 
-proto-swagger-gen:
-	@echo "Generating Swagger files"
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen:v0.3 sh ./scripts/protoc-swagger-gen.sh
-
-.PHONY: proto-all proto-gen proto-swagger-gen 
+.PHONY: proto-all proto-gen
 
 ########################################
 ### Tools & dependencies
@@ -209,7 +304,10 @@ test-cover:
 benchmark:
 	@go test -mod=readonly -bench=. ./...
 
-.PHONY: test test-all test-cover test-unit test-race
+simulate:
+	@go test  -bench BenchmarkSimulation ./app -NumBlocks=200 -BlockSize 50 -Commit=true -Verbose=true -Enabled=true -Seed 1
+
+.PHONY: test test-all test-cover test-unit test-race simulate
 
 ###############################################################################
 ###                                Linting                                  ###
@@ -223,7 +321,7 @@ lint-fix:
 .PHONY: lint lint-fix
 
 format:
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' | xargs gofmt -w -s
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' | xargs misspell -w
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' | xargs goimports -w -local github.com/cosmos/cosmos-sdk
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' -not -path "./_build/*" | xargs gofmt -w -s
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' -not -path "./_build/*" | xargs misspell -w
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' -not -path "./_build/*" | xargs goimports -w -local github.com/cosmos/cosmos-sdk
 .PHONY: format
