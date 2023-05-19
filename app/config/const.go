@@ -43,4 +43,5 @@ const (
 	// UpgradeName gov proposal name
 	Upgrade2_2_0 = "2.2.0"
 	Upgrade2_3_0 = "2.3.0"
+	Upgrade2_4_0 = "2.4.0"
 )
