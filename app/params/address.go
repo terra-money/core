@@ -6,7 +6,7 @@ import (
 	"github.com/terra-money/core/v2/app/config"
 )
 
-func RegisterAddressesConfig() {
+func RegisterAddressesConfig() *sdk.Config {
 	sdkConfig := sdk.GetConfig()
 	sdkConfig.SetCoinType(config.CoinType)
 
@@ -20,5 +20,5 @@ func RegisterAddressesConfig() {
 	sdkConfig.SetBech32PrefixForValidator(validatorAddressPrefix, validatorPubKeyPrefix)
 	sdkConfig.SetBech32PrefixForConsensusNode(consNodeAddressPrefix, consNodePubKeyPrefix)
 	sdkConfig.SetAddressVerifier(wasmtypes.VerifyAddressLen())
-	sdkConfig.Seal()
+	return sdkConfig.Seal()
 }

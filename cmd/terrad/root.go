@@ -45,7 +45,10 @@ const flagIAVLCacheSize = "iavl-cache-size"
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := terraapp.MakeEncodingConfig()
-	params.RegisterDenomsConfig()
+	err := params.RegisterDenomsConfig()
+	if err != nil {
+		panic(err)
+	}
 	params.RegisterAddressesConfig()
 
 	initClientCtx := client.Context{}.
