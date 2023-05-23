@@ -13,7 +13,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	sdkconfig "github.com/cosmos/cosmos-sdk/client/config"
@@ -35,7 +34,6 @@ import (
 	tmcfg "github.com/tendermint/tendermint/config"
 
 	terraapp "github.com/terra-money/core/v2/app"
-	config "github.com/terra-money/core/v2/app/config"
 	"github.com/terra-money/core/v2/app/params"
 	"github.com/terra-money/core/v2/app/wasmconfig"
 )
@@ -47,21 +45,11 @@ const flagIAVLCacheSize = "iavl-cache-size"
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := terraapp.MakeEncodingConfig()
-
-	sdkConfig := sdk.GetConfig()
-	sdkConfig.SetCoinType(config.CoinType)
-
-	accountPubKeyPrefix := config.AccountAddressPrefix + "pub"
-	validatorAddressPrefix := config.AccountAddressPrefix + "valoper"
-	validatorPubKeyPrefix := config.AccountAddressPrefix + "valoperpub"
-	consNodeAddressPrefix := config.AccountAddressPrefix + "valcons"
-	consNodePubKeyPrefix := config.AccountAddressPrefix + "valconspub"
-
-	sdkConfig.SetBech32PrefixForAccount(config.AccountAddressPrefix, accountPubKeyPrefix)
-	sdkConfig.SetBech32PrefixForValidator(validatorAddressPrefix, validatorPubKeyPrefix)
-	sdkConfig.SetBech32PrefixForConsensusNode(consNodeAddressPrefix, consNodePubKeyPrefix)
-	sdkConfig.SetAddressVerifier(wasmtypes.VerifyAddressLen())
-	sdkConfig.Seal()
+	err := params.RegisterDenomsConfig()
+	if err != nil {
+		panic(err)
+	}
+	params.RegisterAddressesConfig()
 
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Marshaler).

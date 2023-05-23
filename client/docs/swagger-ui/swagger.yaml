@@ -728,6 +728,11 @@ paths:
       summary: >-
         Query a delegation to an alliance by delegator addr, validator_addr and
         denom
+
+        @deprecated: this endpoint will be replaced for by the encoded version
+
+        of the denom e.g.:
+        GET:/terra/alliances/terradr1231/terravaloper41234/ibc%2Falliance
       operationId: IBCAllianceDelegation
       responses:
         '200':
@@ -1045,7 +1050,10 @@ paths:
         - Query
   /terra/alliances/ibc/{hash}:
     get:
-      summary: Query a specific alliance by ibc hash
+      summary: |-
+        Query a specific alliance by ibc hash
+        @deprecated: this endpoint will be replaced for by the encoded version
+        of the denom e.g.: GET:/terra/alliances/ibc%2Falliance
       operationId: IBCAlliance
       responses:
         '200':
@@ -1186,7 +1194,13 @@ paths:
         - Query
   /terra/alliances/rewards/{delegator_addr}/{validator_addr}/ibc/{hash}:
     get:
-      summary: Query for rewards by delegator addr, validator_addr and denom
+      summary: >-
+        Query for rewards by delegator addr, validator_addr and denom
+
+        @deprecated: this endpoint will be replaced for by the encoded version
+
+        of the denom e.g.:
+        GET:/terra/alliances/terradr1231/terravaloper41234/ibc%2Falliance
       operationId: IBCAllianceDelegationRewards
       responses:
         '200':
