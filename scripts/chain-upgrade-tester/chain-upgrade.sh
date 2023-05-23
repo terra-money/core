@@ -6,7 +6,7 @@ CHAIN_ID=pisco-1
 CHAIN_HOME=.testnet
 ROOT=$(pwd)
 DENOM=uluna
-SOFTWARE_UPGRADE_NAME="2.3.1"
+SOFTWARE_UPGRADE_NAME="v2.4"
 GOV_PERIOD="10s"
 
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
