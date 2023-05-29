@@ -500,20 +500,6 @@ func NewTerraApp(
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
 		AddRoute(alliancetypes.RouterKey, alliance.NewAllianceProposalHandler(app.AllianceKeeper))
 
-	// Create Transfer Keepers
-	app.TransferKeeper = ibctransferkeeper.NewKeeper(
-		appCodec,
-		keys[ibctransfertypes.StoreKey],
-		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		app.AccountKeeper,
-		app.BankKeeper,
-		scopedTransferKeeper,
-	)
-	transferIBCModule := ibctransfer.NewIBCModule(app.TransferKeeper)
-
 	// Configure the hooks keeper
 	hooksKeeper := ibchookskeeper.NewKeeper(
 		keys[ibchookstypes.StoreKey],
@@ -525,6 +511,20 @@ func NewTerraApp(
 		app.IBCKeeper.ChannelKeeper,
 		app.Ics20WasmHooks,
 	)
+
+	// Create Transfer Keepers
+	app.TransferKeeper = ibctransferkeeper.NewKeeper(
+		appCodec,
+		keys[ibctransfertypes.StoreKey],
+		app.GetSubspace(ibctransfertypes.ModuleName),
+		app.HooksICS4Wrapper,
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
+		scopedTransferKeeper,
+	)
+	transferIBCModule := ibctransfer.NewIBCModule(app.TransferKeeper)
 
 	// Hooks Middleware
 	hooksTransferStack := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
