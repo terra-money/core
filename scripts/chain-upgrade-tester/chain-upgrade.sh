@@ -1,12 +1,12 @@
 #!/bin/bash
 
-OLD_VERSION=v2.2
+OLD_VERSION=v2.3
 UPGRADE_HEIGHT=30
 CHAIN_ID=pisco-1
 CHAIN_HOME=.testnet
 ROOT=$(pwd)
 DENOM=uluna
-SOFTWARE_UPGRADE_NAME="v2.3"
+SOFTWARE_UPGRADE_NAME="v2.4"
 GOV_PERIOD="10s"
 
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
