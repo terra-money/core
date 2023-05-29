@@ -2,8 +2,8 @@
   "swagger": "2.0",
   "info": {
     "title": "Terra Core Rest API",
-    "description": "Rest Interface for Terra Core v2.3.2 https://github.com/terra-money/core",
-    "version": "2.3.2"
+    "description": "Rest Interface for Terra Core v2.3 https://github.com/terra-money/core",
+    "version": "2.3"
   },
   "apis": [
     {

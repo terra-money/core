@@ -13,6 +13,12 @@ const (
 	// BondDenom staking denom
 	BondDenom = "uluna"
 
+	// More denoms
+	// Luna      = "luna"    // 1 (base denom unit)
+	// MilliLuna = "mluna"   // 10^-3 (milli)
+	MicroLuna = BondDenom // 10^-6 (micro)
+	// NanoLuna  = "nluna"   // 10^-9 (nano)
+
 	AuthzMsgExec                        = "/cosmos.authz.v1beta1.MsgExec"
 	AuthzMsgGrant                       = "/cosmos.authz.v1beta1.MsgGrant"
 	AuthzMsgRevoke                      = "/cosmos.authz.v1beta1.MsgRevoke"
@@ -43,4 +49,5 @@ const (
 	// UpgradeName gov proposal name
 	Upgrade2_2_0 = "2.2.0"
 	Upgrade2_3_0 = "2.3.0"
+	Upgrade2_4   = "v2.4"
 )
