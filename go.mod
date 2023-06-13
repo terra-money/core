@@ -166,6 +166,8 @@ require (
 )
 
 replace (
+	// This is a temporary fix since the latest version updated some function signatures. To remove when updating to cosmos 47
+	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d
 	github.com/CosmWasm/wasmd => github.com/terra-money/wasmd v0.30.0-sdk469.5
 	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
 	github.com/cosmos/cosmos-sdk => github.com/terra-money/cosmos-sdk v0.46.13-terra.1
