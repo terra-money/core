@@ -119,6 +119,23 @@ else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/terrad ./cmd/terrad
 endif
 
+build/linux/amd64:
+	GOOS=linux GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o "$@/terrad" ./cmd/terrad
+
+build/linux/arm64:
+	GOOS=linux GOARCH=arm64 go build -mod=readonly $(BUILD_FLAGS) -o "$@/terrad" ./cmd/terrad
+
+build/darwin/amd64:
+	GOOS=darwin GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o "$@/terrad" ./cmd/terrad
+
+build/darwin/arm64:
+	GOOS=darwin GOARCH=arm64 go build -mod=readonly $(BUILD_FLAGS) -o "$@/terrad" ./cmd/terrad
+
+build/windows/amd64:
+	GOOS=windows GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o "$@/terrad" ./cmd/terrad
+
+build-release: build/linux/amd64 build/linux/arm64 build/darwin/amd64 build/darwin/arm64 build/windows/amd64
+
 build-linux:
 	mkdir -p $(BUILDDIR)
 	docker build --no-cache --tag terramoney/core ./
@@ -133,8 +150,6 @@ build-linux-with-shared-library:
 	docker cp temp:/usr/local/bin/terrad $(BUILDDIR)/
 	docker cp temp:/lib/libwasmvm.so $(BUILDDIR)/
 	docker rm temp
-
-build-release: build-release-amd64 build-release-arm64
 
 build-release-amd64: go.sum $(BUILDDIR)/
 	$(DOCKER) buildx create --name core-builder || true
@@ -175,6 +190,7 @@ build-release-arm64: go.sum $(BUILDDIR)/
 	tar -czvf $(BUILDDIR)/release/terra_$(VERSION)_Linux_arm64.tar.gz -C $(BUILDDIR)/release/ terrad 
 	rm $(BUILDDIR)/release/terrad
 	$(DOCKER) rm -f core-builder
+
 install: go.sum 
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/terrad
 
