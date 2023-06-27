@@ -22,6 +22,7 @@ require (
 	github.com/tendermint/tendermint v0.34.28
 	github.com/tendermint/tm-db v0.6.8-0.20221109095132-774cdfe7e6b0
 	github.com/terra-money/alliance v0.1.1
+	google.golang.org/grpc v1.54.0
 )
 
 require (
@@ -156,7 +157,6 @@ require (
 	google.golang.org/api v0.110.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
-	google.golang.org/grpc v1.54.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -170,7 +170,7 @@ replace (
 	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d
 	github.com/CosmWasm/wasmd => github.com/terra-money/wasmd v0.30.0-sdk469.5
 	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
-	github.com/cosmos/cosmos-sdk => github.com/terra-money/cosmos-sdk v0.46.13-terra.2
+	github.com/cosmos/cosmos-sdk => github.com/terra-money/cosmos-sdk v0.46.13-terra.3
 	github.com/cosmos/ledger-cosmos-go => github.com/terra-money/ledger-terra-go v0.11.2
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/tendermint/tendermint => github.com/terra-money/tendermint v0.34.27-terra.rc.1
