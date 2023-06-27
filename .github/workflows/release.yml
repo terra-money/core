@@ -112,5 +112,5 @@ jobs:
       - name: Display JSON file
         run: cat build/release/binaries.json
       - name: Upload the JSON file to release
-        run: gh release upload ${{ github.ref_name }} build/release/checksum.txt --repo ${{ github.repository }}
+        run: gh release upload ${{ github.ref_name }} build/release/binaries.json --repo ${{ github.repository }}
 
