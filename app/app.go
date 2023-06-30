@@ -1009,7 +1009,7 @@ func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 		v2_3_0.CreateUpgradeHandler(app.mm, app.configurator, app.TokenFactoryKeeper),
 	)
 	app.UpgradeKeeper.SetUpgradeHandler(
-		terraappconfig.Upgrade2_4,
+		terraappconfig.Upgrade2_4_rc4,
 		v2_4.CreateUpgradeHandler(app.mm, app.configurator),
 	)
 }
