@@ -50,4 +50,5 @@ const (
 	Upgrade2_2_0 = "2.2.0"
 	Upgrade2_3_0 = "2.3.0"
 	Upgrade2_4   = "v2.4"
+	Upgrade2_5   = "v2.5"
 )

@@ -17,7 +17,7 @@ cosmos_proto_dir=$(go list -f '{{ .Dir }}' -m github.com/cosmos/cosmos-proto)
 cosmos_sdk_dir=$(go list -f '{{ .Dir }}' -m github.com/cosmos/cosmos-sdk)
 alliance_dir=$(go list -f '{{ .Dir }}' -m github.com/terra-money/alliance)
 wasm_dir=$(go list -f '{{ .Dir }}' -m github.com/CosmWasm/wasmd)
-ibc_dir=$(go list -f '{{ .Dir }}' -m github.com/cosmos/ibc-go/v6)
+ibc_dir=$(go list -f '{{ .Dir }}' -m github.com/cosmos/ibc-go/v7)
 
 # move the vendor folder back to ./vendor
 if [ -d $temp_dir ]; then
@@ -33,6 +33,7 @@ for dir in $proto_dirs; do
     -I "$cosmos_sdk_dir/proto" \
     -I "$alliance_dir/proto" \
     -I "$ibc_dir/proto" \
+    -I "$ibc_dir/third_party/proto" \
     -I "$wasm_dir/proto" \
     -I "$gogo_proto_dir" \
     -I "$google_api_dir/third_party/googleapis" \
@@ -50,4 +51,4 @@ npm install -g swagger-combine
 npx swagger-combine ./client/docs/config.json -o ./client/docs/swagger-ui/swagger.yaml -f yaml --continueOnConflictingPaths true --includeDefinitions true
 
 # clean swagger files
-rm -rf ./tmp-swagger-gen
+#rm -rf ./tmp-swagger-gen
