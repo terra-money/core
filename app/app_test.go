@@ -5,18 +5,18 @@ import (
 	"os"
 	"testing"
 
+	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	mocktestutils "github.com/cosmos/cosmos-sdk/testutil/mock"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-	dbm "github.com/tendermint/tm-db"
 	"github.com/terra-money/core/v2/app/wasmconfig"
 
-	"cosmossdk.io/simapp"
 	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	"github.com/cosmos/cosmos-sdk/tests/mocks"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -43,7 +43,6 @@ import (
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
 	ibc "github.com/cosmos/ibc-go/v7/modules/core"
-	"github.com/cosmos/ibc-go/v7/testing/mock"
 	"github.com/strangelove-ventures/packet-forward-middleware/v7/router"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -69,11 +68,11 @@ func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	db := dbm.NewMemDB()
 	app := NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
-		db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 0, encCfg,
-		simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg,
+		simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	// generate validator private/public key
-	privVal := mock.NewPV()
+	privVal := mocktestutils.NewPV()
 	pubKey, err := privVal.GetPubKey()
 	require.NoError(t, err)
 
@@ -105,9 +104,9 @@ func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	// Making a new app object with the db, so that initchain hasn't been called
 	app2 := NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
-		db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 0,
-		encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
-	_, err = app2.ExportAppStateAndValidators(false, []string{})
+		db, nil, true, map[int64]bool{}, DefaultNodeHome, 0,
+		encCfg, simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+	_, err = app2.ExportAppStateAndValidators(false, []string{}, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 }
 
@@ -122,7 +121,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 	app := NewTerraApp(
 		logger, db, nil, true, map[int64]bool{},
-		simapp.DefaultNodeHome, 0, encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		DefaultNodeHome, 0, encCfg, simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
 
@@ -130,7 +129,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	// adding during a migration.
 	mockCtrl := gomock.NewController(t)
 	t.Cleanup(mockCtrl.Finish)
-	mockModule := mocks.NewMockAppModule(mockCtrl)
+	mockModule := mocktestutils.NewMockAppModuleWithAllExtensions(mockCtrl)
 	mockDefaultGenesis := json.RawMessage(`{"key": "value"}`)
 	mockModule.EXPECT().DefaultGenesis(gomock.Eq(app.appCodec)).Times(1).Return(mockDefaultGenesis)
 	mockModule.EXPECT().InitGenesis(gomock.Eq(ctx), gomock.Eq(app.appCodec), gomock.Eq(mockDefaultGenesis)).Times(1).Return(nil)
@@ -174,7 +173,7 @@ func TestLegacyAmino(t *testing.T) {
 	app := NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db, nil, true, map[int64]bool{}, DefaultNodeHome, 0,
-		encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		encCfg, simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	require.Equal(t, encCfg.Amino, app.LegacyAmino())
 }
@@ -185,7 +184,7 @@ func TestAppCodec(t *testing.T) {
 	app := NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db, nil, true, map[int64]bool{}, DefaultNodeHome, 0,
-		encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		encCfg, simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	require.Equal(t, encCfg.Marshaler, app.AppCodec())
 }
@@ -196,7 +195,7 @@ func TestInterfaceRegistry(t *testing.T) {
 	app := NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db, nil, true, map[int64]bool{}, DefaultNodeHome, 0,
-		encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		encCfg, simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	require.Equal(t, encCfg.InterfaceRegistry, app.InterfaceRegistry())
 }
@@ -207,7 +206,7 @@ func TestGetKey(t *testing.T) {
 	app := NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db, nil, true, map[int64]bool{}, DefaultNodeHome, 0,
-		encCfg, simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		encCfg, simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
 
 	require.NotEmpty(t, app.GetKey(banktypes.StoreKey))
 	require.NotEmpty(t, app.GetTKey(paramstypes.TStoreKey))
@@ -219,8 +218,8 @@ func TestSimAppEnforceStakingForVestingTokens(t *testing.T) {
 	db := dbm.NewMemDB()
 	app := NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
-		db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 0, encCfg,
-		simapp.EmptyAppOptions{}, wasmconfig.DefaultConfig(),
+		db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg,
+		simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig(),
 	)
 	genAccounts := authtypes.GenesisAccounts{
 		vestingtypes.NewContinuousVestingAccount(
@@ -258,7 +257,7 @@ func TestSimAppEnforceStakingForVestingTokens(t *testing.T) {
 	}
 
 	// generate validator private/public key
-	privVal := mock.NewPV()
+	privVal := mocktestutils.NewPV()
 	pubKey, err := privVal.GetPubKey()
 	require.NoError(t, err, "PubKey should not have an error")
 	validator := tmtypes.NewValidator(pubKey, 1)
