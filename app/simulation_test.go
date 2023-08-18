@@ -60,7 +60,7 @@ func BenchmarkSimulation(b *testing.B) {
 
 	encoding := app.MakeEncodingConfig()
 
-	AppTest := app.NewTerraApp(
+	appTest := app.NewTerraApp(
 		logger,
 		db,
 		nil,
@@ -77,17 +77,17 @@ func BenchmarkSimulation(b *testing.B) {
 	_, simParams, simErr := simulation.SimulateFromSeed(
 		b,
 		os.Stdout,
-		AppTest.BaseApp,
-		simtestutil.AppStateFn(AppTest.AppCodec(), AppTest.SimulationManager(), AppTest.DefaultGenesis()),
+		appTest.BaseApp,
+		simtestutil.AppStateFn(appTest.AppCodec(), appTest.SimulationManager(), appTest.DefaultGenesis()),
 		simulationtypes.RandomAccounts,
-		simtestutil.SimulationOperations(AppTest, AppTest.AppCodec(), config),
-		AppTest.ModuleAccountAddrs(),
+		simtestutil.SimulationOperations(appTest, appTest.AppCodec(), config),
+		appTest.ModuleAccountAddrs(),
 		config,
-		AppTest.AppCodec(),
+		appTest.AppCodec(),
 	)
 
 	// export state and simParams before the simulation error is checked
-	err = simtestutil.CheckExportSimulation(AppTest, config, simParams)
+	err = simtestutil.CheckExportSimulation(appTest, config, simParams)
 	require.NoError(b, err)
 	require.NoError(b, simErr)
 

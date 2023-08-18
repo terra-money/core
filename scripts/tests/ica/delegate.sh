@@ -36,7 +36,7 @@ fi
 echo "Executing Delegation from test-1 to test-2 via ICA"
 VAL_ADDR_1=$(cat $CHAIN_DIR/test-2/config/genesis.json | jq -r '.app_state.genutil.gen_txs[0].body.messages[0].validator_address')
 
-$BINARY tx intertx submit \
+$BINARY tx interchain-accounts controller send-tx connection-0 \
 '{
     "@type":"/cosmos.staking.v1beta1.MsgDelegate",
     "delegator_address": "'"$ICS_TX_RESULT"'",
@@ -45,7 +45,7 @@ $BINARY tx intertx submit \
         "denom": "uluna",
         "amount": "'"$ICS_ACCOUNT_BALANCE"'"
     }
-}' --connection-id connection-0 --from $WALLET_1 --chain-id test-1 --home $CHAIN_DIR/test-1 --node tcp://localhost:16657 --broadcast-mode block --keyring-backend test -y &> /dev/null
+}' --from $WALLET_1 --chain-id test-1 --home $CHAIN_DIR/test-1 --node tcp://localhost:16657 --broadcast-mode block --keyring-backend test -y &> /dev/null
 
 VALIDATOR_DELEGATIONS=""
 while [[ "$VALIDATOR_DELEGATIONS" != "$ICS_ACCOUNT_BALANCE" ]]; do 
