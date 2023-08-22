@@ -3,7 +3,6 @@ package app
 import (
 	"encoding/json"
 
-	tokenfactorytypes "github.com/CosmWasm/wasmd/x/tokenfactory/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
@@ -16,6 +15,7 @@ import (
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	"github.com/terra-money/core/v2/app/config"
+	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
 // GenesisState - The genesis state of the blockchain is represented here as a map of raw json

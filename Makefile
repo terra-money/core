@@ -270,7 +270,7 @@ proto-all: proto-gen
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen:v0.3 sh ./scripts/protocgen.sh
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /worwkspace tendermintdev/sdk-proto-gen:v0.3 sh ./scripts/protocgen.sh
 
 .PHONY: proto-all proto-gen
 

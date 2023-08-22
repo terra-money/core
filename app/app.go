@@ -135,10 +135,10 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/CosmWasm/wasmd/x/tokenfactory"
-	tokenfactorybindings "github.com/CosmWasm/wasmd/x/tokenfactory/bindings"
-	tokenfactorykeeper "github.com/CosmWasm/wasmd/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/CosmWasm/wasmd/x/tokenfactory/types"
+	"github.com/terra-money/core/v2/x/tokenfactory"
+	tokenfactorybindings "github.com/terra-money/core/v2/x/tokenfactory/bindings"
+	tokenfactorykeeper "github.com/terra-money/core/v2/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
 	alliancebank "github.com/terra-money/alliance/custom/bank"
 	bankkeeper "github.com/terra-money/alliance/custom/bank/keeper"
@@ -1198,10 +1198,7 @@ func (app *TerraApp) SimulationManager() *module.SimulationManager {
 		ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper),
 		router.NewAppModule(&app.RouterKeeper),
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
-		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		alliance.NewAppModule(appCodec, app.AllianceKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
-		// does not implement simulation
-		// ibchooks.NewAppModule(app.AccountKeeper),
 	)
 
 	sm.RegisterStoreDecoders()

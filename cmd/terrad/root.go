@@ -48,7 +48,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	if err != nil {
 		panic(err)
 	}
-	params.RegisterAddressesConfig()
+	sdkConfig := params.RegisterAddressesConfig()
+	sdkConfig.Seal()
 
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Marshaler).
