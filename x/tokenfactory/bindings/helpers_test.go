@@ -5,35 +5,57 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 
+	dbm "github.com/cometbft/cometbft-db"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/CosmWasm/wasmd/app"
-	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	"github.com/terra-money/core/v2/app"
+	"github.com/terra-money/core/v2/app/wasmconfig"
+	"github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
-func CreateTestInput() (*app.WasmApp, sdk.Context) {
-	var emptyWasmOpts []wasm.Option
+func CreateTestInput() (*app.TerraApp, sdk.Context) {
+	encCfg := app.MakeEncodingConfig()
+	genesisState := app.NewDefaultGenesisState(encCfg.Marshaler)
+	genesisState.ConfigureBondDenom(encCfg.Marshaler, "uluna")
+	db := dbm.NewMemDB()
+	terraApp := app.NewTerraApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		db,
+		nil,
+		true,
+		map[int64]bool{},
+		app.DefaultNodeHome,
+		0,
+		encCfg,
+		simtestutil.EmptyAppOptions{},
+		wasmconfig.DefaultConfig(),
+	)
+	ctx := terraApp.BaseApp.NewContext(true, tmproto.Header{Height: 1, ChainID: "phoenix-1", Time: time.Now().UTC()})
+	err := terraApp.WasmKeeper.SetParams(ctx, wasmtypes.DefaultParams())
+	if err != nil {
+		panic(err)
+	}
+	terraApp.TokenFactoryKeeper.SetParams(ctx, types.DefaultParams())
+	if err != nil {
+		panic(err)
+	}
 
-	osmosis := app.Setup(&testing.T{}, emptyWasmOpts...)
-	ctx := osmosis.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "osmosis-1", Time: time.Now().UTC()})
-	return osmosis, ctx
+	return terraApp, ctx
 }
 
-func FundAccount(t *testing.T, ctx sdk.Context, osmosis *app.WasmApp, acct sdk.AccAddress) {
+func FundAccount(t *testing.T, ctx sdk.Context, terra *app.TerraApp, acct sdk.AccAddress) {
 	t.Helper()
-	// TODO:
-	// err := simapp.FundAccount(osmosis.BankKeeper, ctx, acct, sdk.NewCoins(
-	// 	sdk.NewCoin("uosmo", sdk.NewInt(10000000000)),
-	// ))
-	// require.NoError(t, err)
 }
 
 // we need to make this deterministic (same every test run), as content might affect gas costs
@@ -53,22 +75,22 @@ func RandomBech32AccountAddress() string {
 	return RandomAccountAddress().String()
 }
 
-func storeReflectCode(t *testing.T, ctx sdk.Context, tokenz *app.WasmApp, addr sdk.AccAddress) uint64 {
+func storeReflectCode(t *testing.T, ctx sdk.Context, app *app.TerraApp, addr sdk.AccAddress) uint64 {
 	t.Helper()
 	wasmCode, err := os.ReadFile("./testdata/token_reflect.wasm")
 	require.NoError(t, err)
 
-	contractKeeper := keeper.NewDefaultPermissionKeeper(tokenz.WasmKeeper)
+	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 	codeID, _, err := contractKeeper.Create(ctx, addr, wasmCode, nil)
 	require.NoError(t, err)
 
 	return codeID
 }
 
-func instantiateReflectContract(t *testing.T, ctx sdk.Context, tokenz *app.WasmApp, funder sdk.AccAddress) sdk.AccAddress {
+func instantiateReflectContract(t *testing.T, ctx sdk.Context, app *app.TerraApp, funder sdk.AccAddress) sdk.AccAddress {
 	t.Helper()
 	initMsgBz := []byte("{}")
-	contractKeeper := keeper.NewDefaultPermissionKeeper(tokenz.WasmKeeper)
+	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 	codeID := uint64(1)
 	addr, _, err := contractKeeper.Instantiate(ctx, codeID, funder, funder, initMsgBz, "demo contract", nil)
 	require.NoError(t, err)
@@ -76,32 +98,22 @@ func instantiateReflectContract(t *testing.T, ctx sdk.Context, tokenz *app.WasmA
 	return addr
 }
 
-func fundAccount(t *testing.T, ctx sdk.Context, tokenz *app.WasmApp, addr sdk.AccAddress, coins sdk.Coins) {
+func fundAccount(t *testing.T, ctx sdk.Context, app *app.TerraApp, addr sdk.AccAddress, coins sdk.Coins) {
 	t.Helper()
-	// TODO:
-	// err := simapp.FundAccount(
-	// 	tokenz.BankKeeper,
-	// 	ctx,
-	// 	addr,
-	// 	coins,
-	// )
-
-	// require.NoError(t, err)
-	err := tokenz.BankKeeper.MintCoins(ctx, minttypes.ModuleName, coins)
+	err := app.BankKeeper.MintCoins(ctx, minttypes.ModuleName, coins)
 	require.NoError(t, err)
-	err = tokenz.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, addr, coins)
+	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, addr, coins)
 	require.NoError(t, err)
 }
 
-func SetupCustomApp(t *testing.T, addr sdk.AccAddress) (*app.WasmApp, sdk.Context) {
+func SetupCustomApp(t *testing.T, addr sdk.AccAddress) (*app.TerraApp, sdk.Context) {
 	t.Helper()
-	tokenz, ctx := CreateTestInput()
-	wasmKeeper := tokenz.WasmKeeper
+	app, ctx := CreateTestInput()
 
-	storeReflectCode(t, ctx, tokenz, addr)
+	storeReflectCode(t, ctx, app, addr)
 
-	cInfo := wasmKeeper.GetCodeInfo(ctx, 1)
+	cInfo := app.WasmKeeper.GetCodeInfo(ctx, 1)
 	require.NotNil(t, cInfo)
 
-	return tokenz, ctx
+	return app, ctx
 }

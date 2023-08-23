@@ -26,7 +26,7 @@ func init() {
 	simcli.GetSimulatorFlags()
 }
 
-type AppTest interface {
+type terraApp interface {
 	app.TerraApp
 	GetBaseApp() *baseapp.BaseApp
 	AppCodec() codec.Codec
@@ -60,7 +60,7 @@ func BenchmarkSimulation(b *testing.B) {
 
 	encoding := app.MakeEncodingConfig()
 
-	appTest := app.NewTerraApp(
+	terraApp := app.NewTerraApp(
 		logger,
 		db,
 		nil,
@@ -77,17 +77,17 @@ func BenchmarkSimulation(b *testing.B) {
 	_, simParams, simErr := simulation.SimulateFromSeed(
 		b,
 		os.Stdout,
-		appTest.BaseApp,
-		simtestutil.AppStateFn(appTest.AppCodec(), appTest.SimulationManager(), appTest.DefaultGenesis()),
+		terraApp.BaseApp,
+		simtestutil.AppStateFn(terraApp.AppCodec(), terraApp.SimulationManager(), terraApp.DefaultGenesis()),
 		simulationtypes.RandomAccounts,
-		simtestutil.SimulationOperations(appTest, appTest.AppCodec(), config),
-		appTest.ModuleAccountAddrs(),
+		simtestutil.SimulationOperations(terraApp, terraApp.AppCodec(), config),
+		terraApp.ModuleAccountAddrs(),
 		config,
-		appTest.AppCodec(),
+		terraApp.AppCodec(),
 	)
 
 	// export state and simParams before the simulation error is checked
-	err = simtestutil.CheckExportSimulation(appTest, config, simParams)
+	err = simtestutil.CheckExportSimulation(terraApp, config, simParams)
 	require.NoError(b, err)
 	require.NoError(b, simErr)
 
@@ -100,7 +100,7 @@ func TestSimulationManager(t *testing.T) {
 	db := dbm.NewMemDB()
 	encoding := app.MakeEncodingConfig()
 
-	AppTest := app.NewTerraApp(
+	terraApp := app.NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db,
 		nil,
@@ -112,6 +112,6 @@ func TestSimulationManager(t *testing.T) {
 		simtestutil.EmptyAppOptions{},
 		wasmconfig.DefaultConfig(),
 	)
-	sm := AppTest.SimulationManager()
+	sm := terraApp.SimulationManager()
 	require.NotNil(t, sm)
 }

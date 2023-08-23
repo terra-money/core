@@ -2,6 +2,7 @@ package app_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -235,10 +236,11 @@ func TestNewGenesis(t *testing.T) {
 			"params": {
 				"denom_creation_fee": [
 					{
-						"denom": "stake",
+						"denom": "uluna",
 						"amount": "10000000"
 					}
-				]
+				],
+				"denom_creation_gas_consume": "1000000"
 			},
 			"factory_denoms": []
 		},
@@ -257,7 +259,6 @@ func TestNewGenesis(t *testing.T) {
 			"params": {
 				"code_upload_access": {
 					"permission": "Everybody",
-					"address": "",
 					"addresses": []
 				},
 				"instantiate_default_permission": "Everybody"
@@ -267,7 +268,6 @@ func TestNewGenesis(t *testing.T) {
 			"sequences": []
 		}
 	}`
-
 	require.JSONEq(t, string(jsonGenState), expectedState)
 }
 
@@ -502,7 +502,8 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 						"denom": "uluna",
 						"amount": "10000000"
 					}
-				]
+				],
+				"denom_creation_gas_consume": "1000000"
 			},
 			"factory_denoms": []
 		},
@@ -521,7 +522,6 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 			"params": {
 				"code_upload_access": {
 					"permission": "Everybody",
-					"address": "",
 					"addresses": []
 				},
 				"instantiate_default_permission": "Everybody"
@@ -787,10 +787,11 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 			"params": {
 				"denom_creation_fee": [
 					{
-						"denom": "stake",
+						"denom": "uluna",
 						"amount": "10000000"
 					}
-				]
+				],
+				"denom_creation_gas_consume": "1000000"
 			},
 			"factory_denoms": []
 		},
@@ -809,7 +810,6 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 			"params": {
 				"code_upload_access": {
 					"permission": "Everybody",
-					"address": "",
 					"addresses": []
 				},
 				"instantiate_default_permission": "Everybody"
@@ -819,5 +819,7 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 			"sequences": []
 		}
 	}`
+	fmt.Print(string(jsonGenState))
+
 	require.JSONEq(t, string(jsonGenState), expectedState)
 }

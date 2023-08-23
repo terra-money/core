@@ -194,21 +194,7 @@ build-release-arm64: go.sum $(BUILDDIR)/
 install: go.sum 
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/terrad
 
-gen-swagger-docs:
-	bash scripts/protoc-swagger-gen.sh
-
-update-swagger-docs: statik
-	$(BINDIR)/statik -src=client/docs/swagger-ui -dest=client/docs -f -m
-	@if [ -n "$(git status --porcelain)" ]; then \
-        echo "Swagger docs are out of sync!";\
-        exit 1;\
-    else \
-        echo "Swagger docs are in sync!";\
-    fi
-
-apply-swagger: gen-swagger-docs update-swagger-docs
-
-.PHONY: build build-linux install update-swagger-docs apply-swagger
+.PHONY: build build-linux install
 
 
 ###############################################################################
@@ -265,14 +251,29 @@ clean-testing-data:
 ###############################################################################
 ###                                Protobuf                                 ###
 ###############################################################################
-
-proto-all: proto-gen
+protoVer=0.13.0
+protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
+protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /worwkspace tendermintdev/sdk-proto-gen:v0.3 sh ./scripts/protocgen.sh
+	@$(protoImage) sh ./scripts/protocgen.sh
 
-.PHONY: proto-all proto-gen
+gen-swagger-docs:
+	bash scripts/protoc-swagger-gen.sh
+
+update-swagger-docs: statik
+	$(BINDIR)/statik -src=client/docs/swagger-ui -dest=client/docs -f -m
+	@if [ -n "$(git status --porcelain)" ]; then \
+        echo "Swagger docs are out of sync!";\
+        exit 1;\
+    else \
+        echo "Swagger docs are in sync!";\
+    fi
+
+apply-swagger: gen-swagger-docs update-swagger-docs
+
+.PHONY: proto-all proto-gen gen-swagger-docs update-swagger-docs apply-swagger
 
 ########################################
 ### Tools & dependencies

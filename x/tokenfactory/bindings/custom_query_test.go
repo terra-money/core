@@ -10,7 +10,7 @@ import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/CosmWasm/wasmd/app"
+	"github.com/terra-money/core/v2/app"
 	bindings "github.com/terra-money/core/v2/x/tokenfactory/bindings/types"
 )
 
@@ -47,7 +47,7 @@ type ChainResponse struct {
 	Data []byte `json:"data"`
 }
 
-func queryCustom(t *testing.T, ctx sdk.Context, tokenz *app.WasmApp, contract sdk.AccAddress, request bindings.TokenQuery, response interface{}) {
+func queryCustom(t *testing.T, ctx sdk.Context, tokenz *app.TerraApp, contract sdk.AccAddress, request bindings.TokenQuery, response interface{}) {
 	t.Helper()
 	wrapped := bindings.TokenFactoryQuery{
 		Token: &request,
