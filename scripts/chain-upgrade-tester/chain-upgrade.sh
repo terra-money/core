@@ -68,9 +68,9 @@ fi
 #
 sleep 15
 #
-$OLD_BINARY tx gov submit-proposal software-upgrade "$SOFTWARE_UPGRADE_NAME" --upgrade-height $UPGRADE_HEIGHT --upgrade-info "temp" --title "upgrade" --description "upgrade"  --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME --broadcast-mode block -y
-$OLD_BINARY tx gov deposit 1 "20000000${DENOM}" --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME --broadcast-mode block -y
-$OLD_BINARY tx gov vote 1 yes --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME --broadcast-mode block -y
+$OLD_BINARY tx gov submit-proposal software-upgrade "$SOFTWARE_UPGRADE_NAME" --upgrade-height $UPGRADE_HEIGHT --upgrade-info "temp" --title "upgrade" --description "upgrade"  --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME  -y
+$OLD_BINARY tx gov deposit 1 "20000000${DENOM}" --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME  -y
+$OLD_BINARY tx gov vote 1 yes --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME  -y
 #
 ## determine block_height to halt
 while true; do

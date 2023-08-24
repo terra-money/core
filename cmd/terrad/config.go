@@ -36,6 +36,8 @@ func initAppConfig() (string, interface{}) {
 	srvCfg.API.Enable = true
 	srvCfg.API.Swagger = true
 
+	srvCfg.Rosetta.DenomToSuggest = "uluna"
+
 	terraAppConfig := TerraAppConfig{
 		Config:     *srvCfg,
 		WASMConfig: *wasmconfig.DefaultConfig(),

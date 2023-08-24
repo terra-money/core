@@ -15,7 +15,7 @@ VAL_WALLET_1=$($BINARY keys show val1 -a --keyring-backend test --home $CHAIN_DI
 VAL_WALLET_2=$($BINARY keys show val2 -a --keyring-backend test --home $CHAIN_DIR/test-2)
 
 echo "Sending tokens from validator wallet on test-1 to validator wallet on test-2"
-IBC_TRANSFER=$($BINARY tx ibc-transfer transfer transfer channel-0 $VAL_WALLET_2 $AMOUNT_TO_DELEGATE$ULUNA_DENOM --chain-id test-1 --from $VAL_WALLET_1 --home $CHAIN_DIR/test-1 --node tcp://localhost:16657 --keyring-backend test --broadcast-mode block -y -o json | jq -r '.raw_log' )
+IBC_TRANSFER=$($BINARY tx ibc-transfer transfer transfer channel-0 $VAL_WALLET_2 $AMOUNT_TO_DELEGATE$ULUNA_DENOM --chain-id test-1 --from $VAL_WALLET_1 --home $CHAIN_DIR/test-1 --node tcp://localhost:16657 --keyring-backend test  -y -o json | jq -r '.raw_log' )
 
 if [[ "$IBC_TRANSFER" == "failed to execute message"* ]]; then
     echo "Error: IBC transfer failed, with error: $IBC_TRANSFER"
@@ -33,7 +33,7 @@ while [ "$ACCOUNT_BALANCE" == "" ]; do
 done
 
 echo "Creating an alliance with the denom $IBC_DENOM"
-PROPOSAL_HEIGHT=$($BINARY tx gov submit-legacy-proposal create-alliance $IBC_DENOM 5 0 5 0 0.99 1s --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --deposit 10000000000$ULUNA_DENOM --node tcp://localhost:26657 -o json --keyring-backend test --broadcast-mode block --gas 1000000 -y | jq -r '.height')
+PROPOSAL_HEIGHT=$($BINARY tx gov submit-legacy-proposal create-alliance $IBC_DENOM 5 0 5 0 0.99 1s --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --deposit 10000000000$ULUNA_DENOM --node tcp://localhost:26657 -o json --keyring-backend test  --gas 1000000 -y | jq -r '.height')
 PROPOSAL_ID=$($BINARY query gov proposals --home $CHAIN_DIR/test-2 --count-total --node tcp://localhost:26657 -o json --output json --chain-id=test-2 | jq .proposals[-1].id -r)
 VOTE_RES=$($BINARY tx gov vote $PROPOSAL_ID yes --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --keyring-backend=test --broadcast-mode=block --gas 1000000 --chain-id=test-2 --node tcp://localhost:26657 -o json -y)
 
