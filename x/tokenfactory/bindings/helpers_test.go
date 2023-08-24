@@ -1,6 +1,7 @@
 package bindings_test
 
 import (
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"os"
 	"testing"
 	"time"
@@ -50,7 +51,10 @@ func CreateTestInput() (*app.TerraApp, sdk.Context) {
 	if err != nil {
 		panic(err)
 	}
-
+	terraApp.DistrKeeper.SetFeePool(ctx, distrtypes.InitialFeePool())
+	if err != nil {
+		panic(err)
+	}
 	return terraApp, ctx
 }
 
