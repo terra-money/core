@@ -33,6 +33,8 @@ func initAppConfig() (string, interface{}) {
 	//
 	// In simapp, we set the min gas prices to 0.
 	srvCfg.MinGasPrices = "0uluna"
+	srvCfg.API.Enable = true
+	srvCfg.API.Swagger = true
 
 	terraAppConfig := TerraAppConfig{
 		Config:     *srvCfg,

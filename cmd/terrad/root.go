@@ -10,38 +10,34 @@ import (
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/spf13/cast"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	tmcfg "github.com/cometbft/cometbft/config"
 	"github.com/cosmos/cosmos-sdk/client"
-	sdkconfig "github.com/cosmos/cosmos-sdk/client/config"
+
+	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
+	"github.com/cosmos/cosmos-sdk/client/pruning"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/cosmos/cosmos-sdk/client/snapshot"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
 	terraapp "github.com/terra-money/core/v2/app"
 	"github.com/terra-money/core/v2/app/params"
 	"github.com/terra-money/core/v2/app/wasmconfig"
 )
 
-// missing flag from cosmos-sdk
-const flagIAVLCacheSize = "iavl-cache-size"
-
-// NewRootCmd creates a new root command for terrad. It is called once in the
-// main function.
+// NewRootCmd creates a new root command for terrad.
+// It is called once in the main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := terraapp.MakeEncodingConfig()
 	err := params.RegisterDenomsConfig()
@@ -63,7 +59,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	rootCmd := &cobra.Command{
 		Use:   "terrad",
-		Short: "Stargate Terra App",
+		Short: "Terra Core App (https://www.terra.money)",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())
@@ -77,7 +73,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			// unsafe-reset-all is not working without viper set
 			viper.Set(tmcli.HomeFlag, initClientCtx.HomeDir)
 
-			initClientCtx, err = sdkconfig.ReadFromClientConfig(initClientCtx)
+			initClientCtx, err = config.ReadFromClientConfig(initClientCtx)
 			if err != nil {
 				return err
 			}
@@ -111,26 +107,23 @@ func initTendermintConfig() *tmcfg.Config {
 }
 
 func initRootCmd(rootCmd *cobra.Command, moduleBasics module.BasicManager, encodingConfig params.EncodingConfig) {
-	// TODO check gaia before make release candidate
-	// authclient.Codec = encodingConfig.Marshaler
-	gentxModule := moduleBasics[genutiltypes.ModuleName].(genutil.AppModuleBasic)
+	a := appCreator{encodingConfig}
 
 	rootCmd.AddCommand(
 		InitCmd(terraapp.ModuleBasics, terraapp.DefaultNodeHome),
-		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, terraapp.DefaultNodeHome, gentxModule.GenTxValidator),
-		genutilcli.GenTxCmd(terraapp.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, terraapp.DefaultNodeHome),
-		genutilcli.ValidateGenesisCmd(terraapp.ModuleBasics),
-		AddGenesisAccountCmd(terraapp.DefaultNodeHome),
+		config.Cmd(),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
+		pruning.Cmd(a.newApp, terraapp.DefaultNodeHome),
+		snapshot.Cmd(a.newApp),
 	)
 
-	a := appCreator{encodingConfig}
 	server.AddCommands(rootCmd, terraapp.DefaultNodeHome, a.newApp, a.appExport, addModuleInitFlags)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
+		genesisCommand(encodingConfig),
 		queryCommand(),
 		txCommand(),
 		keys.Commands(terraapp.DefaultNodeHome),
@@ -138,6 +131,16 @@ func initRootCmd(rootCmd *cobra.Command, moduleBasics module.BasicManager, encod
 
 	// add rosetta commands
 	rootCmd.AddCommand(rosettaCmd.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Marshaler))
+}
+
+// genesisCommand builds genesis-related `terrad genesis` command. Users may provide application specific commands as a parameter
+func genesisCommand(encodingConfig params.EncodingConfig, cmds ...*cobra.Command) *cobra.Command {
+	cmd := genutilcli.GenesisCoreCommand(encodingConfig.TxConfig, terraapp.ModuleBasics, terraapp.DefaultNodeHome)
+
+	for _, sub_cmd := range cmds {
+		cmd.AddCommand(sub_cmd)
+	}
+	return cmd
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
@@ -188,6 +191,7 @@ func txCommand() *cobra.Command {
 		authcmd.GetBroadcastCommand(),
 		authcmd.GetEncodeCommand(),
 		authcmd.GetDecodeCommand(),
+		authcmd.GetAuxToFeeCommand(),
 		flags.LineBreak,
 	)
 

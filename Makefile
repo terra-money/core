@@ -214,7 +214,7 @@ integration-test-all: init-test-framework \
 
 init-test-framework: clean-testing-data install
 	@echo "Initializing both blockchains..."
-	./scripts/tests/start.sh
+	./scripts/tests/init-test-framework.sh
 
 test-relayer:
 	@echo "Testing relayer..."
