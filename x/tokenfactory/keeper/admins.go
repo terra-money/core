@@ -2,8 +2,6 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/gogo/protobuf/proto"
-
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
@@ -12,7 +10,7 @@ func (k Keeper) GetAuthorityMetadata(ctx sdk.Context, denom string) (types.Denom
 	bz := k.GetDenomPrefixStore(ctx, denom).Get([]byte(types.DenomAuthorityMetadataKey))
 
 	metadata := types.DenomAuthorityMetadata{}
-	err := proto.Unmarshal(bz, &metadata)
+	err := k.cdc.Unmarshal(bz, &metadata)
 	if err != nil {
 		return types.DenomAuthorityMetadata{}, err
 	}
@@ -28,7 +26,7 @@ func (k Keeper) setAuthorityMetadata(ctx sdk.Context, denom string, metadata typ
 
 	store := k.GetDenomPrefixStore(ctx, denom)
 
-	bz, err := proto.Marshal(&metadata)
+	bz, err := k.cdc.Marshal(&metadata)
 	if err != nil {
 		return err
 	}

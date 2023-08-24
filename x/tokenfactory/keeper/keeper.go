@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/codec"
 
 	"github.com/cometbft/cometbft/libs/log"
 
@@ -25,6 +26,8 @@ type (
 		contractKeeper types.ContractKeeper
 
 		communityPoolKeeper types.CommunityPoolKeeper
+
+		cdc codec.BinaryCodec
 	}
 )
 
@@ -35,6 +38,7 @@ func NewKeeper(
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	communityPoolKeeper types.CommunityPoolKeeper,
+	cdc codec.BinaryCodec,
 ) Keeper {
 	if !paramSpace.HasKeyTable() {
 		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
@@ -47,6 +51,8 @@ func NewKeeper(
 		accountKeeper:       accountKeeper,
 		bankKeeper:          bankKeeper,
 		communityPoolKeeper: communityPoolKeeper,
+
+		cdc: cdc,
 	}
 }
 

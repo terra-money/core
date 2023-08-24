@@ -513,6 +513,7 @@ func NewTerraApp(
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.DistrKeeper,
+		appCodec,
 	)
 
 	// Create IBC Keeper
