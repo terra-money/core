@@ -48,8 +48,9 @@ func BenchmarkSimulation(b *testing.B) {
 	config := simcli.NewConfigFromFlags()
 	simcli.FlagEnabledValue = true
 	simcli.FlagCommitValue = true
+	enabled := simcli.FlagEnabledValue
 
-	db, dir, logger, _, err := simtestutil.SetupSimulation(config, "goleveldb-app-sim", "Simulation", true, false)
+	db, dir, logger, _, err := simtestutil.SetupSimulation(config, "goleveldb-app-sim", "Simulation", true, enabled)
 	require.NoError(b, err, "simulation setup failed")
 
 	b.Cleanup(func() {
