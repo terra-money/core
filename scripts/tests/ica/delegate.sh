@@ -17,11 +17,10 @@ ICA_REGISTER_RESPONSE=$($BINARY tx interchain-accounts controller register conne
 
 ICS_TX_RESULT="Error:"
 ICS_TX_ERROR="Error:"
-while [[ "$ICS_TX_ERROR" == "$ICS_TX_RESULT"* ]]; do 
-    sleep 2
+while [[ "$ICS_TX_ERROR" == "$ICS_TX_RESULT"* ]]; do
     echo "Waiting for the transaction to be relayed..."
+    sleep 5
     ICS_TX_RESULT=$($BINARY query interchain-accounts controller interchain-account $WALLET_1 connection-0 --node tcp://localhost:16657 -o json | jq -r '.address')
-    sleep 1
 done
 
 echo "Sending tokens to ICA on chain test-2"

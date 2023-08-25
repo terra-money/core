@@ -34,8 +34,9 @@ done
 
 echo "Creating an alliance with the denom $IBC_DENOM"
 PROPOSAL_HEIGHT=$($BINARY tx gov submit-legacy-proposal create-alliance $IBC_DENOM 5 0 5 0 0.99 1s --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --deposit 10000000000$ULUNA_DENOM --node tcp://localhost:26657 -o json --keyring-backend test  --gas 1000000 -y | jq -r '.height')
+sleep 3
 PROPOSAL_ID=$($BINARY query gov proposals --home $CHAIN_DIR/test-2 --count-total --node tcp://localhost:26657 -o json --output json --chain-id=test-2 | jq .proposals[-1].id -r)
-VOTE_RES=$($BINARY tx gov vote $PROPOSAL_ID yes --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --keyring-backend=test --broadcast-mode=block --gas 1000000 --chain-id=test-2 --node tcp://localhost:26657 -o json -y)
+VOTE_RES=$($BINARY tx gov vote $PROPOSAL_ID yes --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --keyring-backend=test --gas 1000000 --chain-id=test-2 --node tcp://localhost:26657 -o json -y)
 
 ALLIANCE="null"
 while [ "$ALLIANCE" == "null" ]; do
@@ -45,12 +46,12 @@ while [ "$ALLIANCE" == "null" ]; do
 done
 
 echo "Delegating $AMOUNT_TO_DELEGATE to the alliance $IBC_DENOM"
-VAL_ADDR=$(allianced query staking validators --output json | jq .validators[0].operator_address --raw-output)
-DELEGATE_RES=$($BINARY tx alliance delegate $VAL_ADDR $AMOUNT_TO_DELEGATE$IBC_DENOM --from=node0 --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --keyring-backend=test --broadcast-mode=block --gas 1000000 --chain-id=test-2 -o json  -y)
-
+VAL_ADDR=$($BINARY query staking validators --output json | jq .validators[0].operator_address --raw-output)
+DELEGATE_RES=$($BINARY tx alliance delegate $VAL_ADDR $AMOUNT_TO_DELEGATE$IBC_DENOM --from=node0 --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --keyring-backend=test --gas 1000000 --chain-id=test-2 -o json -y)
+sleep 3
 DELEGATIONS=$($BINARY query alliance delegation $VAL_WALLET_2 $VAL_ADDR $IBC_DENOM --chain-id test-2 --node tcp://localhost:26657 -o json | jq -r '.delegation.balance.amount')
 if [[ "$DELEGATIONS" == "0" ]]; then
-    echo "Error: Alliance delegations expected to be bigger than 0"
+    echo "Error: Alliance delegations expected to be greater than 0"
     exit 1
 fi
 
