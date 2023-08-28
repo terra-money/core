@@ -26,6 +26,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/terra-money/core/v2/app"
 	terra_app "github.com/terra-money/core/v2/app"
+	appparams "github.com/terra-money/core/v2/app/params"
 	terrraParams "github.com/terra-money/core/v2/app/params"
 	"github.com/terra-money/core/v2/app/wasmconfig"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
@@ -42,6 +43,7 @@ type AppTestSuite struct {
 
 // Setup sets up basic environment for suite (App, Ctx, and test accounts)
 func (s *AppTestSuite) Setup() {
+	appparams.RegisterAddressesConfig()
 	baseTestAccts := CreateRandomAccounts(3)
 	encCfg := terra_app.MakeEncodingConfig()
 
@@ -70,6 +72,18 @@ func (s *AppTestSuite) Setup() {
 	s.App.WasmKeeper.SetParams(s.Ctx, wasmtypes.DefaultParams())
 	s.App.TokenFactoryKeeper.SetParams(s.Ctx, tokenfactorytypes.DefaultParams())
 	s.App.DistrKeeper.SetFeePool(s.Ctx, distrtypes.InitialFeePool())
+}
+
+func (s *AppTestSuite) AssertEventEmitted(ctx sdk.Context, eventTypeExpected string, numEventsExpected int) {
+	allEvents := ctx.EventManager().Events()
+	// filter out other events
+	actualEvents := make([]sdk.Event, 0)
+	for _, event := range allEvents {
+		if event.Type == eventTypeExpected {
+			actualEvents = append(actualEvents, event)
+		}
+	}
+	s.Require().Equal(numEventsExpected, len(actualEvents))
 }
 
 // CreateRandomAccounts is a function return a list of randomly generated AccAddresses

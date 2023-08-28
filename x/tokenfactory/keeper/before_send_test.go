@@ -96,8 +96,6 @@ func (s *KeeperTestSuite) TestBeforeSendHook() {
 			// mint enough coins to the creator
 			_, err = s.msgServer.Mint(sdk.WrapSDKContext(s.Ctx), types.NewMsgMint(s.TestAccs[0].String(), sdk.NewInt64Coin(denom, 1000000000)))
 			s.Require().NoError(err)
-			// mint some non token factory denom coins for testing
-			s.FundAcc(sdk.AccAddress(s.TestAccs[0].String()), sdk.Coins{sdk.NewInt64Coin("foo", 100000000000)})
 
 			// set beforesend hook to the new denom
 			_, err = s.msgServer.SetBeforeSendHook(sdk.WrapSDKContext(s.Ctx), types.NewMsgSetBeforeSendHook(s.TestAccs[0].String(), denom, cosmwasmAddress.String()))
