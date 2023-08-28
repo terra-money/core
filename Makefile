@@ -259,7 +259,7 @@ proto-gen:
 	@echo "Generating Protobuf files"
 	@$(protoImage) sh ./scripts/protocgen.sh
 
-gen-swagger-docs:
+gen-swagger:
 	bash scripts/protoc-swagger-gen.sh
 
 update-swagger-docs: statik
@@ -271,9 +271,9 @@ update-swagger-docs: statik
         echo "Swagger docs are in sync!";\
     fi
 
-apply-swagger: gen-swagger-docs update-swagger-docs
+apply-swagger: gen-swagger update-swagger-docs
 
-.PHONY: proto-all proto-gen gen-swagger-docs update-swagger-docs apply-swagger
+.PHONY: proto-all proto-gen gen-swagger update-swagger-docs apply-swagger
 
 ########################################
 ### Tools & dependencies

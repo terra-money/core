@@ -351,6 +351,18 @@ type TerraApp struct {
 	configurator module.Configurator
 }
 
+func (app TerraApp) GetAppCodec() codec.Codec {
+	return app.appCodec
+}
+
+func (app TerraApp) GetConfigurator() module.Configurator {
+	return app.configurator
+}
+
+func (app TerraApp) GetModuleManager() *module.Manager {
+	return app.mm
+}
+
 // NewTerraApp returns a reference to an initialized Terra.
 func NewTerraApp(
 	logger log.Logger,

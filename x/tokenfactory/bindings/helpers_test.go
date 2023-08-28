@@ -1,10 +1,11 @@
 package bindings_test
 
 import (
-	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"os"
 	"testing"
 	"time"
+
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/stretchr/testify/require"
@@ -19,10 +20,11 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/terra-money/core/v2/app"
 	"github.com/terra-money/core/v2/app/wasmconfig"
-	"github.com/terra-money/core/v2/x/tokenfactory/types"
+	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
 func CreateTestInput() (*app.TerraApp, sdk.Context) {
@@ -42,12 +44,16 @@ func CreateTestInput() (*app.TerraApp, sdk.Context) {
 		simtestutil.EmptyAppOptions{},
 		wasmconfig.DefaultConfig(),
 	)
-	ctx := terraApp.BaseApp.NewContext(true, tmproto.Header{Height: 1, ChainID: "phoenix-1", Time: time.Now().UTC()})
+	ctx := terraApp.BaseApp.NewContext(true, tmproto.Header{Height: 1, ChainID: "phoenix-1", Time: time.Now()})
 	err := terraApp.WasmKeeper.SetParams(ctx, wasmtypes.DefaultParams())
 	if err != nil {
 		panic(err)
 	}
-	terraApp.TokenFactoryKeeper.SetParams(ctx, types.DefaultParams())
+	terraApp.BankKeeper.SetParams(ctx, banktypes.NewParams(true))
+	if err != nil {
+		panic(err)
+	}
+	terraApp.TokenFactoryKeeper.SetParams(ctx, tokenfactorytypes.DefaultParams())
 	if err != nil {
 		panic(err)
 	}
@@ -85,7 +91,7 @@ func storeReflectCode(t *testing.T, ctx sdk.Context, app *app.TerraApp, addr sdk
 	require.NoError(t, err)
 
 	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
-	codeID, _, err := contractKeeper.Create(ctx, addr, wasmCode, nil)
+	codeID, _, err := contractKeeper.Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody})
 	require.NoError(t, err)
 
 	return codeID
