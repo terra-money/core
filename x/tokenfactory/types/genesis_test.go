@@ -5,10 +5,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	appparams "github.com/terra-money/core/v2/app/params"
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {
+	types.DefaultGenesis()
+	appparams.RegisterAddressesConfig()
+
 	for _, tc := range []struct {
 		desc     string
 		genState *types.GenesisState

@@ -100,7 +100,10 @@ func (s *KeeperTestSuite) TestBeforeSendHook() {
 			s.Require().NoError(err)
 
 			// set beforesend hook to the new denom
-			_, err = s.msgServer.SetBeforeSendHook(sdk.WrapSDKContext(s.Ctx), types.NewMsgSetBeforeSendHook(s.TestAccs[0].String(), denom, cosmwasmAddress.String()))
+			msg := types.NewMsgSetBeforeSendHook(s.TestAccs[0].String(), denom, cosmwasmAddress.String())
+			err = msg.ValidateBasic()
+			s.Require().NoError(err, "test: %v", tc.desc)
+			_, err = s.msgServer.SetBeforeSendHook(sdk.WrapSDKContext(s.Ctx), msg)
 			s.Require().NoError(err, "test: %v", tc.desc)
 
 			for _, sendTc := range tc.sendMsgs {

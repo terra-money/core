@@ -95,8 +95,12 @@ func (s *KeeperTestSuite) TestForceTransferMsg() {
 		s.Run(fmt.Sprintf("Case %s", tc.desc), func() {
 			ctx := s.Ctx.WithEventManager(sdk.NewEventManager())
 			s.Require().Equal(0, len(ctx.EventManager().Events()))
-			// Test mint message
-			_, err := s.msgServer.ForceTransfer(ctx, types.NewMsgForceTransfer(tc.admin, sdk.NewInt64Coin(defaultDenom, tc.amount), tc.admin, tc.transferTo))
+			// Test force transfer message
+			msg := types.NewMsgForceTransfer(tc.admin, sdk.NewInt64Coin(defaultDenom, tc.amount), tc.admin, tc.transferTo)
+			err := msg.ValidateBasic()
+			s.Require().NoError(err)
+
+			_, err = s.msgServer.ForceTransfer(ctx, msg)
 			if tc.valid {
 				s.Require().NoError(err)
 			} else {
