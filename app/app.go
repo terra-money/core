@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"reflect"
+	"reflect" // #nosec G702
 	"strings"
 
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
