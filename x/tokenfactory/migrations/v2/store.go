@@ -9,7 +9,7 @@ import (
 func MigrateStore(ctx sdk.Context, subspace paramtypes.Subspace) error {
 	var params types.Params
 	subspace.GetParamSet(ctx, &params)
-	params.DenomCreationGasConsume = uint64(types.DefaultCreationGasFee)
+	params.DenomCreationGasConsume = types.DefaultCreationGasFee
 	subspace.SetParamSet(ctx, &params)
 	return nil
 }

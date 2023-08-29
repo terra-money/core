@@ -274,6 +274,7 @@ func TestSimAppEnforceStakingForVestingTokens(t *testing.T) {
 		}
 	}
 
+	/* #nosec */
 	for _, share := range sharePerValidators {
 		require.Equal(t, sdk.NewDec(3_500_001_000_000), share)
 	}

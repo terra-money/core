@@ -13,7 +13,7 @@ var (
 	KeyDenomCreationGasConsume = []byte("DenomCreationGasConsume")
 
 	// chosen as an arbitrary large number, less than the max_gas_wanted_per_tx in config.
-	DefaultCreationGasFee = 1_000_000
+	DefaultCreationGasFee = uint64(1_000_000)
 )
 
 // ParamTable for gamm module.
@@ -32,8 +32,9 @@ func NewParams(denomCreationFee sdk.Coins, denomCreationGasConsume uint64) Param
 func DefaultParams() Params {
 	return Params{
 		// For choice, see: https://github.com/osmosis-labs/osmosis/pull/4983
-		DenomCreationFee:        sdk.NewCoins(sdk.NewInt64Coin("uluna", 10000000)),
-		DenomCreationGasConsume: uint64(DefaultCreationGasFee),
+		DenomCreationFee: sdk.NewCoins(sdk.NewInt64Coin("uluna", 10000000)),
+		/* #nosec */
+		DenomCreationGasConsume: DefaultCreationGasFee,
 	}
 }
 

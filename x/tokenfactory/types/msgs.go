@@ -49,6 +49,7 @@ func (m MsgCreateDenom) GetSignBytes() []byte {
 }
 
 func (m MsgCreateDenom) GetSigners() []sdk.AccAddress {
+	/* #nosec */
 	sender, _ := sdk.AccAddressFromBech32(m.Sender)
 	return []sdk.AccAddress{sender}
 }
@@ -91,6 +92,7 @@ func (m MsgMint) GetSignBytes() []byte {
 }
 
 func (m MsgMint) GetSigners() []sdk.AccAddress {
+	/* #nosec */
 	sender, _ := sdk.AccAddressFromBech32(m.Sender)
 	return []sdk.AccAddress{sender}
 }
@@ -134,6 +136,7 @@ func (m MsgBurn) GetSignBytes() []byte {
 }
 
 func (m MsgBurn) GetSigners() []sdk.AccAddress {
+	/* #nosec */
 	sender, _ := sdk.AccAddressFromBech32(m.Sender)
 	return []sdk.AccAddress{sender}
 }
@@ -179,6 +182,7 @@ func (m MsgForceTransfer) GetSignBytes() []byte {
 }
 
 func (m MsgForceTransfer) GetSigners() []sdk.AccAddress {
+	/* #nosec */
 	sender, _ := sdk.AccAddressFromBech32(m.Sender)
 	return []sdk.AccAddress{sender}
 }
@@ -220,6 +224,7 @@ func (m MsgChangeAdmin) GetSignBytes() []byte {
 }
 
 func (m MsgChangeAdmin) GetSigners() []sdk.AccAddress {
+	/* #nosec */
 	sender, _ := sdk.AccAddressFromBech32(m.Sender)
 	return []sdk.AccAddress{sender}
 }
@@ -260,6 +265,7 @@ func (m MsgSetDenomMetadata) GetSignBytes() []byte {
 }
 
 func (m MsgSetDenomMetadata) GetSigners() []sdk.AccAddress {
+	/* #nosec */
 	sender, _ := sdk.AccAddressFromBech32(m.Sender)
 	return []sdk.AccAddress{sender}
 }
@@ -303,6 +309,7 @@ func (m MsgSetBeforeSendHook) GetSignBytes() []byte {
 }
 
 func (m MsgSetBeforeSendHook) GetSigners() []sdk.AccAddress {
+	/* #nosec */
 	sender, _ := sdk.AccAddressFromBech32(m.Sender)
 	return []sdk.AccAddress{sender}
 }

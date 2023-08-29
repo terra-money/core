@@ -68,8 +68,11 @@ func (s *AppTestSuite) Setup() {
 		GRPCQueryRouter: s.App.GRPCQueryRouter(),
 		Ctx:             s.Ctx,
 	}
-	s.App.BankKeeper.SetParams(s.Ctx, banktypes.NewParams(true))
-	s.App.WasmKeeper.SetParams(s.Ctx, wasmtypes.DefaultParams())
+	err := s.App.BankKeeper.SetParams(s.Ctx, banktypes.NewParams(true))
+	s.Require().NoError(err)
+	err = s.App.WasmKeeper.SetParams(s.Ctx, wasmtypes.DefaultParams())
+	s.Require().NoError(err)
+
 	s.App.TokenFactoryKeeper.SetParams(s.Ctx, tokenfactorytypes.DefaultParams())
 	s.App.DistrKeeper.SetFeePool(s.Ctx, distrtypes.InitialFeePool())
 }
