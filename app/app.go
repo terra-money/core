@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/skip-mev/pob/mempool"
 	"io"
 	"net/http"
 	"os"
@@ -150,6 +149,7 @@ import (
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 
 	pobabci "github.com/skip-mev/pob/abci"
+	pobmempool "github.com/skip-mev/pob/mempool"
 	pob "github.com/skip-mev/pob/x/builder"
 	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	pobtype "github.com/skip-mev/pob/x/builder/types"
@@ -870,9 +870,9 @@ func NewTerraApp(
 	// register upgrade
 	app.RegisterUpgradeHandlers(app.configurator)
 
-	config := mempool.NewDefaultAuctionFactory(encodingConfig.TxConfig.TxDecoder())
+	config := pobmempool.NewDefaultAuctionFactory(encodingConfig.TxConfig.TxDecoder())
 	// when maxTx is set as 0, there won't be a limit on the number of txs in this mempool
-	mempool := mempool.NewAuctionMempool(encodingConfig.TxConfig.TxDecoder(), encodingConfig.TxConfig.TxEncoder(), 0, config)
+	mempool := pobmempool.NewAuctionMempool(encodingConfig.TxConfig.TxDecoder(), encodingConfig.TxConfig.TxEncoder(), 0, config)
 
 	anteHandler, err := ante.NewAnteHandler(
 		ante.HandlerOptions{
