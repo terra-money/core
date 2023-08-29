@@ -2,7 +2,6 @@ package app_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -54,6 +53,22 @@ func TestNewGenesis(t *testing.T) {
 			"supply": [],
 			"denom_metadata": [],
 			"send_enabled": []
+		},
+		"builder": {
+			"params": {
+				"max_bundle_size": 2,
+				"escrow_account_address": "32sHF2qbF8xMmvwle9QEcy59Cbc=",
+				"reserve_fee": {
+					"denom": "stake",
+					"amount": "1"
+				},
+				"min_bid_increment": {
+					"denom": "stake",
+					"amount": "1"
+				},
+				"front_running_protection": true,
+				"proposer_fee": "0.000000000000000000"
+			}
 		},
 		"capability": {
 			"index": "1",
@@ -318,6 +333,22 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 			"denom_metadata": [],
 			"send_enabled": []
 		},
+		"builder": {
+			"params": {
+				"max_bundle_size": 2,
+				"escrow_account_address": "32sHF2qbF8xMmvwle9QEcy59Cbc=",
+				"reserve_fee": {
+					"denom": "stake",
+					"amount": "1"
+				},
+				"min_bid_increment": {
+					"denom": "stake",
+					"amount": "1"
+				},
+				"front_running_protection": true,
+				"proposer_fee": "0.000000000000000000"
+			}
+		},
 		"capability": {
 			"index": "1",
 			"owners": []
@@ -531,7 +562,6 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 			"sequences": []
 		}
 	}`
-
 	require.JSONEq(t, string(jsonGenState), expectedState)
 }
 
@@ -580,6 +610,22 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 			"supply": [],
 			"denom_metadata": [],
 			"send_enabled": []
+		},
+		"builder": {
+			"params": {
+				"max_bundle_size": 2,
+				"escrow_account_address": "32sHF2qbF8xMmvwle9QEcy59Cbc=",
+				"reserve_fee": {
+					"denom": "stake",
+					"amount": "1"
+				},
+				"min_bid_increment": {
+					"denom": "stake",
+					"amount": "1"
+				},
+				"front_running_protection": true,
+				"proposer_fee": "0.000000000000000000"
+			}
 		},
 		"capability": {
 			"index": "1",
@@ -819,7 +865,6 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 			"sequences": []
 		}
 	}`
-	fmt.Print(string(jsonGenState))
 
 	require.JSONEq(t, string(jsonGenState), expectedState)
 }
