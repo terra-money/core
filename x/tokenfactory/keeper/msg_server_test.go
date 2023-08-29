@@ -55,6 +55,59 @@ func (s *KeeperTestSuite) TestMintDenomMsg() {
 	}
 }
 
+// TestForceTransferMsg tests MsgForceTransfer message is emitted on a successful send
+func (s *KeeperTestSuite) TestForceTransferMsg() {
+	// Create a denom
+	admin := s.TestAccs[0].String()
+	res, err := s.msgServer.CreateDenom(s.Ctx, types.NewMsgCreateDenom(admin, "bitcoin"))
+	s.Require().NoError(err)
+
+	// Mint tokens
+	defaultDenom := res.GetNewTokenDenom()
+	_, err = s.msgServer.Mint(s.Ctx, types.NewMsgMint(admin, sdk.NewInt64Coin(res.NewTokenDenom, 10)))
+	s.Require().NoError(err)
+
+	for _, tc := range []struct {
+		desc                  string
+		amount                int64
+		admin                 string
+		transferTo            string
+		valid                 bool
+		expectedMessageEvents int
+	}{
+		{
+			desc:                  "success case",
+			amount:                1,
+			admin:                 admin,
+			transferTo:            s.TestAccs[1].String(),
+			valid:                 true,
+			expectedMessageEvents: 1,
+		},
+		{
+			desc:                  "fail to transfer because user that force transfer is not the admin",
+			amount:                1,
+			admin:                 s.TestAccs[1].String(),
+			transferTo:            admin,
+			valid:                 false,
+			expectedMessageEvents: 0,
+		},
+	} {
+		s.Run(fmt.Sprintf("Case %s", tc.desc), func() {
+			ctx := s.Ctx.WithEventManager(sdk.NewEventManager())
+			s.Require().Equal(0, len(ctx.EventManager().Events()))
+			// Test mint message
+			_, err := s.msgServer.ForceTransfer(ctx, types.NewMsgForceTransfer(tc.admin, sdk.NewInt64Coin(defaultDenom, tc.amount), tc.admin, tc.transferTo))
+			if tc.valid {
+				s.Require().NoError(err)
+			} else {
+				s.Require().Error(err)
+			}
+			// Ensure current number and type of event is emitted
+			s.AssertEventEmitted(ctx, types.TypeMsgForceTransfer, tc.expectedMessageEvents)
+		})
+	}
+}
+
 // TestBurnDenomMsg tests TypeMsgBurn message is emitted on a successful burn
 func (s *KeeperTestSuite) TestBurnDenomMsg() {
 	// Create a denom

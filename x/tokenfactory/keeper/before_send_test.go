@@ -6,9 +6,11 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/terra-money/core/v2/x/tokenfactory/keeper"
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
@@ -186,4 +188,39 @@ func (s *KeeperTestSuite) TestInfiniteTrackBeforeSend() {
 			s.Require().True(distributionModuleBalances[0].IsEqual(tokenToSend[0]))
 		})
 	}
+}
+
+// Test paarse coins from sdk to cosmwasm types
+func (s *KeeperTestSuite) TestCoinsFromSDK() {
+	parsed_coin := keeper.CWCoinFromSDKCoin(sdk.NewInt64Coin("foo", 100))
+	parsed_coins := keeper.CWCoinsFromSDKCoins(sdk.NewCoins(sdk.NewInt64Coin("foo", 100), sdk.NewInt64Coin("bar", 100)))
+
+	expected_coin := wasmvmtypes.Coin{
+		Denom:  "foo",
+		Amount: "100",
+	}
+
+	expected_coins := wasmvmtypes.Coins{
+		wasmvmtypes.Coin{
+			Denom:  "bar",
+			Amount: "100",
+		},
+		wasmvmtypes.Coin{
+			Denom:  "foo",
+			Amount: "100",
+		},
+	}
+
+	s.Require().Equal(expected_coin, parsed_coin)
+	s.Require().Equal(expected_coins, parsed_coins)
+
+}
+
+// Test get before send hook with no hook set
+func (s *KeeperTestSuite) TestGetBeforeSendHook() {
+	res := s.App.TokenFactoryKeeper.GetBeforeSendHook(s.Ctx, "foo")
+
+	expected := ""
+
+	s.Require().Equal(expected, res)
 }

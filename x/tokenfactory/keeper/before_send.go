@@ -80,7 +80,7 @@ func (h Hooks) TrackBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount 
 	_ = h.k.callBeforeSendListener(ctx, from, to, amount, false)
 }
 
-// TrackBeforeSend calls the before send listener contract returns any errors
+// BlockBeforeSend calls the before send listener contract returns any errors
 func (h Hooks) BlockBeforeSend(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coins) error {
 	return h.k.callBeforeSendListener(ctx, from, to, amount, true)
 }

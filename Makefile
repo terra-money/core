@@ -335,6 +335,7 @@ lint:
 
 lint-fix:
 	golangci-lint run --fix --out-format=tab --issues-exit-code=0
+	
 .PHONY: lint lint-fix
 
 format:
