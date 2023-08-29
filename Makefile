@@ -325,7 +325,7 @@ simulate:
 	@go test  -bench BenchmarkSimulation ./app -NumBlocks=200 -BlockSize 50 -Commit=true -Verbose=true -Enabled=true -Seed 1
 
 test-e2e-pob:
-	cd interchaintest && go test -race -v -run TestPOB
+	cd interchaintest && go test -race -v -run TestPOB .
 
 .PHONY: test test-all test-cover test-unit test-race simulate test-e2e-pob
 
