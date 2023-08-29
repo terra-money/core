@@ -9,8 +9,6 @@ import (
 	"reflect" // #nosec G702
 	"strings"
 
-	mempool "github.com/skip-mev/pob/mempool"
-
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 
 	"github.com/terra-money/core/v2/app/rpc"
