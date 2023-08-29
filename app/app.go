@@ -2,10 +2,12 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/skip-mev/pob/mempool"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
@@ -147,6 +149,11 @@ import (
 	alliancekeeper "github.com/terra-money/alliance/x/alliance/keeper"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 
+	pobabci "github.com/skip-mev/pob/abci"
+	pob "github.com/skip-mev/pob/x/builder"
+	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
+	pobtype "github.com/skip-mev/pob/x/builder/types"
+
 	tmjson "github.com/cometbft/cometbft/libs/json"
 
 	"github.com/terra-money/core/v2/app/ante"
@@ -254,6 +261,7 @@ var (
 		wasm.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 		alliance.AppModuleBasic{},
+		pob.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -271,6 +279,7 @@ var (
 		tokenfactorytypes.ModuleName:   {authtypes.Burner, authtypes.Minter},
 		alliancetypes.ModuleName:       {authtypes.Burner, authtypes.Minter},
 		alliancetypes.RewardsPoolName:  nil,
+		pobtype.ModuleName:             nil,
 	}
 )
 
@@ -344,6 +353,12 @@ type TerraApp struct {
 	WasmKeeper       wasmkeeper.Keeper
 	scopedWasmKeeper capabilitykeeper.ScopedKeeper
 
+	// BuilderKeeper is the keeper that handles processing auction transactions
+	BuilderKeeper pobkeeper.Keeper
+
+	// Custom checkTx handler
+	checkTxHandler pobabci.CheckTx
+
 	// the module manager
 	mm           *module.Manager
 	basicManager module.BasicManager
@@ -394,6 +409,7 @@ func NewTerraApp(
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey, routertypes.StoreKey, consensusparamtypes.StoreKey, tokenfactorytypes.StoreKey,
 		wasmtypes.StoreKey, ibcfeetypes.StoreKey, ibchookstypes.StoreKey, alliancetypes.StoreKey,
+		pobtype.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -690,6 +706,16 @@ func NewTerraApp(
 		),
 	)
 
+	app.BuilderKeeper = pobkeeper.NewKeeper(
+		appCodec,
+		keys[pobtype.StoreKey],
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.DistrKeeper,
+		app.StakingKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
 	/****  Module Options ****/
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -729,6 +755,7 @@ func NewTerraApp(
 		ibchooks.NewAppModule(app.AccountKeeper),
 		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		alliance.NewAppModule(appCodec, app.AllianceKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
+		pob.NewAppModule(appCodec, app.BuilderKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -763,6 +790,7 @@ func NewTerraApp(
 		tokenfactorytypes.ModuleName,
 		alliancetypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		pobtype.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -793,6 +821,7 @@ func NewTerraApp(
 		tokenfactorytypes.ModuleName,
 		alliancetypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		pobtype.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -827,6 +856,7 @@ func NewTerraApp(
 		wasmtypes.ModuleName,
 		alliancetypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		pobtype.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(app.CrisisKeeper)
@@ -840,6 +870,10 @@ func NewTerraApp(
 	// register upgrade
 	app.RegisterUpgradeHandlers(app.configurator)
 
+	config := mempool.NewDefaultAuctionFactory(encodingConfig.TxConfig.TxDecoder())
+	// when maxTx is set as 0, there won't be a limit on the number of txs in this mempool
+	mempool := mempool.NewAuctionMempool(encodingConfig.TxConfig.TxDecoder(), encodingConfig.TxConfig.TxEncoder(), 0, config)
+
 	anteHandler, err := ante.NewAnteHandler(
 		ante.HandlerOptions{
 			HandlerOptions: cosmosante.HandlerOptions{
@@ -852,17 +886,42 @@ func NewTerraApp(
 			IBCkeeper:         app.IBCKeeper,
 			TxCounterStoreKey: keys[wasmtypes.StoreKey],
 			WasmConfig:        wasmConfig.ToWasmConfig(),
+			PobBuilderKeeper:  app.BuilderKeeper,
+			TxConfig:          encodingConfig.TxConfig,
+			PobMempool:        mempool,
 		},
 	)
 	if err != nil {
 		panic(err)
 	}
 
+	// Create the proposal handler that will be used to build and validate blocks.
+	handler := pobabci.NewProposalHandler(
+		mempool,
+		bApp.Logger(),
+		anteHandler,
+		encodingConfig.TxConfig.TxEncoder(),
+		encodingConfig.TxConfig.TxDecoder(),
+	)
+	app.SetPrepareProposal(handler.PrepareProposalHandler())
+	app.SetProcessProposal(handler.ProcessProposalHandler())
+
+	// Set the custom CheckTx handler on BaseApp.
+	checkTxHandler := pobabci.NewCheckTxHandler(
+		app.BaseApp,
+		encodingConfig.TxConfig.TxDecoder(),
+		mempool,
+		anteHandler,
+		app.ChainID(),
+	)
+
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
+	app.SetMempool(mempool)
+	app.SetCheckTx(checkTxHandler.CheckTx())
 
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
@@ -1225,4 +1284,24 @@ func (a *TerraApp) DefaultGenesis() map[string]json.RawMessage {
 
 func (app *TerraApp) RegisterNodeService(clientCtx client.Context) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
+}
+
+// ChainID gets chainID from private fields of BaseApp
+// Should be removed once SDK 0.50.x will be adopted
+func (app *TerraApp) ChainID() string {
+	field := reflect.ValueOf(app.BaseApp).Elem().FieldByName("chainID")
+	return field.String()
+}
+
+// CheckTx will check the transaction with the provided checkTxHandler. We override the default
+// handler so that we can verify bid transactions before they are inserted into the mempool.
+// With the POB CheckTx, we can verify the bid transaction and all of the bundled transactions
+// before inserting the bid transaction into the mempool.
+func (app *TerraApp) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
+	return app.checkTxHandler(req)
+}
+
+// SetCheckTx sets the checkTxHandler for the app.
+func (app *TerraApp) SetCheckTx(handler pobabci.CheckTx) {
+	app.checkTxHandler = handler
 }
