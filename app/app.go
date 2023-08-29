@@ -2,13 +2,14 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/skip-mev/pob/mempool"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"reflect" // #nosec G702
 	"strings"
+
+	mempool "github.com/skip-mev/pob/mempool"
 
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 
