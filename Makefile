@@ -327,7 +327,10 @@ simulate:
 test-e2e-pob:
 	cd interchaintest && go test -race -v -run TestPOB .
 
-.PHONY: test test-all test-cover test-unit test-race simulate test-e2e-pob
+test-e2e-pmf:
+	cd interchaintest && go test -race -v -run TestPMF .
+
+.PHONY: test test-all test-cover test-unit test-race simulate test-e2e-pob test-e2e-pmf
 
 ###############################################################################
 ###                                Linting                                  ###

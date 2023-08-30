@@ -340,7 +340,7 @@ type TerraApp struct {
 
 	// IBC hooks
 	IBCHooksKeeper   *ibchookskeeper.Keeper
-	TransferStack    *ibchooks.IBCMiddleware
+	TransferStack    porttypes.Middleware
 	Ics20WasmHooks   *ibchooks.WasmHooks
 	HooksICS4Wrapper ibchooks.ICS4Middleware
 
@@ -593,7 +593,21 @@ func NewTerraApp(
 
 	// Hooks Middleware
 	hooksTransferStack := ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
-	app.TransferStack = &hooksTransferStack
+
+	// Packet forwarding middleware
+	app.RouterKeeper = *routerkeeper.NewKeeper(
+		appCodec,
+		app.keys[routertypes.StoreKey],
+		app.GetSubspace(routertypes.ModuleName),
+		app.TransferKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.DistrKeeper,
+		app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+	)
+	pmfTransferStack := router.NewIBCMiddleware(hooksTransferStack, &app.RouterKeeper, 5, routerkeeper.DefaultForwardTransferPacketTimeoutTimestamp, routerkeeper.DefaultRefundTransferPacketTimeoutTimestamp)
+
+	app.TransferStack = &pmfTransferStack
 
 	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(
 		appCodec, keys[ibcfeetypes.StoreKey],
@@ -625,17 +639,6 @@ func NewTerraApp(
 
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
 	icaHostStack := ibcfee.NewIBCMiddleware(icaHostIBCModule, app.IBCFeeKeeper)
-
-	app.RouterKeeper = *routerkeeper.NewKeeper(
-		appCodec,
-		app.keys[routertypes.StoreKey],
-		app.GetSubspace(routertypes.ModuleName),
-		app.TransferKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.DistrKeeper,
-		app.BankKeeper,
-		app.IBCKeeper.ChannelKeeper,
-	)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -687,7 +690,7 @@ func NewTerraApp(
 	ibcRouter := porttypes.NewRouter().
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostStack).
-		AddRoute(ibctransfertypes.ModuleName, hooksTransferStack).
+		AddRoute(ibctransfertypes.ModuleName, pmfTransferStack).
 		AddRoute(wasmtypes.ModuleName, wasmStack)
 
 	app.IBCKeeper.SetRouter(ibcRouter)
