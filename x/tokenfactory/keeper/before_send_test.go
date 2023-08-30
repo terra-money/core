@@ -178,7 +178,10 @@ func (s *KeeperTestSuite) TestInfiniteTrackBeforeSend() {
 
 			// set beforesend hook to the new denom
 			// we register infinite loop contract here to test if we are gas metering properly
-			_, err = s.msgServer.SetBeforeSendHook(sdk.WrapSDKContext(s.Ctx), types.NewMsgSetBeforeSendHook(s.TestAccs[0].String(), factoryDenom, cosmwasmAddress.String()))
+			msg := types.NewMsgSetBeforeSendHook(s.TestAccs[0].String(), factoryDenom, cosmwasmAddress.String())
+			err = msg.ValidateBasic()
+			s.Require().NoError(err, "test: %v", tc.name)
+			_, err = s.msgServer.SetBeforeSendHook(sdk.WrapSDKContext(s.Ctx), msg)
 			s.Require().NoError(err, "test: %v", tc.name)
 
 			// track before send suppresses in any case, thus we expect no error

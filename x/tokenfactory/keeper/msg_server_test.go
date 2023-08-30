@@ -36,18 +36,29 @@ func (s *KeeperTestSuite) TestMintDenomMsg() {
 			mintDenom:             defaultDenom,
 			admin:                 s.TestAccs[0].String(),
 			valid:                 true,
-			expectedMessageEvents: 1,
+			expectedMessageEvents: 2,
 		},
 	} {
 		s.Run(fmt.Sprintf("Case %s", tc.desc), func() {
 			ctx := s.Ctx.WithEventManager(sdk.NewEventManager())
 			s.Require().Equal(0, len(ctx.EventManager().Events()))
 			// Test mint message
-			_, err := s.msgServer.Mint(sdk.WrapSDKContext(ctx), types.NewMsgMint(tc.admin, sdk.NewInt64Coin(tc.mintDenom, 10)))
+			mint := types.NewMsgMint(tc.admin, sdk.NewInt64Coin(tc.mintDenom, 10))
+			err := mint.ValidateBasic()
+			s.Require().NoError(err)
+			_, err = s.msgServer.Mint(sdk.WrapSDKContext(ctx), mint)
+
+			mintTo := types.NewMsgMintTo(tc.admin, sdk.NewInt64Coin(tc.mintDenom, 10), tc.admin)
+			err2 := mintTo.ValidateBasic()
+			s.Require().NoError(err2)
+			_, err2 = s.msgServer.Mint(sdk.WrapSDKContext(ctx), mintTo)
+
 			if tc.valid {
 				s.Require().NoError(err)
+				s.Require().NoError(err2)
 			} else {
 				s.Require().Error(err)
+				s.Require().Error(err2)
 			}
 			// Ensure current number and type of event is emitted
 			s.AssertEventEmitted(ctx, types.TypeMsgMint, tc.expectedMessageEvents)
