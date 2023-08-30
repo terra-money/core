@@ -14,25 +14,116 @@ import (
 	bindings "github.com/terra-money/core/v2/x/tokenfactory/bindings/types"
 )
 
-func TestQueryFullDenom(t *testing.T) {
-	actor := RandomAccountAddress()
-	tokenz, ctx := SetupCustomApp(t, actor)
-
-	reflect := instantiateReflectContract(t, ctx, tokenz, actor)
+func TestQuery(t *testing.T) {
+	// Setup the environment and fund the user accounts
+	user := RandomAccountAddress()
+	app, ctx := SetupCustomApp(t, user)
+	reflect := instantiateReflectContract(t, ctx, app, user)
 	require.NotEmpty(t, reflect)
+	fundAccount(t, ctx, app, reflect, sdk.Coins{sdk.NewInt64Coin("uluna", 100_000_000_000)})
 
-	// query full denom
+	// Create ustart and ustart2 denoms thoguht the smart contract to
+	// query and validate the query binding are working as expected
+	msg := bindings.TokenMsg{CreateDenom: &bindings.CreateDenom{
+		Subdenom: "ustart",
+	}}
+	err := executeCustom(t, ctx, app, reflect, user, msg, sdk.Coin{})
+	require.NoError(t, err)
+	msg = bindings.TokenMsg{CreateDenom: &bindings.CreateDenom{
+		Subdenom: "ustart2",
+	}}
+	err = executeCustom(t, ctx, app, reflect, user, msg, sdk.Coin{})
+	require.NoError(t, err)
+
+	// Query params info
 	query := bindings.TokenQuery{
+		Params: &bindings.GetParams{},
+	}
+	paramsRes := bindings.ParamsResponse{}
+	err = queryCustom(t, ctx, app, reflect, query, &paramsRes)
+	require.NoError(t, err)
+
+	require.EqualValues(t, bindings.ParamsResponse{
+		Params: bindings.Params{
+			DenomCreationFee: []wasmvmtypes.Coin{
+				{
+					Denom:  "uluna",
+					Amount: "10000000",
+				},
+			},
+		},
+	}, paramsRes)
+
+	// Query full denom name throught wasm binding
+	query = bindings.TokenQuery{
 		FullDenom: &bindings.FullDenom{
 			CreatorAddr: reflect.String(),
 			Subdenom:    "ustart",
 		},
 	}
-	resp := bindings.FullDenomResponse{}
-	queryCustom(t, ctx, tokenz, reflect, query, &resp)
+	fulldenomresp := bindings.FullDenomResponse{}
+	err = queryCustom(t, ctx, app, reflect, query, &fulldenomresp)
+	require.NoError(t, err)
 
-	expected := fmt.Sprintf("factory/%s/ustart", reflect.String())
-	require.EqualValues(t, expected, resp.Denom)
+	require.EqualValues(t,
+		fmt.Sprintf("factory/%s/ustart", reflect.String()),
+		fulldenomresp.Denom,
+	)
+
+	// Query metadata thoguht wasm binding
+	query = bindings.TokenQuery{
+		Metadata: &bindings.GetMetadata{
+			Denom: fmt.Sprintf("factory/%s/ustart", reflect.String()),
+		},
+	}
+	metadataRes := bindings.MetadataResponse{}
+	err = queryCustom(t, ctx, app, reflect, query, &metadataRes)
+	require.NoError(t, err)
+
+	require.EqualValues(t, bindings.MetadataResponse{
+		Metadata: &bindings.Metadata{
+			Description: "",
+			Base:        fmt.Sprintf("factory/%s/ustart", reflect.String()),
+			Display:     "",
+			Name:        "",
+			Symbol:      "",
+			DenomUnits: []bindings.DenomUnit{
+				{
+					Denom:    fmt.Sprintf("factory/%s/ustart", reflect.String()),
+					Exponent: 0,
+					Aliases:  nil,
+				},
+			},
+		},
+	}, metadataRes)
+
+	// Query denom admin thoguht wasm binding
+	query = bindings.TokenQuery{
+		Admin: &bindings.DenomAdmin{
+			Denom: fmt.Sprintf("factory/%s/ustart", reflect.String()),
+		},
+	}
+	adminresp := bindings.AdminResponse{}
+	err = queryCustom(t, ctx, app, reflect, query, &adminresp)
+	require.NoError(t, err)
+
+	require.EqualValues(t, reflect.String(), adminresp.Admin)
+
+	// Query all denoms by user thoguht wasm binding
+	query = bindings.TokenQuery{
+		DenomsByCreator: &bindings.DenomsByCreator{
+			Creator: reflect.String(),
+		},
+	}
+	denomsbycreator := bindings.DenomsByCreatorResponse{}
+	err = queryCustom(t, ctx, app, reflect, query, &denomsbycreator)
+	require.NoError(t, err)
+
+	expected := []string{
+		fmt.Sprintf("factory/%s/ustart", reflect.String()),
+		fmt.Sprintf("factory/%s/ustart2", reflect.String()),
+	}
+	require.EqualValues(t, expected, denomsbycreator.Denoms)
 }
 
 type ReflectQuery struct {
@@ -47,14 +138,15 @@ type ChainResponse struct {
 	Data []byte `json:"data"`
 }
 
-func queryCustom(t *testing.T, ctx sdk.Context, tokenz *app.TerraApp, contract sdk.AccAddress, request bindings.TokenQuery, response interface{}) {
+func queryCustom(t *testing.T, ctx sdk.Context, app *app.TerraApp, contract sdk.AccAddress, request bindings.TokenQuery, response interface{}) error {
 	t.Helper()
 	wrapped := bindings.TokenFactoryQuery{
 		Token: &request,
 	}
 	msgBz, err := json.Marshal(wrapped)
-	require.NoError(t, err)
-	fmt.Println(string(msgBz))
+	if err != nil {
+		return err
+	}
 
 	query := ReflectQuery{
 		Chain: &ChainRequest{
@@ -62,14 +154,25 @@ func queryCustom(t *testing.T, ctx sdk.Context, tokenz *app.TerraApp, contract s
 		},
 	}
 	queryBz, err := json.Marshal(query)
-	require.NoError(t, err)
-	fmt.Println(string(queryBz))
+	if err != nil {
+		return err
+	}
 
-	resBz, err := tokenz.WasmKeeper.QuerySmart(ctx, contract, queryBz)
-	require.NoError(t, err)
+	resBz, err := app.WasmKeeper.QuerySmart(ctx, contract, queryBz)
+	if err != nil {
+		return err
+	}
+
 	var resp ChainResponse
 	err = json.Unmarshal(resBz, &resp)
-	require.NoError(t, err)
+	if err != nil {
+		return err
+	}
+
 	err = json.Unmarshal(resp.Data, response)
-	require.NoError(t, err)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

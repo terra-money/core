@@ -42,9 +42,138 @@ func TestCreateDenomMsg(t *testing.T) {
 		},
 	}
 	resp := bindings.FullDenomResponse{}
-	queryCustom(t, ctx, app, reflect, query, &resp)
+	err = queryCustom(t, ctx, app, reflect, query, &resp)
+	require.NoError(t, err)
 
 	require.Equal(t, resp.Denom, fmt.Sprintf("factory/%s/SUN", reflect.String()))
+}
+
+func TestSetMetadata(t *testing.T) {
+	creator := RandomAccountAddress()
+	app, ctx := SetupCustomApp(t, creator)
+
+	lucky := RandomAccountAddress()
+	reflect := instantiateReflectContract(t, ctx, app, lucky)
+	require.NotEmpty(t, reflect)
+
+	// Fund reflect contract with 100 base denom creation fees
+	reflectAmount := sdk.NewCoins(sdk.NewCoin(types.DefaultParams().DenomCreationFee[0].Denom, types.DefaultParams().DenomCreationFee[0].Amount.MulRaw(100)))
+	fundAccount(t, ctx, app, reflect, reflectAmount)
+	// create denom
+	msg := bindings.TokenMsg{CreateDenom: &bindings.CreateDenom{
+		Subdenom: "SUN",
+		Metadata: &bindings.Metadata{
+			Description: "SUN is a stablecoin pegged to the value of the sun",
+			Display:     "SUN",
+			DenomUnits: []bindings.DenomUnit{
+				{
+					Denom:    "factory/cosmos14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s4hmalr/SUN",
+					Exponent: 0,
+					Aliases:  []string{"SUN"},
+				},
+				{
+					Denom:    "SUN",
+					Exponent: 2,
+					Aliases:  []string{"SUN"},
+				},
+			},
+			Base:   "factory/cosmos14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s4hmalr/SUN",
+			Name:   "SUN",
+			Symbol: "SUN",
+		},
+	}}
+	err := executeCustom(t, ctx, app, reflect, lucky, msg, sdk.Coin{})
+	require.NoError(t, err)
+
+	// Set Metadata
+	setMetadataMsg := bindings.TokenMsg{SetMetadata: &bindings.SetMetadata{
+		Denom: "factory/cosmos14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s4hmalr/SUN",
+		Metadata: bindings.Metadata{
+			Description: "SUN is a stablecoin pegged to the value of the sun",
+			Display:     "SUN",
+			DenomUnits: []bindings.DenomUnit{
+				{
+					Denom:    "factory/cosmos14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s4hmalr/SUN",
+					Exponent: 0,
+					Aliases:  []string{"SUN"},
+				},
+				{
+					Denom:    "SUN",
+					Exponent: 2,
+					Aliases:  []string{"SUN"},
+				},
+			},
+			Base:   "factory/cosmos14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s4hmalr/SUN",
+			Name:   "SUN",
+			Symbol: "SUN",
+		},
+	}}
+	err = executeCustom(t, ctx, app, reflect, lucky, setMetadataMsg, sdk.Coin{})
+	require.NoError(t, err)
+
+	// query the denom and see if it matches
+	query := bindings.TokenQuery{
+		FullDenom: &bindings.FullDenom{
+			CreatorAddr: reflect.String(),
+			Subdenom:    "SUN",
+		},
+	}
+	resp := bindings.FullDenomResponse{}
+	err = queryCustom(t, ctx, app, reflect, query, &resp)
+	require.NoError(t, err)
+
+	require.Equal(t, resp.Denom, fmt.Sprintf("factory/%s/SUN", reflect.String()))
+}
+func TestChangeAdminMsg(t *testing.T) {
+	creator := RandomAccountAddress()
+	app, ctx := SetupCustomApp(t, creator)
+
+	lucky := RandomAccountAddress()
+	reflect := instantiateReflectContract(t, ctx, app, lucky)
+	require.NotEmpty(t, reflect)
+
+	// Fund reflect contract with 100 base denom creation fees
+	reflectAmount := sdk.NewCoins(sdk.NewCoin(types.DefaultParams().DenomCreationFee[0].Denom, types.DefaultParams().DenomCreationFee[0].Amount.MulRaw(100)))
+	fundAccount(t, ctx, app, reflect, reflectAmount)
+
+	// Create the SUN denom
+	msg := bindings.TokenMsg{CreateDenom: &bindings.CreateDenom{
+		Subdenom: "SUN",
+	}}
+	err := executeCustom(t, ctx, app, reflect, lucky, msg, sdk.Coin{})
+	require.NoError(t, err)
+
+	// Change admin to creator
+	msg = bindings.TokenMsg{ChangeAdmin: &bindings.ChangeAdmin{
+		Denom:           fmt.Sprintf("factory/%s/SUN", reflect.String()),
+		NewAdminAddress: creator.String(),
+	}}
+	err = executeCustom(t, ctx, app, reflect, lucky, msg, sdk.Coin{})
+	require.NoError(t, err)
+
+	// Query denomm admin
+	query := bindings.TokenQuery{
+		Admin: &bindings.DenomAdmin{
+			Denom: fmt.Sprintf("factory/%s/SUN", reflect.String()),
+		},
+	}
+	resp := bindings.AdminResponse{}
+	err = queryCustom(t, ctx, app, reflect, query, &resp)
+	require.NoError(t, err)
+	require.Equal(t, creator.String(), resp.Admin)
+
+	// query the denom and see if it matches
+	query = bindings.TokenQuery{
+		FullDenom: &bindings.FullDenom{
+			CreatorAddr: reflect.String(),
+			Subdenom:    "SUN",
+		},
+	}
+	fullDenomRes := bindings.FullDenomResponse{}
+	err = queryCustom(t, ctx, app, reflect, query, &fullDenomRes)
+	require.NoError(t, err)
+
+	require.Equal(t, fullDenomRes.Denom, fmt.Sprintf("factory/%s/SUN", reflect.String()))
 }
 
 func TestCreateDenomWithMetadataMsg(t *testing.T) {
@@ -92,7 +221,8 @@ func TestCreateDenomWithMetadataMsg(t *testing.T) {
 		},
 	}
 	resp := bindings.FullDenomResponse{}
-	queryCustom(t, ctx, app, reflect, query, &resp)
+	err = queryCustom(t, ctx, app, reflect, query, &resp)
+	require.NoError(t, err)
 
 	require.Equal(t, resp.Denom, fmt.Sprintf("factory/%s/SUN", reflect.String()))
 }
@@ -145,7 +275,8 @@ func TestMintMsg(t *testing.T) {
 		},
 	}
 	resp := bindings.FullDenomResponse{}
-	queryCustom(t, ctx, app, reflect, query, &resp)
+	err = queryCustom(t, ctx, app, reflect, query, &resp)
+	require.NoError(t, err)
 
 	require.Equal(t, resp.Denom, coin.Denom)
 
@@ -167,7 +298,8 @@ func TestMintMsg(t *testing.T) {
 		},
 	}
 	resp = bindings.FullDenomResponse{}
-	queryCustom(t, ctx, app, reflect, query, &resp)
+	err = queryCustom(t, ctx, app, reflect, query, &resp)
+	require.NoError(t, err)
 
 	require.Equal(t, resp.Denom, coin.Denom)
 
@@ -203,7 +335,8 @@ func TestMintMsg(t *testing.T) {
 		},
 	}
 	resp = bindings.FullDenomResponse{}
-	queryCustom(t, ctx, app, reflect, query, &resp)
+	err = queryCustom(t, ctx, app, reflect, query, &resp)
+	require.NoError(t, err)
 
 	require.Equal(t, resp.Denom, coin.Denom)
 
@@ -220,7 +353,8 @@ func TestMintMsg(t *testing.T) {
 		},
 	}
 	resp = bindings.FullDenomResponse{}
-	queryCustom(t, ctx, app, reflect, query, &resp)
+	err = queryCustom(t, ctx, app, reflect, query, &resp)
+	require.NoError(t, err)
 
 	require.Equal(t, resp.Denom, coin.Denom)
 }
