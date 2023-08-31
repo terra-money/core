@@ -3,6 +3,7 @@ package keeper
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	accountkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
@@ -30,4 +31,28 @@ func NewBaseKeeper(
 	}
 
 	return keeper
+}
+
+// Set the bank hooks
+func (k *Keeper) SetHooks(bh customterratypes.BankHooks) *Keeper {
+	if k.hooks != nil {
+		panic("cannot set bank hooks twice")
+	}
+
+	k.hooks = bh
+
+	return k
+}
+
+// SendCoins transfers amt coins from a sending account to a receiving account.
+// An error is returned upon failure.
+func (k Keeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error {
+	// BlockBeforeSend hook should always be called before the TrackBeforeSend hook.
+	err := k.BlockBeforeSend(ctx, fromAddr, toAddr, amt)
+	if err != nil {
+		return err
+	}
+	k.TrackBeforeSend(ctx, fromAddr, toAddr, amt)
+
+	return k.Keeper.BaseKeeper.SendCoins(ctx, fromAddr, toAddr, amt)
 }

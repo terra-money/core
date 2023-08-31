@@ -141,12 +141,12 @@ import (
 	tokenfactorykeeper "github.com/terra-money/core/v2/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
-	bankkeeper "github.com/terra-money/alliance/custom/bank/keeper"
 	"github.com/terra-money/alliance/x/alliance"
 	allianceclient "github.com/terra-money/alliance/x/alliance/client"
 	alliancekeeper "github.com/terra-money/alliance/x/alliance/keeper"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	terracustombank "github.com/terra-money/core/v2/custom/bank"
+	custombankkeeper "github.com/terra-money/core/v2/custom/bank/keeper"
 
 	pobabci "github.com/skip-mev/pob/abci"
 	pobmempool "github.com/skip-mev/pob/mempool"
@@ -315,7 +315,7 @@ type TerraApp struct {
 
 	// keepers
 	AccountKeeper         authkeeper.AccountKeeper
-	BankKeeper            bankkeeper.Keeper
+	BankKeeper            custombankkeeper.Keeper
 	CapabilityKeeper      *capabilitykeeper.Keeper
 	StakingKeeper         *stakingkeeper.Keeper
 	SlashingKeeper        slashingkeeper.Keeper
@@ -451,7 +451,7 @@ func NewTerraApp(
 		terraappconfig.AccountAddressPrefix,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	app.BankKeeper = bankkeeper.NewBaseKeeper(
+	app.BankKeeper = custombankkeeper.NewBaseKeeper(
 		appCodec,
 		keys[banktypes.StoreKey],
 		app.AccountKeeper,
@@ -542,6 +542,12 @@ func NewTerraApp(
 		app.BankKeeper,
 		app.DistrKeeper,
 		appCodec,
+	)
+
+	app.BankKeeper.SetHooks(
+		custombankkeeper.NewMultiBankHooks(
+			app.TokenFactoryKeeper.Hooks(),
+		),
 	)
 
 	// Create IBC Keeper
