@@ -543,13 +543,6 @@ func NewTerraApp(
 		app.DistrKeeper,
 		appCodec,
 	)
-
-	app.BankKeeper.SetHooks(
-		custombankkeeper.NewMultiBankHooks(
-			app.TokenFactoryKeeper.Hooks(),
-		),
-	)
-
 	// Create IBC Keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec,
@@ -680,7 +673,15 @@ func NewTerraApp(
 	)
 
 	app.Ics20WasmHooks.ContractKeeper = &app.WasmKeeper
-
+	// Setup the contract app.WasmKeeper before the
+	// hook for the BankKeeper othrwise the WasmKeeper
+	// will be nil inside the hooks.
+	app.TokenFactoryKeeper.SetContractKeeper(app.WasmKeeper)
+	app.BankKeeper.SetHooks(
+		custombankkeeper.NewMultiBankHooks(
+			app.TokenFactoryKeeper.Hooks(),
+		),
+	)
 	// register wasm gov proposal types
 	enabledProposals := GetEnabledProposals()
 	if len(enabledProposals) != 0 {
