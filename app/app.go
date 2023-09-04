@@ -1134,6 +1134,7 @@ func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			app.IBCKeeper.ClientKeeper,
 			app.ParamsKeeper,
 			app.ConsensusParamsKeeper,
+			app.ICAControllerKeeper,
 		),
 	)
 }
