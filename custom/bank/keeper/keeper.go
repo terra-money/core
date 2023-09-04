@@ -7,6 +7,7 @@ import (
 	accountkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	custombankkeeper "github.com/terra-money/alliance/custom/bank/keeper"
 	customterratypes "github.com/terra-money/core/v2/custom/bank/types"
 )
@@ -14,6 +15,7 @@ import (
 type Keeper struct {
 	custombankkeeper.Keeper
 	hooks customterratypes.BankHooks
+	ak    accountkeeper.AccountKeeper
 }
 
 var _ bankkeeper.Keeper = Keeper{}
@@ -28,6 +30,7 @@ func NewBaseKeeper(
 	keeper := Keeper{
 		Keeper: custombankkeeper.NewBaseKeeper(cdc, storeKey, ak, blockedAddrs, authority),
 		hooks:  nil,
+		ak:     ak,
 	}
 
 	return keeper
@@ -54,5 +57,22 @@ func (k Keeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.A
 	}
 	k.TrackBeforeSend(ctx, fromAddr, toAddr, amt)
 
-	return k.Keeper.BaseKeeper.SendCoins(ctx, fromAddr, toAddr, amt)
+	return k.Keeper.SendCoins(ctx, fromAddr, toAddr, amt)
+}
+
+// SendCoinsFromModuleToManyAccounts transfers coins from a ModuleAccount to multiple AccAddresses.
+// It will panic if the module account does not exist. An error is returned if
+// the recipient address is black-listed or if sending the tokens fails.
+func (k Keeper) SendCoinsFromModuleToModule(ctx sdk.Context, senderModule, recipientModule string, amt sdk.Coins) error {
+	senderAddr := k.ak.GetModuleAddress(senderModule)
+	if senderAddr == nil {
+		panic(sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", senderModule))
+	}
+
+	recipientAcc := k.ak.GetModuleAccount(ctx, recipientModule)
+	if recipientAcc == nil {
+		panic(sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", recipientModule))
+	}
+
+	return k.Keeper.SendCoins(ctx, senderAddr, recipientAcc.GetAddress(), amt)
 }
