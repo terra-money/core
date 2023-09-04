@@ -882,7 +882,7 @@ func NewTerraApp(
 
 	config := pobmempool.NewDefaultAuctionFactory(encodingConfig.TxConfig.TxDecoder())
 	// when maxTx is set as 0, there won't be a limit on the number of txs in this mempool
-	mempool := pobmempool.NewAuctionMempool(encodingConfig.TxConfig.TxDecoder(), encodingConfig.TxConfig.TxEncoder(), 0, config)
+	pobMempool := pobmempool.NewAuctionMempool(encodingConfig.TxConfig.TxDecoder(), encodingConfig.TxConfig.TxEncoder(), 0, config)
 
 	anteHandler, err := ante.NewAnteHandler(
 		ante.HandlerOptions{
@@ -898,7 +898,7 @@ func NewTerraApp(
 			WasmConfig:        wasmConfig.ToWasmConfig(),
 			PobBuilderKeeper:  app.BuilderKeeper,
 			TxConfig:          encodingConfig.TxConfig,
-			PobMempool:        mempool,
+			PobMempool:        pobMempool,
 		},
 	)
 	if err != nil {
@@ -907,7 +907,7 @@ func NewTerraApp(
 
 	// Create the proposal handler that will be used to build and validate blocks.
 	handler := pobabci.NewProposalHandler(
-		mempool,
+		pobMempool,
 		bApp.Logger(),
 		anteHandler,
 		encodingConfig.TxConfig.TxEncoder(),
@@ -920,7 +920,7 @@ func NewTerraApp(
 	checkTxHandler := pobabci.NewCheckTxHandler(
 		app.BaseApp,
 		encodingConfig.TxConfig.TxDecoder(),
-		mempool,
+		pobMempool,
 		anteHandler,
 		app.ChainID(),
 	)
@@ -930,7 +930,7 @@ func NewTerraApp(
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
-	app.SetMempool(mempool)
+	app.SetMempool(pobMempool)
 	app.SetCheckTx(checkTxHandler.CheckTx())
 
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
