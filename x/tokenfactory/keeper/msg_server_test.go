@@ -22,6 +22,7 @@ func (s *KeeperTestSuite) TestMintDenomMsg() {
 		admin                 string
 		valid                 bool
 		expectedMessageEvents int
+		expectedResType       interface{}
 	}{
 		{
 			desc:      "denom does not exist",
@@ -37,6 +38,7 @@ func (s *KeeperTestSuite) TestMintDenomMsg() {
 			admin:                 s.TestAccs[0].String(),
 			valid:                 true,
 			expectedMessageEvents: 2,
+			expectedResType:       &types.MsgMintResponse{},
 		},
 	} {
 		s.Run(fmt.Sprintf("Case %s", tc.desc), func() {
@@ -46,19 +48,23 @@ func (s *KeeperTestSuite) TestMintDenomMsg() {
 			mint := types.NewMsgMint(tc.admin, sdk.NewInt64Coin(tc.mintDenom, 10))
 			err := mint.ValidateBasic()
 			s.Require().NoError(err)
-			_, err = s.msgServer.Mint(sdk.WrapSDKContext(ctx), mint)
+			res, err := s.msgServer.Mint(sdk.WrapSDKContext(ctx), mint)
 
 			mintTo := types.NewMsgMintTo(tc.admin, sdk.NewInt64Coin(tc.mintDenom, 10), tc.admin)
 			err2 := mintTo.ValidateBasic()
 			s.Require().NoError(err2)
-			_, err2 = s.msgServer.Mint(sdk.WrapSDKContext(ctx), mintTo)
+			res2, err2 := s.msgServer.Mint(sdk.WrapSDKContext(ctx), mintTo)
 
 			if tc.valid {
 				s.Require().NoError(err)
 				s.Require().NoError(err2)
+				s.Require().Equal(tc.expectedResType, res)
+				s.Require().Equal(tc.expectedResType, res2)
 			} else {
 				s.Require().Error(err)
 				s.Require().Error(err2)
+				s.Require().Nil(res)
+				s.Require().Nil(res2)
 			}
 			// Ensure current number and type of event is emitted
 			s.AssertEventEmitted(ctx, types.TypeMsgMint, tc.expectedMessageEvents)
@@ -85,6 +91,7 @@ func (s *KeeperTestSuite) TestForceTransferMsg() {
 		transferTo            string
 		valid                 bool
 		expectedMessageEvents int
+		expectedResType       interface{}
 	}{
 		{
 			desc:                  "success case",
@@ -93,6 +100,7 @@ func (s *KeeperTestSuite) TestForceTransferMsg() {
 			transferTo:            s.TestAccs[1].String(),
 			valid:                 true,
 			expectedMessageEvents: 1,
+			expectedResType:       &types.MsgForceTransferResponse{},
 		},
 		{
 			desc:                  "fail to transfer because user that force transfer is not the admin",
@@ -111,11 +119,13 @@ func (s *KeeperTestSuite) TestForceTransferMsg() {
 			err := msg.ValidateBasic()
 			s.Require().NoError(err)
 
-			_, err = s.msgServer.ForceTransfer(ctx, msg)
+			res, err := s.msgServer.ForceTransfer(ctx, msg)
 			if tc.valid {
 				s.Require().NoError(err)
+				s.Require().Equal(tc.expectedResType, res)
 			} else {
 				s.Require().Error(err)
+				s.Require().Nil(res)
 			}
 			// Ensure current number and type of event is emitted
 			s.AssertEventEmitted(ctx, types.TypeMsgForceTransfer, tc.expectedMessageEvents)
