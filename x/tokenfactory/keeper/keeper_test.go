@@ -15,14 +15,14 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/terra-money/core/v2/app/app_testing"
+	app "github.com/terra-money/core/v2/app/app_test"
 	"github.com/terra-money/core/v2/app/config"
 	"github.com/terra-money/core/v2/x/tokenfactory/keeper"
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
 type KeeperTestSuite struct {
-	app_testing.AppTestSuite
+	app.AppTestSuite
 
 	queryClient    types.QueryClient
 	msgServer      types.MsgServer

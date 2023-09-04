@@ -2,12 +2,18 @@ package keeper_test
 
 import (
 	"fmt"
+	"testing"
 
+	"github.com/stretchr/testify/suite"
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
+
+func TestKeeperMsgServer(t *testing.T) {
+	suite.Run(t, new(KeeperTestSuite))
+}
 
 // TestMintDenomMsg tests TypeMsgMint message is emitted on a successful mint
 func (s *KeeperTestSuite) TestMintDenomMsg() {

@@ -1,4 +1,4 @@
-package app_testing
+package app
 
 // DONTCOVER
 
