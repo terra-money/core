@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 
 	"github.com/cometbft/cometbft/libs/log"
@@ -10,9 +11,9 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/terra-money/core/v2/x/tokenfactory/types"
-
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	customtypes "github.com/terra-money/core/v2/custom/bank/keeper"
+	"github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
 type (
@@ -22,7 +23,7 @@ type (
 		paramSpace paramtypes.Subspace
 
 		accountKeeper  types.AccountKeeper
-		bankKeeper     types.BankKeeper
+		bankKeeper     customtypes.Keeper
 		contractKeeper types.ContractKeeper
 
 		communityPoolKeeper types.CommunityPoolKeeper
@@ -36,7 +37,7 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	paramSpace paramtypes.Subspace,
 	accountKeeper types.AccountKeeper,
-	bankKeeper types.BankKeeper,
+	bankKeeper customtypes.Keeper,
 	communityPoolKeeper types.CommunityPoolKeeper,
 	cdc codec.BinaryCodec,
 ) Keeper {

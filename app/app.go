@@ -141,12 +141,12 @@ import (
 	tokenfactorykeeper "github.com/terra-money/core/v2/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
-	alliancebank "github.com/terra-money/alliance/custom/bank"
-	bankkeeper "github.com/terra-money/alliance/custom/bank/keeper"
 	"github.com/terra-money/alliance/x/alliance"
 	allianceclient "github.com/terra-money/alliance/x/alliance/client"
 	alliancekeeper "github.com/terra-money/alliance/x/alliance/keeper"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
+	terracustombank "github.com/terra-money/core/v2/custom/bank"
+	custombankkeeper "github.com/terra-money/core/v2/custom/bank/keeper"
 
 	pobabci "github.com/skip-mev/pob/abci"
 	pobmempool "github.com/skip-mev/pob/mempool"
@@ -315,7 +315,7 @@ type TerraApp struct {
 
 	// keepers
 	AccountKeeper         authkeeper.AccountKeeper
-	BankKeeper            bankkeeper.Keeper
+	BankKeeper            custombankkeeper.Keeper
 	CapabilityKeeper      *capabilitykeeper.Keeper
 	StakingKeeper         *stakingkeeper.Keeper
 	SlashingKeeper        slashingkeeper.Keeper
@@ -451,7 +451,7 @@ func NewTerraApp(
 		terraappconfig.AccountAddressPrefix,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	app.BankKeeper = bankkeeper.NewBaseKeeper(
+	app.BankKeeper = custombankkeeper.NewBaseKeeper(
 		appCodec,
 		keys[banktypes.StoreKey],
 		app.AccountKeeper,
@@ -543,7 +543,6 @@ func NewTerraApp(
 		app.DistrKeeper,
 		appCodec,
 	)
-
 	// Create IBC Keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec,
@@ -674,7 +673,15 @@ func NewTerraApp(
 	)
 
 	app.Ics20WasmHooks.ContractKeeper = &app.WasmKeeper
-
+	// Setup the contract app.WasmKeeper before the
+	// hook for the BankKeeper othrwise the WasmKeeper
+	// will be nil inside the hooks.
+	app.TokenFactoryKeeper.SetContractKeeper(app.WasmKeeper)
+	app.BankKeeper.SetHooks(
+		custombankkeeper.NewMultiBankHooks(
+			app.TokenFactoryKeeper.Hooks(),
+		),
+	)
 	// register wasm gov proposal types
 	enabledProposals := GetEnabledProposals()
 	if len(enabledProposals) != 0 {
@@ -735,7 +742,7 @@ func NewTerraApp(
 		),
 		auth.NewAppModule(appCodec, app.AccountKeeper, nil, app.GetSubspace(authtypes.ModuleName)),
 		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper, app.DistrKeeper, app.StakingKeeper),
-		alliancebank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper, app.GetSubspace(alliancetypes.ModuleName)),
+		terracustombank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper, app.GetSubspace(alliancetypes.ModuleName)),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
