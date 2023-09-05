@@ -273,7 +273,7 @@ update-swagger-docs: statik
 
 apply-swagger: gen-swagger update-swagger-docs
 
-.PHONY: proto-all proto-gen gen-swagger update-swagger-docs apply-swagger
+.PHONY: proto-gen gen-swagger update-swagger-docs apply-swagger
 
 ########################################
 ### Tools & dependencies

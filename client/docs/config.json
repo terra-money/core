@@ -15,7 +15,7 @@
       }
     },
     {
-      "url": "./tmp-swagger-gen/cosmwasm/tokenfactory/v1beta1/query.swagger.json",
+      "url": "./tmp-swagger-gen/osmosis/tokenfactory/v1beta1/query.swagger.json",
       "operationIds": {
         "rename": {
           "Params": "TokenFactoryParams"
@@ -61,7 +61,7 @@
       "url": "./tmp-swagger-gen/cosmos/base/tendermint/v1beta1/query.swagger.json",
       "operationIds": {
         "rename": {
-          "Params": "BaseParams"
+          "Params": "TendermintBaseParams"
         }
       }
     },
@@ -82,13 +82,55 @@
       }
     },
     {
+      "url": "./tmp-swagger-gen/cosmos/base/node/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "CosmosBaseParams"
+        }
+      }
+    },
+    {
       "url": "./tmp-swagger-gen/cosmos/feegrant/v1beta1/query.swagger.json"
     },
     {
       "url": "./tmp-swagger-gen/cosmos/gov/v1beta1/query.swagger.json",
       "operationIds": {
         "rename": {
-          "Params": "GovParams"
+          "Params": "GovParams",
+          "Proposal": "GovProposal",
+          "Tally": "GovTally",
+          "TallyResult" : "GovTallyResult"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/gov/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "GovV1Params",
+          "Proposals": "GovV1Proposals",
+          "Proposal": "GovV1Proposal",
+          "Deposits": "GovV1Deposits",
+          "Deposit": "GovV1Deposit",
+          "TallyResult": "GovV1TallyResult",
+          "Votes": "GovV1Votes",
+          "Vote": "GovV1Vote"
+        }
+      }
+    },
+    {
+      "url" : "./tmp-swagger-gen/cosmos/consensus/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "ConsensusParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/group/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "GroupParams"
         }
       }
     },
@@ -185,6 +227,14 @@
       "operationIds": {
         "rename": {
           "Params": "IBCFee"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/router/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCRouterParams"
         }
       }
     }
