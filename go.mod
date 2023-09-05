@@ -4,9 +4,9 @@ go 1.20
 
 require (
 	github.com/CosmWasm/wasmd v0.30.0
-	github.com/cosmos/cosmos-sdk v0.46.11
+	github.com/cosmos/cosmos-sdk v0.46.12
 	github.com/cosmos/go-bip39 v1.0.0
-	github.com/cosmos/ibc-go/v6 v6.1.1
+	github.com/cosmos/ibc-go/v6 v6.2.0
 	github.com/cosmos/interchain-accounts v0.4.3
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.0
@@ -53,7 +53,7 @@ require (
 	github.com/confio/ics23/go v0.9.0 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3 // indirect
-	github.com/cosmos/gogoproto v1.4.6 // indirect
+	github.com/cosmos/gogoproto v1.4.8 // indirect
 	github.com/cosmos/gorocksdb v1.2.0 // indirect
 	github.com/cosmos/iavl v0.19.6 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.12.2 // indirect
@@ -169,7 +169,6 @@ replace (
 	// This is a temporary fix since the latest version updated some function signatures. To remove when updating to cosmos 47
 	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d
 	github.com/CosmWasm/wasmd => github.com/terra-money/wasmd v0.30.0-sdk469.5
-	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
 	github.com/cosmos/cosmos-sdk => github.com/terra-money/cosmos-sdk v0.46.13-terra.3
 	github.com/cosmos/ledger-cosmos-go => github.com/terra-money/ledger-terra-go v0.11.2
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
