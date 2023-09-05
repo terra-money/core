@@ -8,6 +8,9 @@ coverage:
       default:
         threshold: 10% # allow this much decrease on project
     changes: false
+    patch:
+      default:
+        threshold: 10%
 
 comment:
   layout: "reach, diff, files"
