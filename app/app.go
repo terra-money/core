@@ -95,6 +95,7 @@ import (
 
 	ica "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts"
 	// https://github.com/cosmos/interchain-accounts-demo
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router"
 	icacontroller "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller/types"
@@ -115,14 +116,13 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v6/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v6/modules/core/keeper"
-	"github.com/strangelove-ventures/packet-forward-middleware/v6/router"
 
 	intertx "github.com/cosmos/interchain-accounts/x/inter-tx"
 	intertxkeeper "github.com/cosmos/interchain-accounts/x/inter-tx/keeper"
 	intertxtypes "github.com/cosmos/interchain-accounts/x/inter-tx/types"
 
-	routerkeeper "github.com/strangelove-ventures/packet-forward-middleware/v6/router/keeper"
-	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v6/router/types"
+	routerkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/keeper"
+	routertypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/types"
 
 	ibchooks "github.com/terra-money/core/v2/x/ibc-hooks"
 	ibchookskeeper "github.com/terra-money/core/v2/x/ibc-hooks/keeper"

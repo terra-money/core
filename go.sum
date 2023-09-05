@@ -211,8 +211,8 @@ github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v0.3.0/go.mod h1:tPaiy8S5bQ
 github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 h1:UQHMgLO+TxOElx5B5HZ4hJQsoJ/PvUvKRhJHDQXO8P8=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d h1:nalkkPQcITbvhmL4+C4cKA87NW0tfm3Kl9VXRoPywFg=
-github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d/go.mod h1:URdX5+vg25ts3aCh8H5IFZybJYKWhJHYMTnf+ULtoC4=
+github.com/ChainSafe/go-schnorrkel v1.0.0 h1:3aDA67lAykLaG1y3AOjs88dMxC88PgUuHRrLeDnvGIM=
+github.com/ChainSafe/go-schnorrkel v1.0.0/go.mod h1:dpzHYVxLZcp8pjlV+O+UR8K0Hp/z7vcchBSbMBEhCw4=
 github.com/CosmWasm/wasmvm v1.1.2 h1:uvMk0iIJcFFUvdElmV9KQeeqRx7ESspxUrPjfCGki3M=
 github.com/CosmWasm/wasmvm v1.1.2/go.mod h1:ei0xpvomwSdONsxDuONzV7bL1jSET1M8brEx0FCXc+A=
 github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
@@ -375,6 +375,8 @@ github.com/cosmos/gorocksdb v1.2.0 h1:d0l3jJG8M4hBouIZq0mDUHZ+zjOx044J3nGRskwTb4
 github.com/cosmos/gorocksdb v1.2.0/go.mod h1:aaKvKItm514hKfNJpUJXnnOWeBnk2GL4+Qw9NHizILw=
 github.com/cosmos/iavl v0.19.6 h1:XY78yEeNPrEYyNCKlqr9chrwoeSDJ0bV2VjocTk//OU=
 github.com/cosmos/iavl v0.19.6/go.mod h1:X9PKD3J0iFxdmgNLa7b2LYWdsGd90ToV5cAONApkEPw=
+github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6 v6.1.0 h1:/0cGpVlFzOwRbHTPGgjUcWbuly5aiC5mD5SJoQilwdI=
+github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6 v6.1.0/go.mod h1:lrm2Uqvtz2YxybGVtE+ER+CPh1Lx5PGFy0kIWtPOHoU=
 github.com/cosmos/ibc-go/v6 v6.2.0 h1:HKS5WNxQrlmjowHb73J9LqlNJfvTnvkbhXZ9QzNTU7Q=
 github.com/cosmos/ibc-go/v6 v6.2.0/go.mod h1:+S3sxcNwOhgraYDJAhIFDg5ipXHaUnJrg7tOQqGyWlc=
 github.com/cosmos/interchain-accounts v0.4.3 h1:WedxEa/Hj/2GY7AF6CafkEPJ/Z9rhl3rT1mRwNHsdts=
@@ -1061,8 +1063,6 @@ github.com/spf13/viper v1.3.2/go.mod h1:ZiWeW+zYFKm7srdB9IoDzzZXaJaI5eL9QjNiN/DM
 github.com/spf13/viper v1.15.0 h1:js3yy885G8xwJa6iOISGFwd+qlUo5AvyXb7CiihdtiU=
 github.com/spf13/viper v1.15.0/go.mod h1:fFcTBJxvhhzSJiZy8n+PeW6t8l+KeT/uTARa0jHOQLA=
 github.com/status-im/keycard-go v0.0.0-20190316090335-8537d3370df4/go.mod h1:RZLeN1LMWmRsyYjvAu+I6Dm9QmlDaIIt+Y+4Kd7Tp+Q=
-github.com/strangelove-ventures/packet-forward-middleware/v6 v6.0.2 h1:YzEbpmjBmccYK9rZP6p9L1SdAHJPs2X03zfAJdNwlag=
-github.com/strangelove-ventures/packet-forward-middleware/v6 v6.0.2/go.mod h1:/4sIvoLvNKs7g2ExwRqi8Sfg+5nFqzwGdb+A07FnYYM=
 github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/streadway/handy v0.0.0-20190108123426-d5acb3125c2a/go.mod h1:qNTQ5P5JnDBl6z3cMAg/SywNDC5ABu5ApDIw6lUbRmI=

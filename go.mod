@@ -6,6 +6,7 @@ require (
 	github.com/CosmWasm/wasmd v0.30.0
 	github.com/cosmos/cosmos-sdk v0.46.15
 	github.com/cosmos/go-bip39 v1.0.0
+	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6 v6.1.0
 	github.com/cosmos/ibc-go/v6 v6.2.0
 	github.com/cosmos/interchain-accounts v0.4.3
 	github.com/golang/mock v1.6.0
@@ -17,7 +18,6 @@ require (
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
-	github.com/strangelove-ventures/packet-forward-middleware/v6 v6.0.2
 	github.com/stretchr/testify v1.8.2
 	github.com/tendermint/tendermint v0.34.28
 	github.com/tendermint/tm-db v0.6.8-0.20221109095132-774cdfe7e6b0
@@ -166,8 +166,6 @@ require (
 )
 
 replace (
-	// This is a temporary fix since the latest version updated some function signatures. To remove when updating to cosmos 47
-	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d
 	github.com/CosmWasm/wasmd => github.com/terra-money/wasmd v0.30.0-sdk469.5
 	github.com/cosmos/cosmos-sdk => github.com/terra-money/cosmos-sdk v0.46.13-terra.3
 	github.com/cosmos/ledger-cosmos-go => github.com/terra-money/ledger-terra-go v0.11.2

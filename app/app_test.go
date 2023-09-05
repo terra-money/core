@@ -39,11 +39,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router"
 	ica "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts"
 	"github.com/cosmos/ibc-go/v6/modules/apps/transfer"
 	ibc "github.com/cosmos/ibc-go/v6/modules/core"
 	"github.com/cosmos/ibc-go/v6/testing/mock"
-	"github.com/strangelove-ventures/packet-forward-middleware/v6/router"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
