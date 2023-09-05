@@ -35,6 +35,9 @@ coverage.txt
 profile.out
 sim_log_file
 
+_build
+.testnet
+
 # Vagrant
 .vagrant/
 *.box
