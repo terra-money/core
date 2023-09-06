@@ -1,44 +1,42 @@
 #!/bin/bash
 
-OLD_VERSION=v2.4.1
+OLD_VERSION=feat/mod/ver
 UPGRADE_HEIGHT=30
 CHAIN_ID=pisco-1
 CHAIN_HOME=_build/.testnet
 ROOT=$(pwd)
 DENOM=uluna
 SOFTWARE_UPGRADE_NAME="v2.5"
-SOFTWARE_UPGRADE_GIT_VERSION="v2.5.0-rc2"
 GOV_PERIOD="10s"
 
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
 WALLET_MNEMONIC_1="banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass"
 
+export OLD_BINARY=_build/terrad_old
+export NEW_BINARY=_build/terrad_new
 
-# underscore so that go tool will not take gocache into account
-mkdir -p _build/gocache
+rm -rf /tmp/terra
+mkdir -p _build
 
 # install old binary
-if ! command -v _build/old/terrad &> /dev/null
+if ! command -v $OLD_BINARY &> /dev/null
 then
-    mkdir -p _build/old
-    wget -c "https://github.com/terra-money/core/archive/refs/tags/${OLD_VERSION}.zip" -O _build/${OLD_VERSION}.zip
-    unzip _build/${OLD_VERSION}.zip -d _build
-    cd ./_build/core-${OLD_VERSION:1}
+    mkdir -p /tmp/terra
+    cd /tmp/terra
+    git clone https://github.com/terra-money/core
+    cd core
+    git checkout $OLD_VERSION
     make build
-    cp build/terrad ../old
-    cd ../..
+    cp /tmp/terra/core/build/terrad $ROOT/_build/terrad_old
+    cd $ROOT
 fi
 
 # install new binary
-if ! command -v _build/new/terrad &> /dev/null
+if ! command -v $NEW_BINARY &> /dev/null
 then
-  mkdir -p _build/new
   make build
-  cp build/terrad _build/new
+  cp build/terrad _build/terrad_new
 fi
-
-export OLD_BINARY=_build/old/terrad
-export NEW_BINARY=_build/new/terrad
 
 rm -rf $CHAIN_HOME
 # init genesis
@@ -90,7 +88,7 @@ echo '{
   "metadata": "",
   "deposit": "550000000'$DENOM'",
   "title": "Upgrade to '$SOFTWARE_UPGRADE_NAME'",
-  "summary": "Source Code Version https://github.com/terra-money/core/releases/tag/'$SOFTWARE_UPGRADE_GIT_VERSION'"
+  "summary": "Source Code Version https://github.com/terra-money/core"
 }' > _build/software-upgrade.json
 
 #
@@ -104,7 +102,7 @@ while true; do
     if [ $BLOCK_HEIGHT = "$UPGRADE_HEIGHT" ]; then
         # assuming running only 1 terrad
         echo "BLOCK HEIGHT = $UPGRADE_HEIGHT REACHED, KILLING OLD ONE"
-        pkill terrad
+        pkill terrad_old
         break
     else
         $OLD_BINARY query gov proposal 1 --output=json | jq ".status"
