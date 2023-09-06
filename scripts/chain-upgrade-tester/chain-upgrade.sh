@@ -16,7 +16,8 @@ export OLD_BINARY=_build/terrad_old
 export NEW_BINARY=_build/terrad_new
 
 rm -rf /tmp/terra
-mkdir -p _build
+rm -r _build
+mkdir _build
 
 # install old binary
 if ! command -v $OLD_BINARY &> /dev/null
@@ -101,7 +102,7 @@ while true; do
     BLOCK_HEIGHT=$($OLD_BINARY status | jq '.SyncInfo.latest_block_height' -r)
     if [ $BLOCK_HEIGHT = "$UPGRADE_HEIGHT" ]; then
         # assuming running only 1 terrad
-        echo "BLOCK HEIGHT = $UPGRADE_HEIGHT REACHED, KILLING OLD ONE"
+        echo "BLOCK HEIGHT = $UPGRADE_HEIGHT REACHED, STOPPING OLD ONE"
         pkill terrad_old
         break
     else
