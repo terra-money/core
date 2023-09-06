@@ -957,6 +957,13 @@ func NewTerraApp(
 				crisistypes.StoreKey,
 				pobtype.StoreKey,
 			},
+			Deleted: []string{
+				// Module intertx removed in v2.5 because it was never used
+				// (https://github.com/cosmos/interchain-accounts-demo)
+				// The same functionalities are availablein the interchain-accounts
+				// module commands available in scripts/tests/ica/delegate.sh
+				"intertx",
+			},
 		}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}

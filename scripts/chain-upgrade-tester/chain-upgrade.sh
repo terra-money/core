@@ -83,7 +83,6 @@ echo '{
         "name": "'"$SOFTWARE_UPGRADE_NAME"'",
         "time": "0001-01-01T00:00:00Z",
         "height": "'"$UPGRADE_HEIGHT"'",
-        "info": "{\"binaries\": {\"linux/amd64\": \"https://github.com/terra-money/core/releases/download/'$SOFTWARE_UPGRADE_GIT_VERSION'/terra_'$SOFTWARE_UPGRADE_GIT_VERSION'_Linux_x86_64.tar.gz?checksum=sha256:65db71d4a992ff8c4d3c5e47c0b7ec96a2fdfba98666225f8fb45e7ea662a34e\"}},",
         "upgraded_client_state": null
       }
     }
