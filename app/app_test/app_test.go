@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"testing"
 
@@ -12,9 +11,12 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	mocktestutils "github.com/cosmos/cosmos-sdk/testutil/mock"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+	ibcfee "github.com/cosmos/ibc-go/v7/modules/apps/29-fee"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+	"github.com/terra-money/alliance/x/alliance"
 	"github.com/terra-money/core/v2/app/wasmconfig"
+	"github.com/terra-money/core/v2/x/tokenfactory"
 
 	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -42,6 +44,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
 	ibc "github.com/cosmos/ibc-go/v7/modules/core"
@@ -128,41 +131,74 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	t.Cleanup(mockCtrl.Finish)
 	mockModule := mocktestutils.NewMockAppModuleWithAllExtensions(mockCtrl)
 	mockDefaultGenesis := json.RawMessage(`{"key": "value"}`)
-	mockModule.EXPECT().DefaultGenesis(gomock.Eq(app.AppCodec)).Times(1).Return(mockDefaultGenesis)
-	mockModule.EXPECT().InitGenesis(gomock.Eq(ctx), gomock.Eq(app.AppCodec), gomock.Eq(mockDefaultGenesis)).Times(1).Return(nil)
+	mockModule.EXPECT().DefaultGenesis(gomock.Eq(app.AppCodec())).Times(1).Return(mockDefaultGenesis)
+	mockModule.EXPECT().InitGenesis(gomock.Eq(ctx), gomock.Eq(app.AppCodec()), gomock.Eq(mockDefaultGenesis)).Times(1).Return(nil)
 	mockModule.EXPECT().ConsensusVersion().Times(1).Return(uint64(0))
 
 	app.GetModuleManager().Modules["mock"] = mockModule
-	fmt.Print(app.GetModuleManager())
+
 	// Run migrations only for "mock" module. We exclude it from
 	// the VersionMap to simulate upgrading with a new module.
 	res, err := app.GetModuleManager().RunMigrations(ctx, app.GetConfigurator(),
 		module.VersionMap{
-			"bank":                   bank.AppModule{}.ConsensusVersion(),
+			"alliance":               alliance.AppModule{}.ConsensusVersion(),
 			"auth":                   auth.AppModule{}.ConsensusVersion(),
 			"authz":                  authzmodule.AppModule{}.ConsensusVersion(),
-			"staking":                staking.AppModule{}.ConsensusVersion(),
-			"mint":                   mint.AppModule{}.ConsensusVersion(),
-			"distribution":           distribution.AppModule{}.ConsensusVersion(),
-			"slashing":               slashing.AppModule{}.ConsensusVersion(),
-			"gov":                    gov.AppModule{}.ConsensusVersion(),
-			"params":                 params.AppModule{}.ConsensusVersion(),
-			"upgrade":                upgrade.AppModule{}.ConsensusVersion(),
-			"feegrant":               feegrantmodule.AppModule{}.ConsensusVersion(),
-			"evidence":               evidence.AppModule{}.ConsensusVersion(),
-			"crisis":                 crisis.AppModule{}.ConsensusVersion(),
-			"genutil":                genutil.AppModule{}.ConsensusVersion(),
+			"bank":                   bank.AppModule{}.ConsensusVersion(),
 			"capability":             capability.AppModule{}.ConsensusVersion(),
-			"wasm":                   wasm.AppModule{}.ConsensusVersion(),
+			"crisis":                 crisis.AppModule{}.ConsensusVersion(),
+			"distribution":           distribution.AppModule{}.ConsensusVersion(),
+			"evidence":               evidence.AppModule{}.ConsensusVersion(),
+			"feegrant":               feegrantmodule.AppModule{}.ConsensusVersion(),
+			"feeibc":                 ibcfee.AppModule{}.ConsensusVersion(),
+			"genutil":                genutil.AppModule{}.ConsensusVersion(),
+			"gov":                    gov.AppModule{}.ConsensusVersion(),
 			"ibc":                    ibc.AppModule{}.ConsensusVersion(),
-			"transfer":               transfer.AppModule{}.ConsensusVersion(),
+			"ibchooks":               ibchooks.AppModule{}.ConsensusVersion(),
 			"interchainaccounts":     ica.AppModule{}.ConsensusVersion(),
+			"mint":                   mint.AppModule{}.ConsensusVersion(),
 			"packetfowardmiddleware": router.AppModule{}.ConsensusVersion(),
+			"params":                 params.AppModule{}.ConsensusVersion(),
+			"slashing":               slashing.AppModule{}.ConsensusVersion(),
+			"staking":                staking.AppModule{}.ConsensusVersion(),
+			"tokenfactory":           tokenfactory.AppModule{}.ConsensusVersion(),
+			"transfer":               transfer.AppModule{}.ConsensusVersion(),
+			"upgrade":                upgrade.AppModule{}.ConsensusVersion(),
 			"vesting":                vesting.AppModule{}.ConsensusVersion(),
+			"wasm":                   wasm.AppModule{}.ConsensusVersion(),
 		},
 	)
-	require.Empty(t, res)
 	require.NoError(t, err)
+	require.Equal(t, res, module.VersionMap{
+		"alliance":               4,
+		"auth":                   4,
+		"authz":                  2,
+		"bank":                   4,
+		"builder":                1,
+		"capability":             1,
+		"consensus":              1,
+		"crisis":                 2,
+		"distribution":           3,
+		"evidence":               1,
+		"feegrant":               2,
+		"feeibc":                 1,
+		"genutil":                1,
+		"gov":                    4,
+		"ibc":                    4,
+		"ibchooks":               1,
+		"interchainaccounts":     2,
+		"mint":                   2,
+		"mock":                   0,
+		"packetfowardmiddleware": 1,
+		"params":                 1,
+		"slashing":               3,
+		"staking":                4,
+		"tokenfactory":           2,
+		"transfer":               3,
+		"upgrade":                2,
+		"vesting":                1,
+		"wasm":                   4,
+	})
 }
 
 func TestLegacyAmino(t *testing.T) {
