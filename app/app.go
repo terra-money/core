@@ -1199,7 +1199,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(alliancetypes.ModuleName)
 
-	paramsKeeper.Subspace(wasmtypes.ModuleName)
+	paramsKeeper.Subspace(wasmtypes.ModuleName).WithKeyTable(wasmtypes.ParamKeyTable())
 
 	return paramsKeeper
 }
