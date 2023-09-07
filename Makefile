@@ -241,7 +241,6 @@ test-tokenfactory:
 test-chain-upgrade:
 	@echo "Testing software upgrade..."
 	bash ./scripts/tests/chain-upgrade/chain-upgrade.sh
-	clean-testing-data
 
 clean-testing-data:
 	@echo "Killing terrad and removing previous data"

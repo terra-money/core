@@ -16,6 +16,7 @@ const (
 	TypeMsgChangeAdmin       = "change_admin"
 	TypeMsgSetDenomMetadata  = "set_denom_metadata"
 	TypeMsgSetBeforeSendHook = "set_before_send_hook"
+	TypeMsgUpdateParams      = "update_params"
 )
 
 var _ sdk.Msg = &MsgCreateDenom{}
@@ -313,3 +314,42 @@ func (m MsgSetBeforeSendHook) GetSigners() []sdk.AccAddress {
 	sender, _ := sdk.AccAddressFromBech32(m.Sender)
 	return []sdk.AccAddress{sender}
 }
+
+var _ sdk.Msg = &MsgUpdateParams{}
+
+func NewMsgUpdateParams(authority string, params Params) *MsgUpdateParams {
+	return &MsgUpdateParams{
+		authority,
+		params,
+	}
+}
+
+func (msg *MsgUpdateParams) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
+		return sdkerrors.Wrap(err, "invalid authority address")
+	}
+
+	if err := msg.Params.Validate(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (msg MsgUpdateParams) Route() string {
+	return sdk.MsgTypeURL(&msg)
+}
+
+func (msg MsgUpdateParams) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
+}
+
+func (msg *MsgUpdateParams) GetSigners() []sdk.AccAddress {
+	signer, err := sdk.AccAddressFromBech32(msg.Authority)
+	if err != nil {
+		panic("Authority is not valid")
+	}
+	return []sdk.AccAddress{signer}
+}
+
+func (msg MsgUpdateParams) Type() string { return TypeMsgUpdateParams }

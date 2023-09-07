@@ -73,7 +73,8 @@ func (s *AppTestSuite) Setup() {
 	err = s.App.WasmKeeper.SetParams(s.Ctx, wasmtypes.DefaultParams())
 	s.Require().NoError(err)
 
-	s.App.TokenFactoryKeeper.SetParams(s.Ctx, tokenfactorytypes.DefaultParams())
+	err = s.App.TokenFactoryKeeper.SetParams(s.Ctx, tokenfactorytypes.DefaultParams())
+	s.Require().NoError(err)
 	s.App.DistrKeeper.SetFeePool(s.Ctx, distrtypes.InitialFeePool())
 }
 

@@ -11,7 +11,6 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	customtypes "github.com/terra-money/core/v2/custom/bank/keeper"
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
 )
@@ -20,40 +19,36 @@ type (
 	Keeper struct {
 		storeKey storetypes.StoreKey
 
-		paramSpace paramtypes.Subspace
-
 		accountKeeper  types.AccountKeeper
 		bankKeeper     customtypes.Keeper
 		contractKeeper types.ContractKeeper
 
 		communityPoolKeeper types.CommunityPoolKeeper
 
-		cdc codec.BinaryCodec
+		cdc       codec.BinaryCodec
+		authority string
 	}
 )
 
 // NewKeeper returns a new instance of the x/tokenfactory keeper
 func NewKeeper(
 	storeKey storetypes.StoreKey,
-	paramSpace paramtypes.Subspace,
 	accountKeeper types.AccountKeeper,
 	bankKeeper customtypes.Keeper,
 	communityPoolKeeper types.CommunityPoolKeeper,
 	cdc codec.BinaryCodec,
+	authority string,
 ) Keeper {
-	if !paramSpace.HasKeyTable() {
-		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
-	}
 
 	return Keeper{
-		storeKey:   storeKey,
-		paramSpace: paramSpace,
+		storeKey: storeKey,
 
 		accountKeeper:       accountKeeper,
 		bankKeeper:          bankKeeper,
 		communityPoolKeeper: communityPoolKeeper,
 
-		cdc: cdc,
+		cdc:       cdc,
+		authority: authority,
 	}
 }
 
@@ -91,4 +86,8 @@ func (k *Keeper) SetContractKeeper(contractKeeper types.ContractKeeper) {
 // and sends to the relevant address.
 func (k Keeper) CreateModuleAccount(ctx sdk.Context) {
 	k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }

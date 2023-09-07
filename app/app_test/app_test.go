@@ -193,7 +193,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 		"params":                 1,
 		"slashing":               3,
 		"staking":                4,
-		"tokenfactory":           2,
+		"tokenfactory":           3,
 		"transfer":               3,
 		"upgrade":                2,
 		"vesting":                1,

@@ -32,6 +32,8 @@ var (
 	BeforeSendHookAddressPrefixKey = "beforesendhook"
 )
 
+var ParamsKey = []byte{0x00}
+
 // GetDenomPrefixStore returns the store prefix where all the data associated with a specific denom
 // is stored
 func GetDenomPrefixStore(denom string) []byte {

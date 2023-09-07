@@ -23,7 +23,7 @@ func (suite *CodecTestSuite) TestRegisterInterfaces() {
 	RegisterInterfaces(registry)
 
 	impls := registry.ListImplementations(sdk.MsgInterfaceProtoName)
-	suite.Require().Equal(7, len(impls))
+	suite.Require().Equal(8, len(impls))
 	suite.Require().ElementsMatch([]string{
 		"/osmosis.tokenfactory.v1beta1.MsgForceTransfer",
 		"/osmosis.tokenfactory.v1beta1.MsgCreateDenom",
@@ -32,5 +32,6 @@ func (suite *CodecTestSuite) TestRegisterInterfaces() {
 		"/osmosis.tokenfactory.v1beta1.MsgChangeAdmin",
 		"/osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook",
 		"/osmosis.tokenfactory.v1beta1.MsgSetDenomMetadata",
+		"/osmosis.tokenfactory.v1beta1.MsgUpdateParams",
 	}, impls)
 }

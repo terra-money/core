@@ -1,15 +1,16 @@
 package v2
 
 import (
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/terra-money/core/v2/app/config"
+	"github.com/terra-money/core/v2/x/tokenfactory/exported"
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
-func MigrateStore(ctx sdk.Context, subspace paramtypes.Subspace) error {
+func MigrateStore(ctx sdk.Context, legacySubspace exported.Subspace, cdc codec.BinaryCodec) error {
 	var params types.Params
-	subspace.GetParamSetIfExists(ctx, &params)
+	legacySubspace.GetParamSetIfExists(ctx, &params)
 
 	// FIX: when token factory was implemented for the first time *denom creation fee* field was setup to
 	// nil which makes this migration fails. This if statement will fix the issue:
@@ -19,6 +20,6 @@ func MigrateStore(ctx sdk.Context, subspace paramtypes.Subspace) error {
 	}
 
 	params.DenomCreationGasConsume = types.DefaultCreationGasFee
-	subspace.SetParamSet(ctx, &params)
+	legacySubspace.SetParamSet(ctx, &params)
 	return nil
 }
