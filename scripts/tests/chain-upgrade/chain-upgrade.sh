@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OLD_VERSION=feat/mod/ver
+OLD_VERSION=release/v2.4
 UPGRADE_HEIGHT=30
 CHAIN_ID=pisco-1
 ROOT=$(pwd)
