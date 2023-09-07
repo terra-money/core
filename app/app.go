@@ -884,6 +884,7 @@ func (app *TerraApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abc
 		panic(err)
 	}
 	res := app.mm.InitGenesis(ctx, app.appCodec, genesisState)
+	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 
 	// stake all vesting tokens
 	app.enforceStakingForVestingTokens(ctx, genesisState)
