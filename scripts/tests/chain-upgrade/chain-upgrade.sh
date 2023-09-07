@@ -3,8 +3,8 @@
 OLD_VERSION=feat/mod/ver
 UPGRADE_HEIGHT=30
 CHAIN_ID=pisco-1
-CHAIN_HOME=_build/.testnet
 ROOT=$(pwd)
+CHAIN_HOME=$ROOT/_build/.testnet
 DENOM=uluna
 SOFTWARE_UPGRADE_NAME="v2.5"
 GOV_PERIOD="10s"
@@ -12,12 +12,12 @@ GOV_PERIOD="10s"
 VAL_MNEMONIC_1="clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion"
 WALLET_MNEMONIC_1="banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass"
 
-export OLD_BINARY=_build/terrad_old
-export NEW_BINARY=_build/terrad_new
+export OLD_BINARY=$ROOT/_build/terrad_old
+export NEW_BINARY=$ROOT/_build/terrad_new
 
 rm -rf /tmp/terra
-rm -r _build
-mkdir _build
+rm -r $ROOT/_build
+mkdir $ROOT/_build
 
 # install old binary
 if ! command -v $OLD_BINARY &> /dev/null
@@ -36,10 +36,9 @@ fi
 if ! command -v $NEW_BINARY &> /dev/null
 then
   make build
-  cp build/terrad _build/terrad_new
+  cp build/terrad $ROOT/_build/terrad_new
 fi
 
-rm -rf $CHAIN_HOME
 # init genesis
 $OLD_BINARY init test --home $CHAIN_HOME --chain-id=$CHAIN_ID
 echo $VAL_MNEMONIC_1 | $OLD_BINARY keys add val1 --home $CHAIN_HOME --recover --keyring-backend=test
@@ -90,10 +89,10 @@ echo '{
   "deposit": "550000000'$DENOM'",
   "title": "Upgrade to '$SOFTWARE_UPGRADE_NAME'",
   "summary": "Source Code Version https://github.com/terra-money/core"
-}' > _build/software-upgrade.json
+}' > $PWD/_build/software-upgrade.json
 
 #
-$OLD_BINARY tx gov submit-proposal _build/software-upgrade.json --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME  -y
+$OLD_BINARY tx gov submit-proposal $ROOT/_build/software-upgrade.json --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME  -y
 sleep 2
 $OLD_BINARY tx gov vote 1 yes --from val1 --keyring-backend test --chain-id $CHAIN_ID --home $CHAIN_HOME  -y
 #

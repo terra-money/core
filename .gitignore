@@ -21,7 +21,7 @@ tools/bin/*
 examples/build/*
 docs/_build
 tools-stamp
-
+tmp-swagger-gen
 # Data - ideally these don't exist
 examples/basecoin/app/data
 baseapp/data/*

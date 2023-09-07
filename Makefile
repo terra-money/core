@@ -207,10 +207,8 @@ integration-test-all: init-test-framework \
 	test-ibc-hooks \
 	test-vesting-accounts \
 	test-alliance \
-	test-tokenfactory
-	-@rm -rf ./data
-	-@killall terrad 2>/dev/null
-	-@killall rly 2>/dev/null
+	test-tokenfactory \
+	test-chain-upgrade
 
 init-test-framework: clean-testing-data install
 	@echo "Initializing both blockchains..."
@@ -240,11 +238,20 @@ test-tokenfactory:
 	@echo "Testing tokenfactory..."
 	./scripts/tests/tokenfactory/tokenfactory.sh
 
+test-chain-upgrade:
+	@echo "Testing software upgrade..."
+	bash ./scripts/tests/chain-upgrade/chain-upgrade.sh
+	clean-testing-data
+
 clean-testing-data:
 	@echo "Killing terrad and removing previous data"
-	-@killall terrad 2>/dev/null
-	-@killall rly 2>/dev/null
+	-@pkill terrad 2>/dev/null
+	-@pkill rly 2>/dev/null
+	-@pkill terrad_new 2>/dev/null
+	-@pkill terrad_old 2>/dev/null
 	-@rm -rf ./data
+	-@rm -rf ./_build
+	
 
 .PHONY: integration-test-all init-test-framework test-relayer test-ica test-ibc-hooks test-vesting-accounts test-tokenfactory clean-testing-data
 
@@ -273,7 +280,9 @@ update-swagger-docs: statik
 
 apply-swagger: gen-swagger update-swagger-docs
 
-.PHONY: proto-gen gen-swagger update-swagger-docs apply-swagger
+proto-all: proto-gen gen-swagger update-swagger-docs apply-swagger
+
+.PHONY: proto-gen gen-swagger update-swagger-docs apply-swagger proto-all
 
 ########################################
 ### Tools & dependencies

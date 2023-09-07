@@ -692,8 +692,8 @@
     .swagger-ui .topbar .download-url-wrapper .select-label { color: #f0f0f0; }
 
     .swagger-ui .topbar .download-url-wrapper .download-url-button {
-        background: #63a040;
-        color: #fff;
+        background: #2a69a7;
+        color: #b5bac9;
     }
 
     .swagger-ui .info .title small { background: #7c8492; }
@@ -783,7 +783,7 @@
 
     .swagger-ui .auth-container, .swagger-ui .dialog-ux .modal-ux-header { border-bottom: 1px solid #2e2e2e; }
 
-    .swagger-ui .topbar .download-url-wrapper .select-label select, .swagger-ui .topbar .download-url-wrapper input[type=text] { border: 2px solid #63a040; }
+    .swagger-ui .topbar .download-url-wrapper .select-label select, .swagger-ui .topbar .download-url-wrapper input[type=text] { border: 2px solid #2a69a7; }
 
     .swagger-ui .info a, .swagger-ui .info a:hover, .swagger-ui .scopes h2 a { color: #99bde6; }
 
