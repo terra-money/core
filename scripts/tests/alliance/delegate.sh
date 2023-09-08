@@ -32,8 +32,31 @@ while [ "$ACCOUNT_BALANCE" == "" ]; do
     sleep 2
 done
 
+GOV_ADDRESS=$($BINARY query auth module-account gov --output json | jq .account.base_account.address -r)
+echo '{
+  "messages": [
+    {
+      "@type": "/alliance.MsgCreateAlliance",
+      "authority" : "'"$GOV_ADDRESS"'",
+      "denom": "'"$IBC_DENOM"'",
+      "reward_weight": "0.3",
+      "take_rate": "0.01",
+      "reward_change_rate": "0.01",
+      "reward_change_interval": "10s",
+      "reward_weight_range": {
+          "min":"0.0001",
+          "max":"0.3"
+      }
+    }
+  ],
+  "metadata": "",
+  "deposit": "550000000'$ULUNA_DENOM'",
+  "title": "Create an Alliance!",
+  "summary": "Source Code Version https://github.com/terra-money/core"
+}' > $CHAIN_DIR/create-alliance.json
+
 echo "Creating an alliance with the denom $IBC_DENOM"
-PROPOSAL_HEIGHT=$($BINARY tx gov submit-legacy-proposal create-alliance $IBC_DENOM 5 0 5 0 0.99 1s --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --deposit 10000000000$ULUNA_DENOM --node tcp://localhost:26657 -o json --keyring-backend test  --gas 1000000 -y | jq -r '.height')
+PROPOSAL_HEIGHT=$($BINARY tx gov submit-proposal $CHAIN_DIR/create-alliance.json --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --node tcp://localhost:26657 -o json --keyring-backend test  --gas 1000000 -y | jq -r '.height')
 sleep 3
 PROPOSAL_ID=$($BINARY query gov proposals --home $CHAIN_DIR/test-2 --count-total --node tcp://localhost:26657 -o json --output json --chain-id=test-2 | jq .proposals[-1].id -r)
 VOTE_RES=$($BINARY tx gov vote $PROPOSAL_ID yes --from=$VAL_WALLET_2 --home $CHAIN_DIR/test-2 --keyring-backend=test --gas 1000000 --chain-id=test-2 --node tcp://localhost:26657 -o json -y)

@@ -170,7 +170,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	)
 	require.NoError(t, err)
 	require.Equal(t, res, module.VersionMap{
-		"alliance":               4,
+		"alliance":               5,
 		"auth":                   4,
 		"authz":                  2,
 		"bank":                   4,
