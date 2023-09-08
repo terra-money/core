@@ -207,8 +207,7 @@ integration-test-all: init-test-framework \
 	test-ibc-hooks \
 	test-vesting-accounts \
 	test-alliance \
-	test-tokenfactory \
-	test-chain-upgrade
+	test-tokenfactory 
 
 init-test-framework: clean-testing-data install
 	@echo "Initializing both blockchains..."

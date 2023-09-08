@@ -38,16 +38,14 @@ echo '{
     {
       "@type": "/alliance.MsgCreateAlliance",
       "authority" : "'"$GOV_ADDRESS"'",
-      "plan" : {
-        "denom": "'"$IBC_DENOM"'",
-        "reward_weight": "0.3",
-        "take_rate": "0.01",
-        "reward_change_rate": "0.01",
-        "reward_change_interval": "10s",
-        "reward_weight_range": {
-            "min":"0.0001",
-            "max":"0.3"
-        }
+      "denom": "'"$IBC_DENOM"'",
+      "reward_weight": "0.3",
+      "take_rate": "0.01",
+      "reward_change_rate": "0.01",
+      "reward_change_interval": "10s",
+      "reward_weight_range": {
+          "min":"0.0001",
+          "max":"0.3"
       }
     }
   ],
