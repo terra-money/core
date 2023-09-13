@@ -1143,6 +1143,11 @@ func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 		terraappconfig.Upgrade2_3_0,
 		v2_3_0.CreateUpgradeHandler(app.mm, app.configurator, app.TokenFactoryKeeper),
 	)
+	// This is pisco only since an incorrect plan name was used for the upgrade
+	app.UpgradeKeeper.SetUpgradeHandler(
+		terraappconfig.Upgrade2_4_rc,
+		v2_4.CreateUpgradeHandler(app.mm, app.configurator),
+	)
 	app.UpgradeKeeper.SetUpgradeHandler(
 		terraappconfig.Upgrade2_4,
 		v2_4.CreateUpgradeHandler(app.mm, app.configurator),
