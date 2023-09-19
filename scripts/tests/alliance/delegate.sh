@@ -36,7 +36,7 @@ GOV_ADDRESS=$($BINARY query auth module-account gov --output json | jq .account.
 echo '{
   "messages": [
     {
-      "@type": "/alliance.MsgCreateAlliance",
+      "@type": "/alliance.alliance.MsgCreateAlliance",
       "authority" : "'"$GOV_ADDRESS"'",
       "denom": "'"$IBC_DENOM"'",
       "reward_weight": "0.3",

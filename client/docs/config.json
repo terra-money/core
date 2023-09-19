@@ -6,7 +6,7 @@
   },
   "apis": [
     {
-      "url": "./tmp-swagger-gen/alliance/query.swagger.json",
+      "url": "./tmp-swagger-gen/alliance/alliance/query.swagger.json",
       "operationIds": {
         "rename": {
           "Params": "AllianceParams"
@@ -234,6 +234,14 @@
       "operationIds": {
         "rename": {
           "Params": "IBCRouterParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/pob/builder/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "PobParams"
         }
       }
     }

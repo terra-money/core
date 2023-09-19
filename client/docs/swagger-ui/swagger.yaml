@@ -53198,8 +53198,99 @@ paths:
                       format: byte
       tags:
         - Query
+  /pob/builder/v1/params:
+    get:
+      summary: Params queries the parameters of the x/builder module.
+      operationId: PobParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: params defines the parameters of the module.
+                type: object
+                properties:
+                  max_bundle_size:
+                    type: integer
+                    format: int64
+                    description: >-
+                      max_bundle_size is the maximum number of transactions that
+                      can be bundled
+
+                      in a single bundle.
+                  escrow_account_address:
+                    type: string
+                    format: byte
+                    description: >-
+                      escrow_account_address is the address of the account that
+                      will receive a
+
+                      portion of the bid proceeds.
+                  reserve_fee:
+                    description: reserve_fee specifies the bid floor for the auction.
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                  min_bid_increment:
+                    description: >-
+                      min_bid_increment specifies the minimum amount that the
+                      next bid must be
+
+                      greater than the previous bid.
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                  front_running_protection:
+                    type: boolean
+                    description: >-
+                      front_running_protection specifies whether front running
+                      and sandwich
+
+                      attack protection is enabled.
+                  proposer_fee:
+                    type: string
+                    description: >-
+                      proposer_fee defines the portion of the winning bid that
+                      goes to the block
+
+                      proposer that proposed the block.
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
 definitions:
-  alliance.AllianceAsset:
+  alliance.alliance.AllianceAsset:
     type: object
     properties:
       denom:
@@ -53251,7 +53342,7 @@ definitions:
           flag to check if an asset has completed the initialization process
           after the reward delay
     title: 'key: denom value: AllianceAsset'
-  alliance.Delegation:
+  alliance.alliance.Delegation:
     type: object
     properties:
       delegator_address:
@@ -53278,7 +53369,7 @@ definitions:
       last_reward_claim_height:
         type: string
         format: uint64
-  alliance.DelegationResponse:
+  alliance.alliance.DelegationResponse:
     type: object
     properties:
       delegation:
@@ -53323,7 +53414,7 @@ definitions:
     description: |-
       DelegationResponse is equivalent to Delegation except that it contains a
       balance in addition to shares which is more suitable for client responses.
-  alliance.Params:
+  alliance.alliance.Params:
     type: object
     properties:
       reward_delay_time:
@@ -53335,7 +53426,7 @@ definitions:
         type: string
         format: date-time
         title: Last application of `take_rate` on assets
-  alliance.QueryAllianceDelegationResponse:
+  alliance.alliance.QueryAllianceDelegationResponse:
     type: object
     properties:
       delegation:
@@ -53393,7 +53484,7 @@ definitions:
 
           balance in addition to shares which is more suitable for client
           responses.
-  alliance.QueryAllianceDelegationRewardsResponse:
+  alliance.alliance.QueryAllianceDelegationRewardsResponse:
     type: object
     properties:
       rewards:
@@ -53410,7 +53501,7 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
-  alliance.QueryAllianceRedelegationsResponse:
+  alliance.alliance.QueryAllianceRedelegationsResponse:
     type: object
     properties:
       redelegations:
@@ -53476,7 +53567,7 @@ definitions:
                    repeated Bar results = 1;
                    PageResponse page = 2;
            }
-  alliance.QueryAllianceResponse:
+  alliance.alliance.QueryAllianceResponse:
     type: object
     properties:
       alliance:
@@ -53533,7 +53624,7 @@ definitions:
               flag to check if an asset has completed the initialization process
               after the reward delay
         title: 'key: denom value: AllianceAsset'
-  alliance.QueryAllianceUnbondingsByDenomAndDelegatorResponse:
+  alliance.alliance.QueryAllianceUnbondingsByDenomAndDelegatorResponse:
     type: object
     properties:
       unbondings:
@@ -53582,7 +53673,7 @@ definitions:
                    repeated Bar results = 1;
                    PageResponse page = 2;
            }
-  alliance.QueryAllianceUnbondingsResponse:
+  alliance.alliance.QueryAllianceUnbondingsResponse:
     type: object
     properties:
       unbondings:
@@ -53631,7 +53722,7 @@ definitions:
                    repeated Bar results = 1;
                    PageResponse page = 2;
            }
-  alliance.QueryAllianceValidatorResponse:
+  alliance.alliance.QueryAllianceValidatorResponse:
     type: object
     properties:
       validator_addr:
@@ -53678,7 +53769,7 @@ definitions:
 
             NOTE: The amount field is an Dec which implements the custom method
             signatures required by gogoproto.
-  alliance.QueryAllianceValidatorsResponse:
+  alliance.alliance.QueryAllianceValidatorsResponse:
     type: object
     properties:
       validators:
@@ -53768,7 +53859,7 @@ definitions:
                    repeated Bar results = 1;
                    PageResponse page = 2;
            }
-  alliance.QueryAlliancesDelegationsResponse:
+  alliance.alliance.QueryAlliancesDelegationsResponse:
     type: object
     properties:
       delegations:
@@ -53854,7 +53945,7 @@ definitions:
                    repeated Bar results = 1;
                    PageResponse page = 2;
            }
-  alliance.QueryAlliancesResponse:
+  alliance.alliance.QueryAlliancesResponse:
     type: object
     properties:
       alliances:
@@ -53939,7 +54030,7 @@ definitions:
                    repeated Bar results = 1;
                    PageResponse page = 2;
            }
-  alliance.QueryParamsResponse:
+  alliance.alliance.QueryParamsResponse:
     type: object
     properties:
       params:
@@ -53954,7 +54045,7 @@ definitions:
             type: string
             format: date-time
             title: Last application of `take_rate` on assets
-  alliance.RedelegationEntry:
+  alliance.alliance.RedelegationEntry:
     type: object
     properties:
       delegator_address:
@@ -53984,21 +54075,21 @@ definitions:
         format: date-time
         description: completion_time defines the unix time for redelegation completion.
     title: Used on QueryServer
-  alliance.RewardHistory:
+  alliance.alliance.RewardHistory:
     type: object
     properties:
       denom:
         type: string
       index:
         type: string
-  alliance.RewardWeightRange:
+  alliance.alliance.RewardWeightRange:
     type: object
     properties:
       min:
         type: string
       max:
         type: string
-  alliance.UnbondingDelegation:
+  alliance.alliance.UnbondingDelegation:
     type: object
     properties:
       completion_time:
@@ -84794,4 +84885,114 @@ definitions:
         properties:
           fee_percentage:
             type: string
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
+  pob.builder.v1.Params:
+    type: object
+    properties:
+      max_bundle_size:
+        type: integer
+        format: int64
+        description: >-
+          max_bundle_size is the maximum number of transactions that can be
+          bundled
+
+          in a single bundle.
+      escrow_account_address:
+        type: string
+        format: byte
+        description: >-
+          escrow_account_address is the address of the account that will receive
+          a
+
+          portion of the bid proceeds.
+      reserve_fee:
+        description: reserve_fee specifies the bid floor for the auction.
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+      min_bid_increment:
+        description: >-
+          min_bid_increment specifies the minimum amount that the next bid must
+          be
+
+          greater than the previous bid.
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+      front_running_protection:
+        type: boolean
+        description: |-
+          front_running_protection specifies whether front running and sandwich
+          attack protection is enabled.
+      proposer_fee:
+        type: string
+        description: >-
+          proposer_fee defines the portion of the winning bid that goes to the
+          block
+
+          proposer that proposed the block.
+    description: Params defines the parameters of the x/builder module.
+  pob.builder.v1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params defines the parameters of the module.
+        type: object
+        properties:
+          max_bundle_size:
+            type: integer
+            format: int64
+            description: >-
+              max_bundle_size is the maximum number of transactions that can be
+              bundled
+
+              in a single bundle.
+          escrow_account_address:
+            type: string
+            format: byte
+            description: >-
+              escrow_account_address is the address of the account that will
+              receive a
+
+              portion of the bid proceeds.
+          reserve_fee:
+            description: reserve_fee specifies the bid floor for the auction.
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+          min_bid_increment:
+            description: >-
+              min_bid_increment specifies the minimum amount that the next bid
+              must be
+
+              greater than the previous bid.
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+          front_running_protection:
+            type: boolean
+            description: >-
+              front_running_protection specifies whether front running and
+              sandwich
+
+              attack protection is enabled.
+          proposer_fee:
+            type: string
+            description: >-
+              proposer_fee defines the portion of the winning bid that goes to
+              the block
+
+              proposer that proposed the block.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
