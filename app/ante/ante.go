@@ -1,12 +1,16 @@
 package ante
 
 import (
+	"github.com/cosmos/cosmos-sdk/client"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	ibcante "github.com/cosmos/ibc-go/v6/modules/core/ante"
-	ibckeeper "github.com/cosmos/ibc-go/v6/modules/core/keeper"
+	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
+	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
+	"github.com/skip-mev/pob/mempool"
+	pobante "github.com/skip-mev/pob/x/builder/ante"
+	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -20,6 +24,9 @@ type HandlerOptions struct {
 	IBCkeeper         *ibckeeper.Keeper
 	TxCounterStoreKey storetypes.StoreKey
 	WasmConfig        wasmTypes.WasmConfig
+	PobBuilderKeeper  pobkeeper.Keeper
+	TxConfig          client.TxConfig
+	PobMempool        mempool.Mempool
 }
 
 // NewAnteHandler returns an AnteHandler that checks and increments sequence
@@ -43,7 +50,14 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
 
+	auctionDecorator := pobante.NewBuilderDecorator(
+		options.PobBuilderKeeper,
+		options.TxConfig.TxEncoder(),
+		options.PobMempool,
+	)
+
 	anteDecorators := []sdk.AnteDecorator{
+		auctionDecorator,
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit),
 		wasmkeeper.NewCountTXDecorator(options.TxCounterStoreKey),

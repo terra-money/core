@@ -44,7 +44,7 @@
 
 ## What is Terra?
 
-[Terra](https://terra.money) is a public, open-source, decentralized blockchain hosting a vibrant ecosystem of decentralized applications and top-tier developer tools. **The Terra Core** is the full-node software implementation of the Terra blockchain, powered by the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) and [Tendermint](https://github.com/tendermint/tendermint) BFT consensus.
+[Terra](https://terra.money) is a public, open-source, decentralized blockchain hosting a vibrant ecosystem of decentralized applications and top-tier developer tools. **The Terra Core** is the full-node software implementation of the Terra blockchain, powered by the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) and [Tendermint](https://github.com/cometbft/cometbft) BFT consensus.
 
 To learn more about Terra, visit the [Terra Docs site](https://docs.terra.money/).
 

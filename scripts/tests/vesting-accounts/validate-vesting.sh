@@ -37,7 +37,10 @@ cp $VESTING_FILE $HIDDEN_VESTING_FILE
 sed -i -e 's/"start_time": -1/"start_time": '$CURRENT_DATE'/g' $HIDDEN_VESTING_FILE
 
 echo "Deploying a vesting account on chain test-1 with the address $RANDOM_VESTING_WALLET"
-CREATE_VESTING_ACCOUNT_MSG_RES=$($BINARY tx vesting create-periodic-vesting-account $RANDOM_VESTING_WALLET $HIDDEN_VESTING_FILE --from $WALLET_3 --chain-id test-1 --home $CHAIN_DIR/test-1 --node tcp://localhost:16657 --broadcast-mode block --keyring-backend test -y -o json | jq -r '.logs[0].events[2].attributes[0].value')
+TX_HASH=$($BINARY tx vesting create-periodic-vesting-account $RANDOM_VESTING_WALLET $HIDDEN_VESTING_FILE --from $WALLET_3 --chain-id test-1 --home $CHAIN_DIR/test-1 --node tcp://localhost:16657  --keyring-backend test -y -o json | jq -r '.txhash')
+sleep 3
+CREATE_VESTING_ACCOUNT_MSG_RES=$(terrad query tx $TX_HASH -o josn --chain-id test-1 --home $CHAIN_DIR/test-1 --node tcp://localhost:16657 | jq -r '.logs[0].events[0].attributes[0].value')
+
 if [[ "$CREATE_VESTING_ACCOUNT_MSG_RES" != "/cosmos.vesting.v1beta1.MsgCreatePeriodicVestingAccount" ]]; then
     echo "Error: Expected a message type /cosmos.vesting.v1beta1.MsgCreatePeriodicVestingAccount, got $CREATE_VESTING_ACCOUNT_MSG_RES"
     exit 1

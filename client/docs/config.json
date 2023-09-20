@@ -1,13 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Terra Core Rest API",
-    "description": "Rest Interface for Terra Core v2.4 https://github.com/terra-money/core",
-    "version": "2.4"
+    "description": "Source code for <a target='_blank' href='https://github.com/terra-money/core'>Terra Core v2.5</a><br/>UI to interact with the blockchain <a target='_blank' href='https://station.terra.money/'>Station</a><br/>Create a DAO on Terra using <a target='_blank' href='https://enterprise.money/'>Enterprise</a><br/>Run on-chain automted jobs <a target='_blank' href='https://warp.money/'>Wrap</a><br/>Explore the network using <a target='_blank' href='https://terrasco.pe/'>TerraScope</a><br/>Anything you need to know about shared security on <a target='_blank' href='https://alliance.terra.money/'>Alliance Docs</a><br/>More info about the protocol on <a target='_blank' href='https://docs.terra.money/'>Terra Docs</a>",
+    "version": "2.5"
   },
   "apis": [
     {
-      "url": "./tmp-swagger-gen/alliance/query.swagger.json",
+      "url": "./tmp-swagger-gen/alliance/alliance/query.swagger.json",
       "operationIds": {
         "rename": {
           "Params": "AllianceParams"
@@ -15,7 +14,7 @@
       }
     },
     {
-      "url": "./tmp-swagger-gen/cosmwasm/tokenfactory/v1beta1/query.swagger.json",
+      "url": "./tmp-swagger-gen/osmosis/tokenfactory/v1beta1/query.swagger.json",
       "operationIds": {
         "rename": {
           "Params": "TokenFactoryParams"
@@ -61,7 +60,7 @@
       "url": "./tmp-swagger-gen/cosmos/base/tendermint/v1beta1/query.swagger.json",
       "operationIds": {
         "rename": {
-          "Params": "BaseParams"
+          "Params": "TendermintBaseParams"
         }
       }
     },
@@ -82,13 +81,55 @@
       }
     },
     {
+      "url": "./tmp-swagger-gen/cosmos/base/node/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "CosmosBaseParams"
+        }
+      }
+    },
+    {
       "url": "./tmp-swagger-gen/cosmos/feegrant/v1beta1/query.swagger.json"
     },
     {
       "url": "./tmp-swagger-gen/cosmos/gov/v1beta1/query.swagger.json",
       "operationIds": {
         "rename": {
-          "Params": "GovParams"
+          "Params": "GovParams",
+          "Proposal": "GovProposal",
+          "Tally": "GovTally",
+          "TallyResult" : "GovTallyResult"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/gov/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "GovV1Params",
+          "Proposals": "GovV1Proposals",
+          "Proposal": "GovV1Proposal",
+          "Deposits": "GovV1Deposits",
+          "Deposit": "GovV1Deposit",
+          "TallyResult": "GovV1TallyResult",
+          "Votes": "GovV1Votes",
+          "Vote": "GovV1Vote"
+        }
+      }
+    },
+    {
+      "url" : "./tmp-swagger-gen/cosmos/consensus/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "ConsensusParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/group/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "GroupParams"
         }
       }
     },
@@ -185,6 +226,22 @@
       "operationIds": {
         "rename": {
           "Params": "IBCFee"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/router/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCRouterParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/pob/builder/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "PobParams"
         }
       }
     }

@@ -16,6 +16,8 @@ func TestNewGenesis(t *testing.T) {
 	require.Nil(t, err)
 
 	expectedState := `{
+		"06-solomachine": null,
+		"07-tendermint": null,
 		"alliance": {
 			"params": {
 				"reward_delay_time": "604800s",
@@ -49,12 +51,30 @@ func TestNewGenesis(t *testing.T) {
 			},
 			"balances": [],
 			"supply": [],
-			"denom_metadata": []
+			"denom_metadata": [],
+			"send_enabled": []
+		},
+		"builder": {
+			"params": {
+				"max_bundle_size": 2,
+				"escrow_account_address": "32sHF2qbF8xMmvwle9QEcy59Cbc=",
+				"reserve_fee": {
+					"denom": "stake",
+					"amount": "1"
+				},
+				"min_bid_increment": {
+					"denom": "stake",
+					"amount": "1"
+				},
+				"front_running_protection": true,
+				"proposer_fee": "0.000000000000000000"
+			}
 		},
 		"capability": {
 			"index": "1",
 			"owners": []
 		},
+		"consensus": null,
 		"crisis": {
 			"constant_fee": {
 				"denom": "stake",
@@ -64,8 +84,8 @@ func TestNewGenesis(t *testing.T) {
 		"distribution": {
 			"params": {
 				"community_tax": "0.020000000000000000",
-				"base_proposer_reward": "0.010000000000000000",
-				"bonus_proposer_reward": "0.040000000000000000",
+				"base_proposer_reward": "0.000000000000000000",
+				"bonus_proposer_reward": "0.000000000000000000",
 				"withdraw_addr_enabled": true
 			},
 			"fee_pool": {
@@ -101,22 +121,25 @@ func TestNewGenesis(t *testing.T) {
 			"deposits": [],
 			"votes": [],
 			"proposals": [],
-			"deposit_params": {
+			"deposit_params": null,
+			"voting_params": null,
+			"tally_params": null,
+			"params": {
 				"min_deposit": [
 					{
 						"denom": "stake",
 						"amount": "10000000"
 					}
 				],
-				"max_deposit_period": "172800s"
-			},
-			"voting_params": {
-				"voting_period": "172800s"
-			},
-			"tally_params": {
+				"max_deposit_period": "172800s",
+				"voting_period": "172800s",
 				"quorum": "0.334000000000000000",
 				"threshold": "0.500000000000000000",
-				"veto_threshold": "0.334000000000000000"
+				"veto_threshold": "0.334000000000000000",
+				"min_initial_deposit_ratio": "0.000000000000000000",
+				"burn_vote_quorum": false,
+				"burn_proposal_deposit_prevote": false,
+				"burn_vote_veto": true
 			}
 		},
 		"ibc": {
@@ -127,7 +150,8 @@ func TestNewGenesis(t *testing.T) {
 				"params": {
 					"allowed_clients": [
 						"06-solomachine",
-						"07-tendermint"
+						"07-tendermint",
+						"09-localhost"
 					]
 				},
 				"create_localhost": false,
@@ -174,7 +198,6 @@ func TestNewGenesis(t *testing.T) {
 				}
 			}
 		},
-		"intertx": null,
 		"mint": {
 			"minter": {
 				"inflation": "0.130000000000000000",
@@ -228,10 +251,11 @@ func TestNewGenesis(t *testing.T) {
 			"params": {
 				"denom_creation_fee": [
 					{
-						"denom": "stake",
+						"denom": "uluna",
 						"amount": "10000000"
 					}
-				]
+				],
+				"denom_creation_gas_consume": "1000000"
 			},
 			"factory_denoms": []
 		},
@@ -241,7 +265,8 @@ func TestNewGenesis(t *testing.T) {
 			"params": {
 				"send_enabled": true,
 				"receive_enabled": true
-			}
+			},
+			"total_escrowed": []
 		},
 		"upgrade": {},
 		"vesting": {},
@@ -249,18 +274,15 @@ func TestNewGenesis(t *testing.T) {
 			"params": {
 				"code_upload_access": {
 					"permission": "Everybody",
-					"address": "",
 					"addresses": []
 				},
 				"instantiate_default_permission": "Everybody"
 			},
 			"codes": [],
 			"contracts": [],
-			"sequences": [],
-			"gen_msgs": []
+			"sequences": []
 		}
 	}`
-
 	require.JSONEq(t, string(jsonGenState), expectedState)
 }
 
@@ -273,6 +295,8 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 	require.Nil(t, err)
 
 	expectedState := `{
+		"06-solomachine": null,
+		"07-tendermint": null,
 		"alliance": {
 			"params": {
 				"reward_delay_time": "604800s",
@@ -306,12 +330,30 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 			},
 			"balances": [],
 			"supply": [],
-			"denom_metadata": []
+			"denom_metadata": [],
+			"send_enabled": []
+		},
+		"builder": {
+			"params": {
+				"max_bundle_size": 2,
+				"escrow_account_address": "32sHF2qbF8xMmvwle9QEcy59Cbc=",
+				"reserve_fee": {
+					"denom": "stake",
+					"amount": "1"
+				},
+				"min_bid_increment": {
+					"denom": "stake",
+					"amount": "1"
+				},
+				"front_running_protection": true,
+				"proposer_fee": "0.000000000000000000"
+			}
 		},
 		"capability": {
 			"index": "1",
 			"owners": []
 		},
+		"consensus": null,
 		"crisis": {
 			"constant_fee": {
 				"denom": "uluna",
@@ -321,8 +363,8 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 		"distribution": {
 			"params": {
 				"community_tax": "0.020000000000000000",
-				"base_proposer_reward": "0.010000000000000000",
-				"bonus_proposer_reward": "0.040000000000000000",
+				"base_proposer_reward": "0.000000000000000000",
+				"bonus_proposer_reward": "0.000000000000000000",
 				"withdraw_addr_enabled": true
 			},
 			"fee_pool": {
@@ -358,22 +400,25 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 			"deposits": [],
 			"votes": [],
 			"proposals": [],
-			"deposit_params": {
+			"deposit_params": null,
+			"voting_params": null,
+			"tally_params": null,
+			"params": {
 				"min_deposit": [
 					{
 						"denom": "uluna",
 						"amount": "10000000"
 					}
 				],
-				"max_deposit_period": "172800s"
-			},
-			"voting_params": {
-				"voting_period": "172800s"
-			},
-			"tally_params": {
+				"max_deposit_period": "172800s",
+				"voting_period": "172800s",
 				"quorum": "0.334000000000000000",
 				"threshold": "0.500000000000000000",
-				"veto_threshold": "0.334000000000000000"
+				"veto_threshold": "0.334000000000000000",
+				"min_initial_deposit_ratio": "0.000000000000000000",
+				"burn_vote_quorum": false,
+				"burn_proposal_deposit_prevote": false,
+				"burn_vote_veto": true
 			}
 		},
 		"ibc": {
@@ -384,7 +429,8 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 				"params": {
 					"allowed_clients": [
 						"06-solomachine",
-						"07-tendermint"
+						"07-tendermint",
+						"09-localhost"
 					]
 				},
 				"create_localhost": false,
@@ -431,7 +477,6 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 				}
 			}
 		},
-		"intertx": null,
 		"mint": {
 			"minter": {
 				"inflation": "0.130000000000000000",
@@ -488,7 +533,8 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 						"denom": "uluna",
 						"amount": "10000000"
 					}
-				]
+				],
+				"denom_creation_gas_consume": "1000000"
 			},
 			"factory_denoms": []
 		},
@@ -498,7 +544,8 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 			"params": {
 				"send_enabled": true,
 				"receive_enabled": true
-			}
+			},
+			"total_escrowed": []
 		},
 		"upgrade": {},
 		"vesting": {},
@@ -506,18 +553,15 @@ func TestNewGenesisWithBondDenom(t *testing.T) {
 			"params": {
 				"code_upload_access": {
 					"permission": "Everybody",
-					"address": "",
 					"addresses": []
 				},
 				"instantiate_default_permission": "Everybody"
 			},
 			"codes": [],
 			"contracts": [],
-			"sequences": [],
-			"gen_msgs": []
+			"sequences": []
 		}
 	}`
-
 	require.JSONEq(t, string(jsonGenState), expectedState)
 }
 
@@ -528,8 +572,9 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 
 	jsonGenState, err := json.Marshal(genesisState)
 	require.Nil(t, err)
-
 	expectedState := `{
+		"06-solomachine": null,
+		"07-tendermint": null,
 		"alliance": {
 			"params": {
 				"reward_delay_time": "604800s",
@@ -563,12 +608,30 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 			},
 			"balances": [],
 			"supply": [],
-			"denom_metadata": []
+			"denom_metadata": [],
+			"send_enabled": []
+		},
+		"builder": {
+			"params": {
+				"max_bundle_size": 2,
+				"escrow_account_address": "32sHF2qbF8xMmvwle9QEcy59Cbc=",
+				"reserve_fee": {
+					"denom": "stake",
+					"amount": "1"
+				},
+				"min_bid_increment": {
+					"denom": "stake",
+					"amount": "1"
+				},
+				"front_running_protection": true,
+				"proposer_fee": "0.000000000000000000"
+			}
 		},
 		"capability": {
 			"index": "1",
 			"owners": []
 		},
+		"consensus": null,
 		"crisis": {
 			"constant_fee": {
 				"denom": "stake",
@@ -578,8 +641,8 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 		"distribution": {
 			"params": {
 				"community_tax": "0.020000000000000000",
-				"base_proposer_reward": "0.010000000000000000",
-				"bonus_proposer_reward": "0.040000000000000000",
+				"base_proposer_reward": "0.000000000000000000",
+				"bonus_proposer_reward": "0.000000000000000000",
 				"withdraw_addr_enabled": true
 			},
 			"fee_pool": {
@@ -615,22 +678,25 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 			"deposits": [],
 			"votes": [],
 			"proposals": [],
-			"deposit_params": {
+			"deposit_params": null,
+			"voting_params": null,
+			"tally_params": null,
+			"params": {
 				"min_deposit": [
 					{
 						"denom": "stake",
 						"amount": "10000000"
 					}
 				],
-				"max_deposit_period": "172800s"
-			},
-			"voting_params": {
-				"voting_period": "172800s"
-			},
-			"tally_params": {
+				"max_deposit_period": "172800s",
+				"voting_period": "172800s",
 				"quorum": "0.334000000000000000",
 				"threshold": "0.500000000000000000",
-				"veto_threshold": "0.334000000000000000"
+				"veto_threshold": "0.334000000000000000",
+				"min_initial_deposit_ratio": "0.000000000000000000",
+				"burn_vote_quorum": false,
+				"burn_proposal_deposit_prevote": false,
+				"burn_vote_veto": true
 			}
 		},
 		"ibc": {
@@ -641,7 +707,8 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 				"params": {
 					"allowed_clients": [
 						"06-solomachine",
-						"07-tendermint"
+						"07-tendermint",
+						"09-localhost"
 					]
 				},
 				"create_localhost": false,
@@ -713,7 +780,6 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 				}
 			}
 		},
-		"intertx": null,
 		"mint": {
 			"minter": {
 				"inflation": "0.130000000000000000",
@@ -767,10 +833,11 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 			"params": {
 				"denom_creation_fee": [
 					{
-						"denom": "stake",
+						"denom": "uluna",
 						"amount": "10000000"
 					}
-				]
+				],
+				"denom_creation_gas_consume": "1000000"
 			},
 			"factory_denoms": []
 		},
@@ -780,7 +847,8 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 			"params": {
 				"send_enabled": true,
 				"receive_enabled": true
-			}
+			},
+			"total_escrowed": []
 		},
 		"upgrade": {},
 		"vesting": {},
@@ -788,16 +856,15 @@ func TestNewGenesisConfigureICA(t *testing.T) {
 			"params": {
 				"code_upload_access": {
 					"permission": "Everybody",
-					"address": "",
 					"addresses": []
 				},
 				"instantiate_default_permission": "Everybody"
 			},
 			"codes": [],
 			"contracts": [],
-			"sequences": [],
-			"gen_msgs": []
+			"sequences": []
 		}
 	}`
+
 	require.JSONEq(t, string(jsonGenState), expectedState)
 }

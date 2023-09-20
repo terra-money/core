@@ -17,7 +17,7 @@ ifeq (,$(VERSION))
   endif
 endif
 
-TM_VERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
+TM_VERSION := $(shell go list -m github.com/cometbft/cometbft | sed 's:.* ::')
 
 export GO111MODULE = on
 
@@ -72,7 +72,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=terra \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
-			-X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TM_VERSION)
+			-X github.com/cometbft/cometbft/version.TMCoreSemVer=$(TM_VERSION)
 
 # DB backend selection
 ifeq (cleveldb,$(findstring cleveldb,$(COSMOS_BUILD_OPTIONS)))
@@ -194,21 +194,7 @@ build-release-arm64: go.sum $(BUILDDIR)/
 install: go.sum 
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/terrad
 
-gen-swagger-docs:
-	bash scripts/protoc-swagger-gen.sh
-
-update-swagger-docs: statik
-	$(BINDIR)/statik -src=client/docs/swagger-ui -dest=client/docs -f -m
-	@if [ -n "$(git status --porcelain)" ]; then \
-        echo "Swagger docs are out of sync!";\
-        exit 1;\
-    else \
-        echo "Swagger docs are in sync!";\
-    fi
-
-apply-swagger: gen-swagger-docs update-swagger-docs
-
-.PHONY: build build-linux install update-swagger-docs apply-swagger
+.PHONY: build build-linux install
 
 
 ###############################################################################
@@ -221,14 +207,11 @@ integration-test-all: init-test-framework \
 	test-ibc-hooks \
 	test-vesting-accounts \
 	test-alliance \
-	test-tokenfactory
-	-@rm -rf ./data
-	-@killall terrad 2>/dev/null
-	-@killall rly 2>/dev/null
+	test-tokenfactory 
 
 init-test-framework: clean-testing-data install
 	@echo "Initializing both blockchains..."
-	./scripts/tests/start.sh
+	./scripts/tests/init-test-framework.sh
 
 test-relayer:
 	@echo "Testing relayer..."
@@ -254,25 +237,50 @@ test-tokenfactory:
 	@echo "Testing tokenfactory..."
 	./scripts/tests/tokenfactory/tokenfactory.sh
 
+test-chain-upgrade:
+	@echo "Testing software upgrade..."
+	bash ./scripts/tests/chain-upgrade/chain-upgrade.sh
+
 clean-testing-data:
 	@echo "Killing terrad and removing previous data"
+	-@pkill terrad 2>/dev/null
+	-@pkill rly 2>/dev/null
+	-@pkill terrad_new 2>/dev/null
+	-@pkill terrad_old 2>/dev/null
 	-@rm -rf ./data
-	-@killall terrad 2>/dev/null
-	-@killall rly 2>/dev/null
+	-@rm -rf ./_build
+	
 
 .PHONY: integration-test-all init-test-framework test-relayer test-ica test-ibc-hooks test-vesting-accounts test-tokenfactory clean-testing-data
 
 ###############################################################################
 ###                                Protobuf                                 ###
 ###############################################################################
-
-proto-all: proto-gen
+protoVer=0.13.0
+protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
+protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen:v0.3 sh ./scripts/protocgen.sh
+	@$(protoImage) sh ./scripts/protocgen.sh
 
-.PHONY: proto-all proto-gen
+gen-swagger:
+	bash scripts/protoc-swagger-gen.sh
+
+update-swagger-docs: statik
+	$(BINDIR)/statik -src=client/docs/swagger-ui -dest=client/docs -f -m
+	@if [ -n "$(git status --porcelain)" ]; then \
+        echo "Swagger docs are out of sync!";\
+        exit 1;\
+    else \
+        echo "Swagger docs are in sync!";\
+    fi
+
+apply-swagger: gen-swagger update-swagger-docs
+
+proto-all: proto-gen gen-swagger update-swagger-docs apply-swagger
+
+.PHONY: proto-gen gen-swagger update-swagger-docs apply-swagger proto-all
 
 ########################################
 ### Tools & dependencies
@@ -315,7 +323,7 @@ test-race:
 	@VERSION=$(VERSION) go test -mod=readonly -race -tags='ledger test_ledger_mock' ./...
 
 test-cover:
-	@go test -mod=readonly -timeout 30m -race -coverprofile=coverage.txt -covermode=atomic -tags='ledger test_ledger_mock' ./...
+	@go test -mod=readonly -timeout 10m -race -coverprofile=coverage.txt -covermode=atomic -tags='ledger test_ledger_mock' ./...
 
 benchmark:
 	@go test -mod=readonly -bench=. ./...
@@ -323,7 +331,13 @@ benchmark:
 simulate:
 	@go test  -bench BenchmarkSimulation ./app -NumBlocks=200 -BlockSize 50 -Commit=true -Verbose=true -Enabled=true -Seed 1
 
-.PHONY: test test-all test-cover test-unit test-race simulate
+test-e2e-pob:
+	cd interchaintest && go test -race -v -run TestPOB .
+
+test-e2e-pmf:
+	cd interchaintest && go test -race -v -run TestPMF .
+
+.PHONY: test test-all test-cover test-unit test-race simulate test-e2e-pob test-e2e-pmf
 
 ###############################################################################
 ###                                Linting                                  ###
@@ -334,6 +348,7 @@ lint:
 
 lint-fix:
 	golangci-lint run --fix --out-format=tab --issues-exit-code=0
+	
 .PHONY: lint lint-fix
 
 format:
