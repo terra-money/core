@@ -1,6 +1,7 @@
 package v2_5
 
 import (
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	pobtypes "github.com/skip-mev/pob/x/builder/types"
 	"time"
@@ -31,6 +32,7 @@ func CreateUpgradeHandler(
 	consensusParamsKeeper consensuskeeper.Keeper,
 	icacontrollerKeeper icacontrollerkeeper.Keeper,
 	pobKeeper pobkeeper.Keeper,
+	authKeeper authkeeper.AccountKeeper,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 		// READ: https://github.com/cosmos/cosmos-sdk/blob/v0.47.4/UPGRADING.md#xconsensus
@@ -59,6 +61,9 @@ func CreateUpgradeHandler(
 		if err != nil {
 			return nil, err
 		}
+
+		// Create POB module account
+		_ = authKeeper.GetModuleAccount(ctx, pobtypes.ModuleName)
 
 		// Setting pob params to disable by default until a proposal is passed to enable it
 		err = pobKeeper.SetParams(ctx, pobtypes.Params{
