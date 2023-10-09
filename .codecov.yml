@@ -35,3 +35,4 @@ ignore:
   - "**/*.pb.gw.go"
   - "**/test_utils.go"
   - "**/module.go"
+  - "**/test_helpers.go"
