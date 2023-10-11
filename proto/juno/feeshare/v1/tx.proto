@@ -1,0 +1,97 @@
+syntax = "proto3";
+package juno.feeshare.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "juno/feeshare/v1/genesis.proto";
+
+option go_package = "github.com/CosmosContracts/juno/x/feeshare/types";
+
+// Msg defines the fees Msg service.
+service Msg {
+  // RegisterFeeShare registers a new contract for receiving transaction fees
+  rpc RegisterFeeShare(MsgRegisterFeeShare)
+      returns (MsgRegisterFeeShareResponse) {
+    option (google.api.http).post = "/juno/feeshare/v1/tx/register_FeeShare";
+  };
+  // UpdateFeeShare updates the withdrawer address of a FeeShare
+  rpc UpdateFeeShare(MsgUpdateFeeShare) returns (MsgUpdateFeeShareResponse) {
+    option (google.api.http).post = "/juno/feeshare/v1/tx/update_FeeShare";
+  };
+  // CancelFeeShare cancels a contract's fee registration and further receival
+  // of transaction fees
+  rpc CancelFeeShare(MsgCancelFeeShare) returns (MsgCancelFeeShareResponse) {
+    option (google.api.http).post = "/juno/feeshare/v1/tx/cancel_FeeShare";
+  };
+  // Update the params of the module through gov v1 type.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+}
+
+// MsgRegisterFeeShare defines a message that registers a FeeShare
+message MsgRegisterFeeShare {
+  option (gogoproto.equal) = false;
+  // contract_address in bech32 format
+  string contract_address = 1;
+  // deployer_address is the bech32 address of message sender. It must be the
+  // same the contract's admin address
+  string deployer_address = 2;
+  // withdrawer_address is the bech32 address of account receiving the
+  // transaction fees
+  string withdrawer_address = 3;
+}
+
+// MsgRegisterFeeShareResponse defines the MsgRegisterFeeShare response type
+message MsgRegisterFeeShareResponse {}
+
+// MsgUpdateFeeShare defines a message that updates the withdrawer address for a
+// registered FeeShare
+message MsgUpdateFeeShare {
+  option (gogoproto.equal) = false;
+  // contract_address in bech32 format
+  string contract_address = 1;
+  // deployer_address is the bech32 address of message sender. It must be the
+  // same the contract's admin address
+  string deployer_address = 2;
+  // withdrawer_address is the bech32 address of account receiving the
+  // transaction fees
+  string withdrawer_address = 3;
+}
+
+// MsgUpdateFeeShareResponse defines the MsgUpdateFeeShare response type
+message MsgUpdateFeeShareResponse {}
+
+// MsgCancelFeeShare defines a message that cancels a registered FeeShare
+message MsgCancelFeeShare {
+  option (gogoproto.equal) = false;
+  // contract_address in bech32 format
+  string contract_address = 1;
+  // deployer_address is the bech32 address of message sender. It must be the
+  // same the contract's admin address
+  string deployer_address = 2;
+}
+
+// MsgCancelFeeShareResponse defines the MsgCancelFeeShare response type
+message MsgCancelFeeShareResponse {}
+
+// MsgUpdateParams is the Msg/UpdateParams request type.
+//
+// Since: cosmos-sdk 0.47
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";  
+
+  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // params defines the x/feeshare parameters to update.
+  //
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [(gogoproto.nullable) = false];
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+//
+// Since: cosmos-sdk 0.47
+message MsgUpdateParamsResponse {}

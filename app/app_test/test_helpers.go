@@ -49,6 +49,9 @@ func (s *AppTestSuite) Setup() {
 	appparams.RegisterAddressesConfig()
 	baseTestAccts := CreateRandomAccounts(3)
 	encCfg := terra_app.MakeEncodingConfig()
+	genesisState := app.NewDefaultGenesisState(encCfg.Marshaler)
+	genesisState.ConfigureBondDenom(encCfg.Marshaler, "uluna")
+	genesisState.ConfigureICA(encCfg.Marshaler)
 
 	db := dbm.NewMemDB()
 	s.App = terra_app.NewTerraApp(

@@ -41,6 +41,11 @@ func NewKeeper(
 	feeCollector string,
 	authority string,
 ) Keeper {
+	// make sure the fee collector module account exists
+	if ak.GetModuleAddress(feeCollector) == nil {
+		panic(fmt.Sprintf("%s module account has not been set", feeCollector))
+	}
+
 	return Keeper{
 		storeKey:         storeKey,
 		cdc:              cdc,

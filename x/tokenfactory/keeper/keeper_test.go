@@ -48,22 +48,19 @@ func (s *KeeperTestSuite) SetupTest() {
 }
 
 func (s *KeeperTestSuite) TestCreateModuleAccount() {
-	s.Setup()
-	app := s.App
-
 	// setup new next account number
-	nextAccountNumber := app.AccountKeeper.NextAccountNumber(s.Ctx)
+	nextAccountNumber := s.App.AccountKeeper.NextAccountNumber(s.Ctx)
 
 	// ensure module account was removed
-	s.Ctx = app.NewContext(true, tmproto.Header{Time: time.Now()})
-	tokenfactoryModuleAccount := app.AccountKeeper.GetAccount(s.Ctx, app.AccountKeeper.GetModuleAddress(types.ModuleName))
+	s.Ctx = s.App.NewContext(true, tmproto.Header{Time: time.Now()})
+	tokenfactoryModuleAccount := s.App.AccountKeeper.GetAccount(s.Ctx, s.App.AccountKeeper.GetModuleAddress(types.ModuleName))
 	s.Require().Nil(tokenfactoryModuleAccount)
 
 	// create module account
-	app.TokenFactoryKeeper.CreateModuleAccount(s.Ctx)
+	s.App.TokenFactoryKeeper.CreateModuleAccount(s.Ctx)
 
 	// check that the module account is now initialized
-	tokenfactoryModuleAccount = app.AccountKeeper.GetAccount(s.Ctx, app.AccountKeeper.GetModuleAddress(types.ModuleName))
+	tokenfactoryModuleAccount = s.App.AccountKeeper.GetAccount(s.Ctx, s.App.AccountKeeper.GetModuleAddress(types.ModuleName))
 	s.Require().NotNil(tokenfactoryModuleAccount)
 
 	// check that the account number of the module account is now initialized correctly

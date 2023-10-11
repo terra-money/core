@@ -264,6 +264,7 @@ var (
 		wasm.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 		alliance.AppModuleBasic{},
+		feeshare.AppModuleBasic{},
 		pob.AppModuleBasic{},
 	)
 
@@ -414,7 +415,7 @@ func NewTerraApp(
 		icahosttypes.StoreKey, icacontrollertypes.StoreKey, routertypes.StoreKey,
 		consensusparamtypes.StoreKey, tokenfactorytypes.StoreKey, wasmtypes.StoreKey,
 		ibcfeetypes.StoreKey, ibchookstypes.StoreKey, crisistypes.StoreKey,
-		alliancetypes.StoreKey, pobtype.StoreKey,
+		alliancetypes.StoreKey, feesharetypes.StoreKey, pobtype.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -818,6 +819,7 @@ func NewTerraApp(
 		wasmtypes.ModuleName,
 		tokenfactorytypes.ModuleName,
 		alliancetypes.ModuleName,
+		feesharetypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		pobtype.ModuleName,
 	)
@@ -849,6 +851,7 @@ func NewTerraApp(
 		wasmtypes.ModuleName,
 		tokenfactorytypes.ModuleName,
 		alliancetypes.ModuleName,
+		feesharetypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		pobtype.ModuleName,
 	)
@@ -884,6 +887,7 @@ func NewTerraApp(
 		ibchookstypes.ModuleName,
 		wasmtypes.ModuleName,
 		alliancetypes.ModuleName,
+		feesharetypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		pobtype.ModuleName,
 	)
@@ -912,6 +916,7 @@ func NewTerraApp(
 				SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 				SigGasConsumer:  cosmosante.DefaultSigVerificationGasConsumer,
 			},
+			BankKeeper:        app.BankKeeper,
 			FeeShareKeeper:    app.FeeShareKeeper,
 			IBCkeeper:         app.IBCKeeper,
 			TxCounterStoreKey: keys[wasmtypes.StoreKey],
@@ -1222,6 +1227,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(tokenfactorytypes.ModuleName).WithKeyTable(tokenfactorytypes.ParamKeyTable())
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(alliancetypes.ModuleName).WithKeyTable(alliancetypes.ParamKeyTable())
+	paramsKeeper.Subspace(feesharetypes.ModuleName).WithKeyTable(feesharetypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(wasmtypes.ModuleName).WithKeyTable(wasmtypes.ParamKeyTable())
 

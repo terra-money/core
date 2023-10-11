@@ -2,19 +2,16 @@ package keeper_test
 
 import (
 	"testing"
-	"time"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/stretchr/testify/suite"
 
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 
-	app_test "github.com/terra-money/core/v2/app/app_test"
+	app "github.com/terra-money/core/v2/app/app_test"
 	"github.com/terra-money/core/v2/x/feeshare/keeper"
 	"github.com/terra-money/core/v2/x/feeshare/types"
 )
@@ -29,9 +26,8 @@ type BankKeeper interface {
 }
 
 type IntegrationTestSuite struct {
-	*app_test.AppTestSuite
+	app.AppTestSuite
 
-	ctx               sdk.Context
 	bankKeeper        BankKeeper
 	accountKeeper     types.AccountKeeper
 	queryClient       types.QueryClient
@@ -40,16 +36,9 @@ type IntegrationTestSuite struct {
 }
 
 func (s *IntegrationTestSuite) SetupTest() {
-	isCheckTx := false
-	s.AppTestSuite.Setup()
+	s.Setup()
 
-	s.ctx = s.App.BaseApp.NewContext(isCheckTx, tmproto.Header{
-		ChainID: "testing",
-		Height:  9,
-		Time:    time.Now().UTC(),
-	})
-
-	queryHelper := baseapp.NewQueryServerTestHelper(s.ctx, s.App.InterfaceRegistry())
+	queryHelper := baseapp.NewQueryServerTestHelper(s.Ctx, s.App.InterfaceRegistry())
 	types.RegisterQueryServer(queryHelper, keeper.NewQuerier(s.App.FeeShareKeeper))
 
 	s.queryClient = types.NewQueryClient(queryHelper)
