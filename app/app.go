@@ -147,6 +147,9 @@ import (
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	terracustombank "github.com/terra-money/core/v2/custom/bank"
 	custombankkeeper "github.com/terra-money/core/v2/custom/bank/keeper"
+	feeshare "github.com/terra-money/core/v2/x/feeshare"
+	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
+	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 
 	pobabci "github.com/skip-mev/pob/abci"
 	pobmempool "github.com/skip-mev/pob/mempool"
@@ -337,6 +340,7 @@ type TerraApp struct {
 	RouterKeeper          routerkeeper.Keeper
 	TokenFactoryKeeper    tokenfactorykeeper.Keeper
 	AllianceKeeper        alliancekeeper.Keeper
+	FeeShareKeeper        feesharekeeper.Keeper
 
 	// IBC hooks
 	IBCHooksKeeper   *ibchookskeeper.Keeper
@@ -527,6 +531,16 @@ func NewTerraApp(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	app.BankKeeper.RegisterKeepers(app.AllianceKeeper, app.StakingKeeper)
+
+	app.FeeShareKeeper = feesharekeeper.NewKeeper(
+		appCodec,
+		keys[feesharetypes.StoreKey],
+		app.BankKeeper,
+		app.WasmKeeper,
+		app.AccountKeeper,
+		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
@@ -769,6 +783,7 @@ func NewTerraApp(
 		ibchooks.NewAppModule(app.AccountKeeper),
 		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(tokenfactorytypes.ModuleName)),
 		alliance.NewAppModule(appCodec, app.AllianceKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry, app.GetSubspace(alliancetypes.ModuleName)),
+		feeshare.NewAppModule(app.FeeShareKeeper, app.AccountKeeper, app.GetSubspace(feesharetypes.ModuleName)),
 		pob.NewAppModule(appCodec, app.BuilderKeeper),
 	)
 
@@ -897,6 +912,7 @@ func NewTerraApp(
 				SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 				SigGasConsumer:  cosmosante.DefaultSigVerificationGasConsumer,
 			},
+			FeeShareKeeper:    app.FeeShareKeeper,
 			IBCkeeper:         app.IBCKeeper,
 			TxCounterStoreKey: keys[wasmtypes.StoreKey],
 			WasmConfig:        wasmConfig.ToWasmConfig(),
@@ -1310,6 +1326,7 @@ func (app *TerraApp) SimulationManager() *module.SimulationManager {
 		router.NewAppModule(&app.RouterKeeper),
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		alliance.NewAppModule(appCodec, app.AllianceKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry, app.GetSubspace(alliancetypes.ModuleName)),
+		feeshare.NewAppModule(app.FeeShareKeeper, app.AccountKeeper, app.GetSubspace(feesharetypes.ModuleName)),
 	)
 
 	sm.RegisterStoreDecoders()

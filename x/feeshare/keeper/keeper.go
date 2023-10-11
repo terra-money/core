@@ -33,8 +33,8 @@ type Keeper struct {
 
 // NewKeeper creates new instances of the fees Keeper
 func NewKeeper(
-	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
+	storeKey storetypes.StoreKey,
 	bk revtypes.BankKeeper,
 	wk wasmkeeper.Keeper,
 	ak revtypes.AccountKeeper,
