@@ -533,16 +533,6 @@ func NewTerraApp(
 	)
 	app.BankKeeper.RegisterKeepers(app.AllianceKeeper, app.StakingKeeper)
 
-	app.FeeShareKeeper = feesharekeeper.NewKeeper(
-		appCodec,
-		keys[feesharetypes.StoreKey],
-		app.BankKeeper,
-		app.WasmKeeper,
-		app.AccountKeeper,
-		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper.SetHooks(
@@ -725,6 +715,16 @@ func NewTerraApp(
 		appCodec, keys[govtypes.StoreKey], app.AccountKeeper,
 		app.BankKeeper, app.StakingKeeper,
 		app.MsgServiceRouter(), govtypes.DefaultConfig(), authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
+	app.FeeShareKeeper = feesharekeeper.NewKeeper(
+		appCodec,
+		keys[feesharetypes.StoreKey],
+		app.BankKeeper,
+		app.WasmKeeper,
+		app.AccountKeeper,
+		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	// Set legacy router for backwards compatibility with gov v1beta1
