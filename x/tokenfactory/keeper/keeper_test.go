@@ -4,9 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -16,7 +14,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	app "github.com/terra-money/core/v2/app/app_test"
-	"github.com/terra-money/core/v2/app/config"
 	"github.com/terra-money/core/v2/x/tokenfactory/keeper"
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
 )
@@ -36,11 +33,6 @@ func TestKeeperTestSuite(t *testing.T) {
 
 func (s *KeeperTestSuite) SetupTest() {
 	s.Setup()
-	// Fund every TestAcc with two denoms, one of which is the denom creation fee
-	fundAccsAmount := sdk.NewCoins(sdk.NewCoin(config.BondDenom, math.NewInt(1_000_000_000)))
-	for _, acc := range s.TestAccs {
-		s.FundAcc(acc, fundAccsAmount)
-	}
 	s.contractKeeper = wasmkeeper.NewGovPermissionKeeper(s.App.WasmKeeper)
 	s.queryClient = types.NewQueryClient(s.QueryHelper)
 	s.msgServer = keeper.NewMsgServerImpl(s.App.TokenFactoryKeeper)

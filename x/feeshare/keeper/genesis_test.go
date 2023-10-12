@@ -1,4 +1,4 @@
-package feeshare_test
+package keeper_test
 
 import (
 	"fmt"
@@ -9,7 +9,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	app_test "github.com/terra-money/core/v2/app/app_test"
 
-	"github.com/terra-money/core/v2/x/feeshare"
 	"github.com/terra-money/core/v2/x/feeshare/types"
 )
 
@@ -86,11 +85,11 @@ func (suite *GenesisTestSuite) TestFeeShareInitGenesis() {
 
 			if tc.expPanic {
 				suite.Require().Panics(func() {
-					feeshare.InitGenesis(suite.Ctx, suite.App.FeeShareKeeper, tc.genesis)
+					suite.App.FeeShareKeeper.InitGenesis(suite.Ctx, tc.genesis)
 				})
 			} else {
 				suite.Require().NotPanics(func() {
-					feeshare.InitGenesis(suite.Ctx, suite.App.FeeShareKeeper, tc.genesis)
+					suite.App.FeeShareKeeper.InitGenesis(suite.Ctx, tc.genesis)
 				})
 
 				params := suite.App.FeeShareKeeper.GetParams(suite.Ctx)

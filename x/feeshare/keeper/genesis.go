@@ -1,16 +1,14 @@
-package feeshare
+package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/terra-money/core/v2/x/feeshare/keeper"
 	"github.com/terra-money/core/v2/x/feeshare/types"
 )
 
 // InitGenesis import module genesis
-func InitGenesis(
+func (k Keeper) InitGenesis(
 	ctx sdk.Context,
-	k keeper.Keeper,
 	data types.GenesisState,
 ) {
 	if err := k.SetParams(ctx, data.Params); err != nil {
@@ -33,7 +31,7 @@ func InitGenesis(
 }
 
 // ExportGenesis export module state
-func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
+func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	return &types.GenesisState{
 		Params:   k.GetParams(ctx),
 		FeeShare: k.GetFeeShares(ctx),

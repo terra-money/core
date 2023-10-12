@@ -6,9 +6,6 @@ import (
 	"os"
 	"time"
 
-	"reflect"
-	"unsafe"
-
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	dbm "github.com/cometbft/cometbft-db"
@@ -29,9 +26,10 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/terra-money/core/v2/app"
 	terra_app "github.com/terra-money/core/v2/app"
+	"github.com/terra-money/core/v2/app/config"
 	appparams "github.com/terra-money/core/v2/app/params"
-	terrraParams "github.com/terra-money/core/v2/app/params"
 	"github.com/terra-money/core/v2/app/wasmconfig"
+	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
@@ -47,10 +45,9 @@ type AppTestSuite struct {
 // Setup sets up basic environment for suite (App, Ctx, and test accounts)
 func (s *AppTestSuite) Setup() {
 	appparams.RegisterAddressesConfig()
-	baseTestAccts := CreateRandomAccounts(3)
 	encCfg := terra_app.MakeEncodingConfig()
 	genesisState := app.NewDefaultGenesisState(encCfg.Marshaler)
-	genesisState.ConfigureBondDenom(encCfg.Marshaler, "uluna")
+	genesisState.ConfigureBondDenom(encCfg.Marshaler, config.BondDenom)
 	genesisState.ConfigureICA(encCfg.Marshaler)
 
 	db := dbm.NewMemDB()
@@ -67,8 +64,6 @@ func (s *AppTestSuite) Setup() {
 		wasmconfig.DefaultConfig(),
 	)
 
-	s.TestAccs = []sdk.AccAddress{}
-	s.TestAccs = append(s.TestAccs, baseTestAccts...)
 	s.Ctx = s.App.NewContext(true, tmproto.Header{Height: 1, Time: time.Now()})
 	s.QueryHelper = &baseapp.QueryServiceTestHelper{
 		GRPCQueryRouter: s.App.GRPCQueryRouter(),
@@ -76,12 +71,19 @@ func (s *AppTestSuite) Setup() {
 	}
 	err := s.App.BankKeeper.SetParams(s.Ctx, banktypes.NewParams(true))
 	s.Require().NoError(err)
+
 	err = s.App.WasmKeeper.SetParams(s.Ctx, wasmtypes.DefaultParams())
+	s.Require().NoError(err)
+
+	err = s.App.FeeShareKeeper.SetParams(s.Ctx, feesharetypes.DefaultParams())
 	s.Require().NoError(err)
 
 	err = s.App.TokenFactoryKeeper.SetParams(s.Ctx, tokenfactorytypes.DefaultParams())
 	s.Require().NoError(err)
+
 	s.App.DistrKeeper.SetFeePool(s.Ctx, distrtypes.InitialFeePool())
+
+	s.TestAccs = s.CreateRandomAccounts(3)
 }
 
 func (s *AppTestSuite) AssertEventEmitted(ctx sdk.Context, eventTypeExpected string, numEventsExpected int) {
@@ -97,11 +99,14 @@ func (s *AppTestSuite) AssertEventEmitted(ctx sdk.Context, eventTypeExpected str
 }
 
 // CreateRandomAccounts is a function return a list of randomly generated AccAddresses
-func CreateRandomAccounts(numAccts int) []sdk.AccAddress {
+func (s *AppTestSuite) CreateRandomAccounts(numAccts int) []sdk.AccAddress {
 	testAddrs := make([]sdk.AccAddress, numAccts)
 	for i := 0; i < numAccts; i++ {
 		pk := ed25519.GenPrivKey().PubKey()
 		testAddrs[i] = sdk.AccAddress(pk.Address())
+
+		err := s.FundAcc(testAddrs[i], sdk.NewCoins(sdk.NewInt64Coin("uluna", 100000000)))
+		s.Require().NoError(err)
 	}
 
 	return testAddrs
@@ -122,7 +127,7 @@ func SetupGenesisValSet(
 	genAccs []authtypes.GenesisAccount,
 	opts []wasm.Option,
 	app *terra_app.TerraApp,
-	encCfg terrraParams.EncodingConfig,
+	encCfg appparams.EncodingConfig,
 	balances ...banktypes.Balance,
 ) terra_app.GenesisState {
 	genesisState := terra_app.NewDefaultGenesisState(encCfg.Marshaler)
@@ -183,52 +188,4 @@ func SetupGenesisValSet(
 	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
 
 	return genesisState
-}
-
-var (
-	coinType  = reflect.TypeOf(sdk.Coin{})
-	coinsType = reflect.TypeOf(sdk.Coins{})
-)
-
-// Fill analyze all struct fields and slices with
-// reflection and initialize the nil and empty slices,
-// structs, and pointers.
-func Fill(x interface{}) interface{} {
-	v := reflect.Indirect(reflect.ValueOf(x))
-	switch v.Kind() {
-	case reflect.Slice:
-		for i := 0; i < v.Len(); i++ {
-			obj := v.Index(i)
-			objPt := reflect.NewAt(obj.Type(), unsafe.Pointer(obj.UnsafeAddr())).Interface()
-			objPt = Fill(objPt)
-			obj.Set(reflect.ValueOf(objPt))
-		}
-	case reflect.Struct:
-		for i := 0; i < v.NumField(); i++ {
-			f := reflect.Indirect(v.Field(i))
-			if !f.CanSet() {
-				continue
-			}
-			switch f.Kind() {
-			case reflect.Slice:
-				f.Set(reflect.MakeSlice(f.Type(), 0, 0))
-			case reflect.Struct:
-				switch f.Type() {
-				case coinType:
-					coin := reflect.New(coinType).Interface()
-					s := reflect.ValueOf(coin).Elem()
-					f.Set(s)
-				case coinsType:
-					coins := reflect.New(coinsType).Interface()
-					s := reflect.ValueOf(coins).Elem()
-					f.Set(s)
-				default:
-					objPt := reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Interface()
-					s := Fill(objPt)
-					f.Set(reflect.ValueOf(s))
-				}
-			}
-		}
-	}
-	return reflect.Indirect(v).Interface()
 }
