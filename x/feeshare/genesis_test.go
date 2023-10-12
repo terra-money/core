@@ -14,12 +14,7 @@ import (
 )
 
 type GenesisTestSuite struct {
-	*app_test.AppTestSuite
-	suite.Suite
-
-	ctx sdk.Context
-
-	genesis types.GenesisState
+	app_test.AppTestSuite
 }
 
 func TestGenesisTestSuite(t *testing.T) {
@@ -34,7 +29,9 @@ func (suite *GenesisTestSuite) TestFeeShareInitGenesis() {
 	}{
 		{
 			"default genesis",
-			suite.genesis,
+			types.GenesisState{
+				Params: types.DefaultParams(),
+			},
 			false,
 		},
 		{
@@ -85,18 +82,18 @@ func (suite *GenesisTestSuite) TestFeeShareInitGenesis() {
 
 	for _, tc := range testCases {
 		suite.Run(fmt.Sprintf("Case %s", tc.name), func() {
-			suite.Setup() // reset
+			suite.AppTestSuite.Setup() // reset
 
 			if tc.expPanic {
 				suite.Require().Panics(func() {
-					feeshare.InitGenesis(suite.ctx, suite.App.FeeShareKeeper, tc.genesis)
+					feeshare.InitGenesis(suite.Ctx, suite.App.FeeShareKeeper, tc.genesis)
 				})
 			} else {
 				suite.Require().NotPanics(func() {
-					feeshare.InitGenesis(suite.ctx, suite.App.FeeShareKeeper, tc.genesis)
+					feeshare.InitGenesis(suite.Ctx, suite.App.FeeShareKeeper, tc.genesis)
 				})
 
-				params := suite.App.FeeShareKeeper.GetParams(suite.ctx)
+				params := suite.App.FeeShareKeeper.GetParams(suite.Ctx)
 				suite.Require().Equal(tc.genesis.Params, params)
 			}
 		})
