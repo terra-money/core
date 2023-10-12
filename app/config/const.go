@@ -52,4 +52,5 @@ const (
 	Upgrade2_4_rc = "2.4.0-rc4" // This is pisco only since an incorrect plan name was used for the upgrade
 	Upgrade2_4    = "v2.4"
 	Upgrade2_5    = "v2.5"
+	Upgrade2_6    = "v2.6"
 )
