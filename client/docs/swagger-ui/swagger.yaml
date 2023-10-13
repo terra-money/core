@@ -53289,6 +53289,550 @@ paths:
                       format: byte
       tags:
         - Query
+  /juno/feeshare/v1/fee_shares:
+    get:
+      summary: FeeShares retrieves all registered FeeShares
+      operationId: FeeShares
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              feeshare:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    contract_address:
+                      type: string
+                      title: >-
+                        contract_address is the bech32 address of a registered
+                        contract in string
+
+                        form
+                    deployer_address:
+                      type: string
+                      description: >-
+                        deployer_address is the bech32 address of message
+                        sender. It must be the
+
+                        same as the contracts admin address.
+                    withdrawer_address:
+                      type: string
+                      description: >-
+                        withdrawer_address is the bech32 address of account
+                        receiving the
+
+                        transaction fees.
+                  title: >-
+                    FeeShare defines an instance that organizes fee distribution
+                    conditions for
+
+                    the owner of a given smart contract
+                title: FeeShare is a slice of all stored Reveneue
+              pagination:
+                description: pagination defines the pagination in the response.
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+            description: >-
+              QueryFeeSharesResponse is the response type for the
+              Query/FeeShares RPC
+
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /juno/feeshare/v1/fee_shares/{contract_address}:
+    get:
+      summary: FeeShare retrieves a registered FeeShare for a given contract address
+      operationId: FeeShare
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              feeshare:
+                type: object
+                properties:
+                  contract_address:
+                    type: string
+                    title: >-
+                      contract_address is the bech32 address of a registered
+                      contract in string
+
+                      form
+                  deployer_address:
+                    type: string
+                    description: >-
+                      deployer_address is the bech32 address of message sender.
+                      It must be the
+
+                      same as the contracts admin address.
+                  withdrawer_address:
+                    type: string
+                    description: >-
+                      withdrawer_address is the bech32 address of account
+                      receiving the
+
+                      transaction fees.
+                title: >-
+                  FeeShare defines an instance that organizes fee distribution
+                  conditions for
+
+                  the owner of a given smart contract
+            description: >-
+              QueryFeeShareResponse is the response type for the Query/FeeShare
+              RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: contract_address
+          description: contract_address of a registered contract in bech32 format
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
+  /juno/feeshare/v1/fee_shares/{deployer_address}:
+    get:
+      summary: |-
+        DeployerFeeShares retrieves all FeeShares that a given deployer has
+        registered
+      operationId: DeployerFeeShares
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              contract_addresses:
+                type: array
+                items:
+                  type: string
+                title: >-
+                  contract_addresses is the slice of registered contract
+                  addresses for a
+
+                  deployer
+              pagination:
+                description: pagination defines the pagination in the response.
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+            description: |-
+              QueryDeployerFeeSharesResponse is the response type for the
+              Query/DeployerFeeShares RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: deployer_address
+          description: deployer_address in bech32 format
+          in: path
+          required: true
+          type: string
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /juno/feeshare/v1/fee_shares/{withdrawer_address}:
+    get:
+      summary: |-
+        WithdrawerFeeShares retrieves all FeeShares with a given withdrawer
+        address
+      operationId: WithdrawerFeeShares
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              contract_addresses:
+                type: array
+                items:
+                  type: string
+                title: >-
+                  contract_addresses is the slice of registered contract
+                  addresses for a
+
+                  withdrawer
+              pagination:
+                description: pagination defines the pagination in the response.
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+            description: |-
+              QueryWithdrawerFeeSharesResponse is the response type for the
+              Query/WithdrawerFeeShares RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: withdrawer_address
+          description: withdrawer_address in bech32 format
+          in: path
+          required: true
+          type: string
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /juno/feeshare/v1/params:
+    get:
+      summary: Params retrieves the FeeShare module params
+      operationId: FeeshareParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                title: params is the returned FeeShare parameter
+                type: object
+                properties:
+                  enable_fee_share:
+                    type: boolean
+                    title: >-
+                      enable_feeshare defines a parameter to enable the feeshare
+                      module
+                  developer_shares:
+                    type: string
+                    title: >-
+                      developer_shares defines the proportion of the transaction
+                      fees to be
+
+                      distributed to the registered contract owner
+                  allowed_denoms:
+                    type: array
+                    items:
+                      type: string
+                    description: >-
+                      allowed_denoms defines the list of denoms that are allowed
+                      to be paid to
+
+                      the contract withdraw addresses. If said denom is not in
+                      the list, the fees
+
+                      will ONLY be sent to the community pool.
+
+                      If this list is empty, all denoms are allowed.
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
 definitions:
   alliance.alliance.AllianceAsset:
     type: object
@@ -84996,3 +85540,242 @@ definitions:
 
               proposer that proposed the block.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
+  juno.feeshare.v1.FeeShare:
+    type: object
+    properties:
+      contract_address:
+        type: string
+        title: >-
+          contract_address is the bech32 address of a registered contract in
+          string
+
+          form
+      deployer_address:
+        type: string
+        description: >-
+          deployer_address is the bech32 address of message sender. It must be
+          the
+
+          same as the contracts admin address.
+      withdrawer_address:
+        type: string
+        description: |-
+          withdrawer_address is the bech32 address of account receiving the
+          transaction fees.
+    title: >-
+      FeeShare defines an instance that organizes fee distribution conditions
+      for
+
+      the owner of a given smart contract
+  juno.feeshare.v1.Params:
+    type: object
+    properties:
+      enable_fee_share:
+        type: boolean
+        title: enable_feeshare defines a parameter to enable the feeshare module
+      developer_shares:
+        type: string
+        title: |-
+          developer_shares defines the proportion of the transaction fees to be
+          distributed to the registered contract owner
+      allowed_denoms:
+        type: array
+        items:
+          type: string
+        description: >-
+          allowed_denoms defines the list of denoms that are allowed to be paid
+          to
+
+          the contract withdraw addresses. If said denom is not in the list, the
+          fees
+
+          will ONLY be sent to the community pool.
+
+          If this list is empty, all denoms are allowed.
+    title: Params defines the feeshare module params
+  juno.feeshare.v1.QueryDeployerFeeSharesResponse:
+    type: object
+    properties:
+      contract_addresses:
+        type: array
+        items:
+          type: string
+        title: |-
+          contract_addresses is the slice of registered contract addresses for a
+          deployer
+      pagination:
+        description: pagination defines the pagination in the response.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    description: |-
+      QueryDeployerFeeSharesResponse is the response type for the
+      Query/DeployerFeeShares RPC method.
+  juno.feeshare.v1.QueryFeeShareResponse:
+    type: object
+    properties:
+      feeshare:
+        type: object
+        properties:
+          contract_address:
+            type: string
+            title: >-
+              contract_address is the bech32 address of a registered contract in
+              string
+
+              form
+          deployer_address:
+            type: string
+            description: >-
+              deployer_address is the bech32 address of message sender. It must
+              be the
+
+              same as the contracts admin address.
+          withdrawer_address:
+            type: string
+            description: |-
+              withdrawer_address is the bech32 address of account receiving the
+              transaction fees.
+        title: >-
+          FeeShare defines an instance that organizes fee distribution
+          conditions for
+
+          the owner of a given smart contract
+    description: >-
+      QueryFeeShareResponse is the response type for the Query/FeeShare RPC
+      method.
+  juno.feeshare.v1.QueryFeeSharesResponse:
+    type: object
+    properties:
+      feeshare:
+        type: array
+        items:
+          type: object
+          properties:
+            contract_address:
+              type: string
+              title: >-
+                contract_address is the bech32 address of a registered contract
+                in string
+
+                form
+            deployer_address:
+              type: string
+              description: >-
+                deployer_address is the bech32 address of message sender. It
+                must be the
+
+                same as the contracts admin address.
+            withdrawer_address:
+              type: string
+              description: >-
+                withdrawer_address is the bech32 address of account receiving
+                the
+
+                transaction fees.
+          title: >-
+            FeeShare defines an instance that organizes fee distribution
+            conditions for
+
+            the owner of a given smart contract
+        title: FeeShare is a slice of all stored Reveneue
+      pagination:
+        description: pagination defines the pagination in the response.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    description: |-
+      QueryFeeSharesResponse is the response type for the Query/FeeShares RPC
+      method.
+  juno.feeshare.v1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        title: params is the returned FeeShare parameter
+        type: object
+        properties:
+          enable_fee_share:
+            type: boolean
+            title: enable_feeshare defines a parameter to enable the feeshare module
+          developer_shares:
+            type: string
+            title: >-
+              developer_shares defines the proportion of the transaction fees to
+              be
+
+              distributed to the registered contract owner
+          allowed_denoms:
+            type: array
+            items:
+              type: string
+            description: >-
+              allowed_denoms defines the list of denoms that are allowed to be
+              paid to
+
+              the contract withdraw addresses. If said denom is not in the list,
+              the fees
+
+              will ONLY be sent to the community pool.
+
+              If this list is empty, all denoms are allowed.
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
+  juno.feeshare.v1.QueryWithdrawerFeeSharesResponse:
+    type: object
+    properties:
+      contract_addresses:
+        type: array
+        items:
+          type: string
+        title: |-
+          contract_addresses is the slice of registered contract addresses for a
+          withdrawer
+      pagination:
+        description: pagination defines the pagination in the response.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    description: |-
+      QueryWithdrawerFeeSharesResponse is the response type for the
+      Query/WithdrawerFeeShares RPC method.
