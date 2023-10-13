@@ -1172,7 +1172,6 @@ func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			app.configurator,
 			app.appCodec,
 			app.IBCKeeper.ClientKeeper,
-			app.BuilderKeeper,
 			app.AccountKeeper,
 		),
 	)

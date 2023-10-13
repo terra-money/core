@@ -14,7 +14,6 @@ import (
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
-	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	pobtypes "github.com/skip-mev/pob/x/builder/types"
 )
 
@@ -23,13 +22,12 @@ func CreateUpgradeHandler(
 	cfg module.Configurator,
 	cdc codec.Codec,
 	clientKeeper clientkeeper.Keeper,
-	pobKeeper pobkeeper.Keeper,
 	authKeeper authkeeper.AccountKeeper,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 
 		// overwrite pob account to a module account for pisco-1
-		overwritePobModuleAccount(ctx, authKeeper, pobKeeper)
+		overwritePobModuleAccount(ctx, authKeeper)
 
 		// Increase the unbonding period for atlantic-2
 		err := increaseUnbondingPeriod(ctx, cdc, clientKeeper)
@@ -41,7 +39,7 @@ func CreateUpgradeHandler(
 }
 
 // Overwrite the module account for pisco-1
-func overwritePobModuleAccount(ctx sdk.Context, authKeeper authkeeper.AccountKeeper, pobKeeper pobkeeper.Keeper) {
+func overwritePobModuleAccount(ctx sdk.Context, authKeeper authkeeper.AccountKeeper) {
 	if ctx.ChainID() == "pisco-1" {
 		macc := authtypes.NewEmptyModuleAccount(pobtypes.ModuleName)
 		pobaccount := authKeeper.GetAccount(ctx, macc.GetAddress())
