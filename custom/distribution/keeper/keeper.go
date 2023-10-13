@@ -12,10 +12,17 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 )
 
+var (
+	communityPoolBlockedUntil = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	ErrCommunityPoolBlocked   = sdkerrors.New(
+		types.ModuleName,
+		9999,
+		fmt.Sprintf("CommunityPool is blocked until %s", communityPoolBlockedUntil),
+	)
+)
+
 type Keeper struct {
 	distributionkeeper.Keeper
-	bankKeeper                types.BankKeeper
-	communityPoolBlockedUntil time.Time
 }
 
 func NewKeeper(
@@ -37,17 +44,14 @@ func NewKeeper(
 			feeCollectorName,
 			authority,
 		),
-		bankKeeper:                bankKeeper,
-		communityPoolBlockedUntil: time.Date(2025, 1, 1, 0, 0, 0, 0, time.Local),
 	}
 }
 
 // DistributeFromFeePool distributes funds from the distribution module account to
 // a receiver address while updating the community pool
 func (k Keeper) DistributeFromFeePool(ctx sdk.Context, amount sdk.Coins, receiveAddr sdk.AccAddress) error {
-	if k.communityPoolBlockedUntil.After(ctx.BlockHeader().Time) {
-		message := fmt.Sprintf("CommunityPool is blocked until %s", k.communityPoolBlockedUntil)
-		return sdkerrors.New(types.ModuleName, 999, message)
+	if communityPoolBlockedUntil.After(ctx.BlockHeader().Time) {
+		return ErrCommunityPoolBlocked
 	}
 
 	return k.Keeper.DistributeFromFeePool(ctx, amount, receiveAddr)

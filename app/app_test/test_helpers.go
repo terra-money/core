@@ -114,7 +114,6 @@ func (s *AppTestSuite) CreateRandomAccounts(numAccts int) []sdk.AccAddress {
 
 // FundAcc funds target address with specified amount.
 func (s *AppTestSuite) FundAcc(acc sdk.AccAddress, amounts sdk.Coins) (err error) {
-	s.Require().NoError(err)
 	if err := s.App.BankKeeper.MintCoins(s.Ctx, minttypes.ModuleName, amounts); err != nil {
 		return err
 	}
