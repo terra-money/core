@@ -7,11 +7,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	clientkeeper "github.com/cosmos/ibc-go/v7/modules/core/02-client/keeper"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
+	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
+	pobtypes "github.com/skip-mev/pob/x/builder/types"
 )
 
 func CreateUpgradeHandler(
@@ -19,13 +23,29 @@ func CreateUpgradeHandler(
 	cfg module.Configurator,
 	cdc codec.Codec,
 	clientKeeper clientkeeper.Keeper,
+	pobKeeper pobkeeper.Keeper,
+	authKeeper authkeeper.AccountKeeper,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+
+		// overwrite pob account to a module account for pisco-1
+		overwritePobModuleAccount(ctx, authKeeper, pobKeeper)
+
+		// Increase the unbonding period for atlantic-2
 		err := increaseUnbondingPeriod(ctx, cdc, clientKeeper)
 		if err != nil {
 			return nil, err
 		}
 		return mm.RunMigrations(ctx, cfg, fromVM)
+	}
+}
+
+// Overwrite the module account for pisco-1
+func overwritePobModuleAccount(ctx sdk.Context, authKeeper authkeeper.AccountKeeper, pobKeeper pobkeeper.Keeper) {
+	if ctx.ChainID() == "pisco-1" {
+		macc := authtypes.NewEmptyModuleAccount(pobtypes.ModuleName)
+		maccI := (authKeeper.NewAccount(ctx, macc)).(authtypes.ModuleAccountI)
+		authKeeper.SetModuleAccount(ctx, maccI)
 	}
 }
 
