@@ -44,6 +44,8 @@ func CreateUpgradeHandler(
 func overwritePobModuleAccount(ctx sdk.Context, authKeeper authkeeper.AccountKeeper, pobKeeper pobkeeper.Keeper) {
 	if ctx.ChainID() == "pisco-1" {
 		macc := authtypes.NewEmptyModuleAccount(pobtypes.ModuleName)
+		pobaccount := authKeeper.GetAccount(ctx, macc.GetAddress())
+		macc.AccountNumber = pobaccount.GetAccountNumber()
 		maccI := (authKeeper.NewAccount(ctx, macc)).(authtypes.ModuleAccountI)
 		authKeeper.SetModuleAccount(ctx, maccI)
 	}
