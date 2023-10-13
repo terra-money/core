@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/terra-money/alliance/x/alliance"
 	"github.com/terra-money/core/v2/app/wasmconfig"
+	"github.com/terra-money/core/v2/x/feeshare"
 	"github.com/terra-money/core/v2/x/tokenfactory"
 
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -150,6 +151,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 			"distribution":           distribution.AppModule{}.ConsensusVersion(),
 			"evidence":               evidence.AppModule{}.ConsensusVersion(),
 			"feegrant":               feegrantmodule.AppModule{}.ConsensusVersion(),
+			"feeshare":               feeshare.AppModule{}.ConsensusVersion(),
 			"feeibc":                 ibcfee.AppModule{}.ConsensusVersion(),
 			"genutil":                genutil.AppModule{}.ConsensusVersion(),
 			"gov":                    gov.AppModule{}.ConsensusVersion(),
@@ -181,6 +183,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 		"distribution":           3,
 		"evidence":               1,
 		"feegrant":               2,
+		"feeshare":               2,
 		"feeibc":                 1,
 		"genutil":                1,
 		"gov":                    4,
