@@ -147,6 +147,9 @@ import (
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	terracustombank "github.com/terra-money/core/v2/custom/bank"
 	custombankkeeper "github.com/terra-money/core/v2/custom/bank/keeper"
+	feeshare "github.com/terra-money/core/v2/x/feeshare"
+	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
+	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 
 	pobabci "github.com/skip-mev/pob/abci"
 	pobmempool "github.com/skip-mev/pob/mempool"
@@ -261,6 +264,7 @@ var (
 		wasm.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 		alliance.AppModuleBasic{},
+		feeshare.AppModuleBasic{},
 		pob.AppModuleBasic{},
 	)
 
@@ -337,6 +341,7 @@ type TerraApp struct {
 	RouterKeeper          routerkeeper.Keeper
 	TokenFactoryKeeper    tokenfactorykeeper.Keeper
 	AllianceKeeper        alliancekeeper.Keeper
+	FeeShareKeeper        feesharekeeper.Keeper
 
 	// IBC hooks
 	IBCHooksKeeper   *ibchookskeeper.Keeper
@@ -410,7 +415,7 @@ func NewTerraApp(
 		icahosttypes.StoreKey, icacontrollertypes.StoreKey, routertypes.StoreKey,
 		consensusparamtypes.StoreKey, tokenfactorytypes.StoreKey, wasmtypes.StoreKey,
 		ibcfeetypes.StoreKey, ibchookstypes.StoreKey, crisistypes.StoreKey,
-		alliancetypes.StoreKey, pobtype.StoreKey,
+		alliancetypes.StoreKey, feesharetypes.StoreKey, pobtype.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -712,6 +717,16 @@ func NewTerraApp(
 		app.MsgServiceRouter(), govtypes.DefaultConfig(), authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
+	app.FeeShareKeeper = feesharekeeper.NewKeeper(
+		appCodec,
+		keys[feesharetypes.StoreKey],
+		app.BankKeeper,
+		app.WasmKeeper,
+		app.AccountKeeper,
+		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
 	// Set legacy router for backwards compatibility with gov v1beta1
 	govKeeper.SetLegacyRouter(govRouter)
 	app.GovKeeper = *govKeeper.SetHooks(
@@ -769,6 +784,7 @@ func NewTerraApp(
 		ibchooks.NewAppModule(app.AccountKeeper),
 		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(tokenfactorytypes.ModuleName)),
 		alliance.NewAppModule(appCodec, app.AllianceKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry, app.GetSubspace(alliancetypes.ModuleName)),
+		feeshare.NewAppModule(app.FeeShareKeeper, app.AccountKeeper, app.GetSubspace(feesharetypes.ModuleName)),
 		pob.NewAppModule(appCodec, app.BuilderKeeper),
 	)
 
@@ -803,6 +819,7 @@ func NewTerraApp(
 		wasmtypes.ModuleName,
 		tokenfactorytypes.ModuleName,
 		alliancetypes.ModuleName,
+		feesharetypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		pobtype.ModuleName,
 	)
@@ -834,6 +851,7 @@ func NewTerraApp(
 		wasmtypes.ModuleName,
 		tokenfactorytypes.ModuleName,
 		alliancetypes.ModuleName,
+		feesharetypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		pobtype.ModuleName,
 	)
@@ -869,6 +887,7 @@ func NewTerraApp(
 		ibchookstypes.ModuleName,
 		wasmtypes.ModuleName,
 		alliancetypes.ModuleName,
+		feesharetypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		pobtype.ModuleName,
 	)
@@ -897,6 +916,8 @@ func NewTerraApp(
 				SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 				SigGasConsumer:  cosmosante.DefaultSigVerificationGasConsumer,
 			},
+			BankKeeper:        app.BankKeeper,
+			FeeShareKeeper:    app.FeeShareKeeper,
 			IBCkeeper:         app.IBCKeeper,
 			TxCounterStoreKey: keys[wasmtypes.StoreKey],
 			WasmConfig:        wasmConfig.ToWasmConfig(),
@@ -1206,6 +1227,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(tokenfactorytypes.ModuleName).WithKeyTable(tokenfactorytypes.ParamKeyTable())
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(alliancetypes.ModuleName).WithKeyTable(alliancetypes.ParamKeyTable())
+	paramsKeeper.Subspace(feesharetypes.ModuleName).WithKeyTable(feesharetypes.ParamKeyTable())
 
 	paramsKeeper.Subspace(wasmtypes.ModuleName).WithKeyTable(wasmtypes.ParamKeyTable())
 
@@ -1310,6 +1332,7 @@ func (app *TerraApp) SimulationManager() *module.SimulationManager {
 		router.NewAppModule(&app.RouterKeeper),
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		alliance.NewAppModule(appCodec, app.AllianceKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry, app.GetSubspace(alliancetypes.ModuleName)),
+		feeshare.NewAppModule(app.FeeShareKeeper, app.AccountKeeper, app.GetSubspace(feesharetypes.ModuleName)),
 	)
 
 	sm.RegisterStoreDecoders()
