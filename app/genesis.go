@@ -14,6 +14,7 @@ import (
 	icagenesistypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/genesis/types"
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	buildertypes "github.com/skip-mev/pob/x/builder/types"
 	"github.com/terra-money/core/v2/app/config"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 )
@@ -59,6 +60,12 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	cdc.MustUnmarshalJSON(genState[tokenfactorytypes.ModuleName], &tokenFactoryGenState)
 	tokenFactoryGenState.Params.DenomCreationFee = sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(10000000)))
 	genState[tokenfactorytypes.ModuleName] = cdc.MustMarshalJSON(&tokenFactoryGenState)
+
+	var builderGenState buildertypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[buildertypes.ModuleName], &builderGenState)
+	builderGenState.Params.ReserveFee = sdk.NewCoin(bondDenom, sdk.NewInt(1))
+	builderGenState.Params.MinBidIncrement = sdk.NewCoin(bondDenom, sdk.NewInt(1))
+	genState[buildertypes.ModuleName] = cdc.MustMarshalJSON(&builderGenState)
 
 	return genState
 }
