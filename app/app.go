@@ -168,6 +168,7 @@ import (
 	v2_3_0 "github.com/terra-money/core/v2/app/upgrades/v2.3.0"
 	v2_4 "github.com/terra-money/core/v2/app/upgrades/v2.4"
 	v2_5 "github.com/terra-money/core/v2/app/upgrades/v2.5"
+	v2_6 "github.com/terra-money/core/v2/app/upgrades/v2.6"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/terra-money/core/v2/client/docs/statik"
@@ -1183,6 +1184,15 @@ func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			app.ConsensusParamsKeeper,
 			app.ICAControllerKeeper,
 			app.BuilderKeeper,
+			app.AccountKeeper,
+		),
+	)
+	app.UpgradeKeeper.SetUpgradeHandler(
+		terraappconfig.Upgrade2_6,
+		v2_6.CreateUpgradeHandler(app.mm,
+			app.configurator,
+			app.appCodec,
+			app.IBCKeeper.ClientKeeper,
 			app.AccountKeeper,
 		),
 	)
