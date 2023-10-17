@@ -1,11 +1,11 @@
 {
     "compilerOptions": {
       "target": "ES2022",
-      "module": "commonjs",
+      "module": "ES2022",
       "lib": [
-        "esnext",
-        "dom"
+        "ES2022",
       ],
+      "baseUrl": "src",
       // "allowJs": true,                       /* Allow javascript files to be compiled. */
       // "checkJs": true,                       /* Report errors in .js files. */
       // "jsx": "react-jsx" /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */,
