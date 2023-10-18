@@ -244,6 +244,14 @@
           "Params": "PobParams"
         }
       }
+    },
+    {
+      "url": "./tmp-swagger-gen/juno/feeshare/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "FeeshareParams"
+        }
+      }
     }
   ]
 }

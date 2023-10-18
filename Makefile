@@ -229,10 +229,6 @@ test-alliance:
 	@echo "Testing alliance module..."
 	./scripts/tests/alliance/delegate.sh
 
-test-vesting-accounts: 
-	@echo "Testing vesting accounts..."
-	./scripts/tests/vesting-accounts/validate-vesting.sh
-
 test-tokenfactory: 
 	@echo "Testing tokenfactory..."
 	./scripts/tests/tokenfactory/tokenfactory.sh
@@ -251,7 +247,7 @@ clean-testing-data:
 	-@rm -rf ./_build
 	
 
-.PHONY: integration-test-all init-test-framework test-relayer test-ica test-ibc-hooks test-vesting-accounts test-tokenfactory clean-testing-data
+.PHONY: integration-test-all init-test-framework test-relayer test-ica test-ibc-hooks test-tokenfactory clean-testing-data
 
 ###############################################################################
 ###                                Protobuf                                 ###
