@@ -1,6 +1,6 @@
 import { getMnemonics } from "../helpers/mnemonics";
 import { getLCDClient } from "../helpers/lcd.connection";
-import { Coins, MnemonicKey, MsgExecuteContract, MsgInstantiateContract, MsgRegisterFeeShare, MsgStoreCode } from "@terra-money/feather.js";
+import { Coins, Fee, MnemonicKey, MsgExecuteContract, MsgInstantiateContract, MsgRegisterFeeShare, MsgStoreCode } from "@terra-money/feather.js";
 import { blockInclusion } from "../helpers/const";
 import fs from "fs";
 import path from 'path';
@@ -145,6 +145,7 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
             tx = await wallet.createAndSignTx({
                 msgs: [msgExecute],
                 chainID: "test-1",
+                fee: new Fee(200_000, "400000uluna"),
             });
             result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
             await blockInclusion();
@@ -186,7 +187,12 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
                     }]
                 }
                 ])
-
+            
+            // Query the random account (new owner of the contract)
+            // and validate that the account has received 50% of the fees
+            const bankAmount = await LCD.chain1.bank.balance(randomAccountAddress);
+            expect(bankAmount[0])
+                .toMatchObject(Coins.fromString("200000uluna"))
         }
         catch (e) {
             expect(e).toBeUndefined();
