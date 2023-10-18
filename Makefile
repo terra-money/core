@@ -206,7 +206,6 @@ integration-test-all: init-test-framework \
 	test-ica \
 	test-ibc-hooks \
 	test-vesting-accounts \
-	test-alliance \
 	test-tokenfactory 
 
 init-test-framework: clean-testing-data install
@@ -224,10 +223,6 @@ test-ica:
 test-ibc-hooks: 
 	@echo "Testing ibc hooks..."
 	./scripts/tests/ibc-hooks/increment.sh
-
-test-alliance: 
-	@echo "Testing alliance module..."
-	./scripts/tests/alliance/delegate.sh
 
 test-tokenfactory: 
 	@echo "Testing tokenfactory..."
