@@ -1,6 +1,6 @@
 import { getMnemonics } from "../helpers/mnemonics";
 import { getLCDClient } from "../helpers/lcd.connection";
-import { Coin, MsgTransfer, MsgCreateAllianceProposal, MsgSubmitProposal, Coins, MsgVote, Fee, MsgAllianceDelegate, MsgClaimDelegationRewards, MsgAllianceUndelegate, MsgDeleteAllianceProposal } from "@terra-money/feather.js";
+import { Coin, MsgTransfer, MsgCreateAlliance, Coins, MsgVote, Fee, MsgAllianceDelegate, MsgClaimDelegationRewards, MsgAllianceUndelegate, MsgDeleteAlliance, MsgSubmitProposal } from "@terra-money/feather.js";
 import { blockInclusion, votingPeriod } from "../helpers/const";
 import { VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
 import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
@@ -90,25 +90,27 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
         expect(ibcCoin.denom.startsWith("ibc/")).toBeTruthy();
 
         try {
+            const msgProposal = new MsgSubmitProposal(
+                [new MsgCreateAlliance(
+                    "terra10d07y265gmmuvt4z0w9aw880jnsr700juxf95n",
+                    ibcCoin.denom,
+                    "100000000000000000",
+                    "0",
+                    "1000000000000000000",
+                    undefined,
+                    {
+                        "min": "100000000000000000",
+                        "max": "100000000000000000"
+                    })],
+                Coins.fromString("1000000000uluna"),
+                val2WalletAddress,
+                "metadata",
+                "title",
+                "summary"
+            );
             // Create an alliance proposal sign and submit on chain-2
             let tx = await val2Wallet.createAndSignTx({
-                msgs: [new MsgSubmitProposal(
-                    new MsgCreateAllianceProposal(
-                        "title",
-                        "description",
-                        ibcCoin.denom,
-                        "100000000000000000",
-                        "0",
-                        "1000000000000000000",
-                        undefined,
-                        {
-                            "min": "100000000000000000",
-                            "max": "100000000000000000"
-                        }
-                    ),
-                    Coins.fromString("1000000000uluna"),
-                    val2WalletAddress,
-                )],
+                msgs: [msgProposal],
                 chainID: "test-2",
             });
             let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
@@ -299,17 +301,20 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
         test('Must removed the alliance using gov', async () => {
             let ibcCoin = (await LCD.chain2.bank.balance(allianceAccountAddress))[0].find(c => c.denom.startsWith("ibc/")) as Coin;
 
+            const msgProposal = new MsgSubmitProposal(
+                [new MsgDeleteAlliance(
+                    "terra10d07y265gmmuvt4z0w9aw880jnsr700juxf95n",
+                    ibcCoin.denom,
+                )],
+                Coins.fromString("1000000000uluna"),
+                val2WalletAddress,
+                "metadata",
+                "title",
+                "summary"
+            );
             // Create a delete alliance proposal sign and submit on chain-2
             let tx = await val2Wallet.createAndSignTx({
-                msgs: [new MsgSubmitProposal(
-                    new MsgDeleteAllianceProposal(
-                        "title",
-                        "description",
-                        ibcCoin.denom,
-                    ),
-                    Coins.fromString("1000000000uluna"),
-                    val2WalletAddress,
-                )],
+                msgs: [msgProposal],
                 chainID: "test-2",
             });
             let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
