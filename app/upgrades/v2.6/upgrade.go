@@ -15,6 +15,8 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	pobtypes "github.com/skip-mev/pob/x/builder/types"
+	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
+	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 )
 
 func CreateUpgradeHandler(
@@ -23,14 +25,20 @@ func CreateUpgradeHandler(
 	cdc codec.Codec,
 	clientKeeper clientkeeper.Keeper,
 	authKeeper authkeeper.AccountKeeper,
+	feesharekeeper feesharekeeper.Keeper,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-
+		// feeshare module is a new module added in v2.6,
+		// we need to set the default params
+		err := feesharekeeper.SetParams(ctx, feesharetypes.DefaultParams())
+		if err != nil {
+			return nil, err
+		}
 		// overwrite pob account to a module account for pisco-1
 		overwritePobModuleAccount(ctx, authKeeper)
 
 		// Increase the unbonding period for atlantic-2
-		err := increaseUnbondingPeriod(ctx, cdc, clientKeeper)
+		err = increaseUnbondingPeriod(ctx, cdc, clientKeeper)
 		if err != nil {
 			return nil, err
 		}
@@ -43,9 +51,16 @@ func overwritePobModuleAccount(ctx sdk.Context, authKeeper authkeeper.AccountKee
 	if ctx.ChainID() == "pisco-1" {
 		macc := authtypes.NewEmptyModuleAccount(pobtypes.ModuleName)
 		pobaccount := authKeeper.GetAccount(ctx, macc.GetAddress())
-		macc.AccountNumber = pobaccount.GetAccountNumber()
-		maccI := (authKeeper.NewAccount(ctx, macc)).(authtypes.ModuleAccountI)
-		authKeeper.SetModuleAccount(ctx, maccI)
+		// if pob account exists, overwrite it
+		// if not, create a new one
+		if pobaccount != nil {
+			macc.AccountNumber = pobaccount.GetAccountNumber()
+			maccI := (authKeeper.NewAccount(ctx, macc)).(authtypes.ModuleAccountI)
+			authKeeper.SetModuleAccount(ctx, maccI)
+		} else {
+			maccI := (authKeeper.NewAccount(ctx, macc)).(authtypes.ModuleAccountI)
+			authKeeper.SetModuleAccount(ctx, maccI)
+		}
 	}
 }
 

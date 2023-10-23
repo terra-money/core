@@ -992,6 +992,13 @@ func NewTerraApp(
 			},
 		}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	} else if upgradeInfo.Name == terraappconfig.Upgrade2_6 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Added: []string{
+				feesharetypes.StoreKey,
+			},
+		}
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
 
 	if loadLatest {
@@ -1194,6 +1201,7 @@ func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			app.appCodec,
 			app.IBCKeeper.ClientKeeper,
 			app.AccountKeeper,
+			app.FeeShareKeeper,
 		),
 	)
 }
