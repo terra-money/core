@@ -1028,7 +1028,9 @@ func NewTerraApp(
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	} else if upgradeInfo.Name == terraappconfig.Upgrade2_7 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{},
+			Added: []string{
+				icqtypes.StoreKey,
+			},
 		}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
@@ -1242,6 +1244,7 @@ func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 		v2_7.CreateUpgradeHandler(app.mm,
 			app.configurator,
 			app.appCodec,
+			app.ICQKeeper,
 		),
 	)
 }

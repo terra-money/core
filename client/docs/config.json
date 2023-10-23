@@ -252,6 +252,14 @@
           "Params": "FeeshareParams"
         }
       }
+    },
+    {
+      "url": "./tmp-swagger-gen/icq/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "ICQParams"
+        }
+      }
     }
   ]
 }

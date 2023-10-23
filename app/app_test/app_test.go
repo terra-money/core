@@ -22,6 +22,7 @@ import (
 
 	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
 	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
@@ -158,6 +159,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 			"genutil":                genutil.AppModule{}.ConsensusVersion(),
 			"gov":                    gov.AppModule{}.ConsensusVersion(),
 			"ibc":                    ibc.AppModule{}.ConsensusVersion(),
+			"interchainquery":        icq.AppModule{}.ConsensusVersion(),
 			"ibchooks":               ibchooks.AppModule{}.ConsensusVersion(),
 			"interchainaccounts":     ica.AppModule{}.ConsensusVersion(),
 			"mint":                   mint.AppModule{}.ConsensusVersion(),
@@ -192,6 +194,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 		"ibc":                    4,
 		"ibchooks":               1,
 		"interchainaccounts":     2,
+		"interchainquery":        1,
 		"mint":                   2,
 		"mock":                   0,
 		"packetfowardmiddleware": 1,
