@@ -169,6 +169,7 @@ import (
 	v2_3_0 "github.com/terra-money/core/v2/app/upgrades/v2.3.0"
 	v2_4 "github.com/terra-money/core/v2/app/upgrades/v2.4"
 	v2_5 "github.com/terra-money/core/v2/app/upgrades/v2.5"
+	v2_6 "github.com/terra-money/core/v2/app/upgrades/v2.6"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/terra-money/core/v2/client/docs/statik"
@@ -992,6 +993,13 @@ func NewTerraApp(
 			},
 		}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	} else if upgradeInfo.Name == terraappconfig.Upgrade2_6 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Added: []string{
+				feesharetypes.StoreKey,
+			},
+		}
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
 
 	if loadLatest {
@@ -1185,6 +1193,16 @@ func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			app.ICAControllerKeeper,
 			app.BuilderKeeper,
 			app.AccountKeeper,
+		),
+	)
+	app.UpgradeKeeper.SetUpgradeHandler(
+		terraappconfig.Upgrade2_6,
+		v2_6.CreateUpgradeHandler(app.mm,
+			app.configurator,
+			app.appCodec,
+			app.IBCKeeper.ClientKeeper,
+			app.AccountKeeper,
+			app.FeeShareKeeper,
 		),
 	)
 }
