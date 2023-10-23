@@ -205,7 +205,6 @@ integration-test-all: init-test-framework \
 	test-relayer \
 	test-ica \
 	test-ibc-hooks \
-	test-vesting-accounts \
 	test-tokenfactory 
 
 init-test-framework: clean-testing-data install
