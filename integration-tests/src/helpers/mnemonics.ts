@@ -18,6 +18,9 @@ export function getMnemonics() {
     })
 
     // Funded wallets available in both chains
+    let allianceMnemonic = new MnemonicKey({
+        mnemonic: "broken title little open demand ladder mimic keen execute word couple door relief rule pulp demand believe cactus swing fluid tired what crop purse"
+    })
     let pobMnemonic = new MnemonicKey({
         mnemonic: "banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass"
     })
@@ -34,9 +37,6 @@ export function getMnemonics() {
         mnemonic: "open attitude harsh casino rent attitude midnight debris describe spare cancel crisp olive ride elite gallery leaf buffalo sheriff filter rotate path begin soldier"
     })
     // let mnemonic = new MnemonicKey({
-    //     mnemonic: "broken title little open demand ladder mimic keen execute word couple door relief rule pulp demand believe cactus swing fluid tired what crop purse"
-    // })
-    // let mnemonic = new MnemonicKey({
     //     mnemonic: "unit question bulk desk slush answer share bird earth brave book wing special gorilla ozone release permit mercy luxury version advice impact unfair drama"
     // })
     // let mnemonic = new MnemonicKey({
@@ -48,6 +48,7 @@ export function getMnemonics() {
         rly1,
         val2,
         rly2,
+        allianceMnemonic,
         feeshareMnemonic,
         pobMnemonic,
         pobMnemonic1,
