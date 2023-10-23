@@ -30,13 +30,15 @@ func CreateUpgradeHandler(
 	return func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 		// feeshare module is a new module added in v2.6,
 		// we need to set the default params
-		feesharekeeper.SetParams(ctx, feesharetypes.DefaultParams())
-
+		err := feesharekeeper.SetParams(ctx, feesharetypes.DefaultParams())
+		if err != nil {
+			return nil, err
+		}
 		// overwrite pob account to a module account for pisco-1
 		overwritePobModuleAccount(ctx, authKeeper)
 
 		// Increase the unbonding period for atlantic-2
-		err := increaseUnbondingPeriod(ctx, cdc, clientKeeper)
+		err = increaseUnbondingPeriod(ctx, cdc, clientKeeper)
 		if err != nil {
 			return nil, err
 		}
