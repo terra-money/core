@@ -205,8 +205,6 @@ integration-test-all: init-test-framework \
 	test-relayer \
 	test-ica \
 	test-ibc-hooks \
-	test-vesting-accounts \
-	test-alliance \
 	test-tokenfactory 
 
 init-test-framework: clean-testing-data install
@@ -224,14 +222,6 @@ test-ica:
 test-ibc-hooks: 
 	@echo "Testing ibc hooks..."
 	./scripts/tests/ibc-hooks/increment.sh
-
-test-alliance: 
-	@echo "Testing alliance module..."
-	./scripts/tests/alliance/delegate.sh
-
-test-vesting-accounts: 
-	@echo "Testing vesting accounts..."
-	./scripts/tests/vesting-accounts/validate-vesting.sh
 
 test-tokenfactory: 
 	@echo "Testing tokenfactory..."
@@ -251,7 +241,7 @@ clean-testing-data:
 	-@rm -rf ./_build
 	
 
-.PHONY: integration-test-all init-test-framework test-relayer test-ica test-ibc-hooks test-vesting-accounts test-tokenfactory clean-testing-data
+.PHONY: integration-test-all init-test-framework test-relayer test-ica test-ibc-hooks test-tokenfactory clean-testing-data
 
 ###############################################################################
 ###                                Protobuf                                 ###

@@ -62,11 +62,11 @@ func TestGenesis(t *testing.T) {
 				"max_bundle_size": 2,
 				"escrow_account_address": "32sHF2qbF8xMmvwle9QEcy59Cbc=",
 				"reserve_fee": {
-					"denom": "stake",
+					"denom": "uluna",
 					"amount": "1"
 				},
 				"min_bid_increment": {
-					"denom": "stake",
+					"denom": "uluna",
 					"amount": "1"
 				},
 				"front_running_protection": true,

@@ -59,3 +59,4 @@ dependency-graph.png
 # Tests
 scripts/tests/ibc-hooks/counter/target
 scripts/tests/vesting-accounts/.vesting-periods.json
+node_modules
