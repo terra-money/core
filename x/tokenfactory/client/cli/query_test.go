@@ -7,10 +7,11 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/suite"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	app "github.com/terra-money/core/v2/app/app_test"
 	"github.com/terra-money/core/v2/app/config"
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type QueryTestSuite struct {

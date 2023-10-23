@@ -1,8 +1,9 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	customterratypes "github.com/terra-money/core/v2/custom/bank/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Implements StakingHooks interface

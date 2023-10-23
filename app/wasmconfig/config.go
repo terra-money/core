@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 )
 

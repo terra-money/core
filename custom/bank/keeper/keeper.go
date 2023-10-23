@@ -7,9 +7,10 @@ import (
 	accountkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	custombankkeeper "github.com/terra-money/alliance/custom/bank/keeper"
 	customterratypes "github.com/terra-money/core/v2/custom/bank/types"
+
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type Keeper struct {
