@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "description": "Source code for <a target='_blank' href='https://github.com/terra-money/core'>Terra Core v2.6</a><br/>UI to interact with the blockchain <a target='_blank' href='https://station.terra.money/'>Station</a><br/>Create a DAO on Terra using <a target='_blank' href='https://enterprise.money/'>Enterprise</a><br/>Run on-chain automted jobs <a target='_blank' href='https://warp.money/'>Wrap</a><br/>Explore the network using <a target='_blank' href='https://terrasco.pe/'>TerraScope</a><br/>Anything you need to know about shared security on <a target='_blank' href='https://alliance.terra.money/'>Alliance Docs</a><br/>More info about the protocol on <a target='_blank' href='https://docs.terra.money/'>Terra Docs</a>",
-    "version": "2.6"
+    "description": "Source code for <a target='_blank' href='https://github.com/terra-money/core'>Terra Core v2.7</a><br/>UI to interact with the blockchain <a target='_blank' href='https://station.terra.money/'>Station</a><br/>Create a DAO on Terra using <a target='_blank' href='https://enterprise.money/'>Enterprise</a><br/>Run on-chain automted jobs <a target='_blank' href='https://warp.money/'>Wrap</a><br/>Explore the network using <a target='_blank' href='https://terrasco.pe/'>TerraScope</a><br/>Anything you need to know about shared security on <a target='_blank' href='https://alliance.terra.money/'>Alliance Docs</a><br/>More info about the protocol on <a target='_blank' href='https://docs.terra.money/'>Terra Docs</a>",
+    "version": "2.7"
   },
   "apis": [
     {
