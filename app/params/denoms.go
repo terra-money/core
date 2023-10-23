@@ -1,8 +1,9 @@
 package params
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/terra-money/core/v2/app/config"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func RegisterDenomsConfig() error {

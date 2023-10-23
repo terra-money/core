@@ -13,6 +13,15 @@ import (
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
+	"github.com/stretchr/testify/suite"
+	"github.com/terra-money/core/v2/app"
+	terra_app "github.com/terra-money/core/v2/app"
+	"github.com/terra-money/core/v2/app/config"
+	appparams "github.com/terra-money/core/v2/app/params"
+	"github.com/terra-money/core/v2/app/wasmconfig"
+	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
+	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -23,14 +32,6 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/stretchr/testify/suite"
-	"github.com/terra-money/core/v2/app"
-	terra_app "github.com/terra-money/core/v2/app"
-	"github.com/terra-money/core/v2/app/config"
-	appparams "github.com/terra-money/core/v2/app/params"
-	"github.com/terra-money/core/v2/app/wasmconfig"
-	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
-	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
 type AppTestSuite struct {

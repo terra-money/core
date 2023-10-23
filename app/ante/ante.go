@@ -1,12 +1,6 @@
 package ante
 
 import (
-	"github.com/cosmos/cosmos-sdk/client"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	bankKeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	"github.com/skip-mev/pob/mempool"
@@ -14,6 +8,13 @@ import (
 	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	feeshareante "github.com/terra-money/core/v2/x/feeshare/ante"
 	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
+
+	"github.com/cosmos/cosmos-sdk/client"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	bankKeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"

@@ -1,11 +1,12 @@
 package v3
 
 import (
+	"github.com/terra-money/core/v2/x/tokenfactory/exported"
+	"github.com/terra-money/core/v2/x/tokenfactory/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/terra-money/core/v2/x/tokenfactory/exported"
-	"github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
 // MigrateStore migrates the x/tokenfactory module state from the consensus version 2 to
