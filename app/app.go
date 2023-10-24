@@ -123,6 +123,10 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 
+	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
+	icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
+	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	solomachine "github.com/cosmos/ibc-go/v7/modules/light-clients/06-solomachine"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
@@ -268,6 +272,7 @@ var (
 		alliance.AppModuleBasic{},
 		feeshare.AppModuleBasic{},
 		pob.AppModuleBasic{},
+		icq.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -281,6 +286,7 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		ibcfeetypes.ModuleName:         nil,
+		icqtypes.ModuleName:            nil,
 		wasmtypes.ModuleName:           {authtypes.Burner},
 		tokenfactorytypes.ModuleName:   {authtypes.Burner, authtypes.Minter},
 		alliancetypes.ModuleName:       {authtypes.Burner, authtypes.Minter},
@@ -344,6 +350,7 @@ type TerraApp struct {
 	TokenFactoryKeeper    tokenfactorykeeper.Keeper
 	AllianceKeeper        alliancekeeper.Keeper
 	FeeShareKeeper        feesharekeeper.Keeper
+	ICQKeeper             icqkeeper.Keeper
 
 	// IBC hooks
 	IBCHooksKeeper   *ibchookskeeper.Keeper
@@ -356,6 +363,7 @@ type TerraApp struct {
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
+	ScopedICQKeeper           capabilitykeeper.ScopedKeeper
 
 	WasmKeeper       wasmkeeper.Keeper
 	scopedWasmKeeper capabilitykeeper.ScopedKeeper
@@ -417,7 +425,7 @@ func NewTerraApp(
 		icahosttypes.StoreKey, icacontrollertypes.StoreKey, routertypes.StoreKey,
 		consensusparamtypes.StoreKey, tokenfactorytypes.StoreKey, wasmtypes.StoreKey,
 		ibcfeetypes.StoreKey, ibchookstypes.StoreKey, crisistypes.StoreKey,
-		alliancetypes.StoreKey, feesharetypes.StoreKey, pobtype.StoreKey,
+		alliancetypes.StoreKey, feesharetypes.StoreKey, pobtype.StoreKey, icqtypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -450,6 +458,7 @@ func NewTerraApp(
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
+	scopedICQKeeper := app.CapabilityKeeper.ScopeToModule(icqtypes.ModuleName)
 
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
 
@@ -616,8 +625,19 @@ func NewTerraApp(
 		app.IBCKeeper.ChannelKeeper,
 	)
 	pmfTransferStack := router.NewIBCMiddleware(hooksTransferStack, &app.RouterKeeper, 5, routerkeeper.DefaultForwardTransferPacketTimeoutTimestamp, routerkeeper.DefaultRefundTransferPacketTimeoutTimestamp)
-
 	app.TransferStack = &pmfTransferStack
+
+	// ICQ Keeper
+	app.ICQKeeper = icqkeeper.NewKeeper(
+		appCodec,
+		app.keys[icqtypes.StoreKey],
+		app.GetSubspace(icqtypes.ModuleName),
+		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		scopedICQKeeper,
+		bApp.GRPCQueryRouter(),
+	)
 
 	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(
 		appCodec, keys[ibcfeetypes.StoreKey],
@@ -704,12 +724,14 @@ func NewTerraApp(
 	wasmStack = wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCFeeKeeper)
 	wasmStack = ibcfee.NewIBCMiddleware(wasmStack, app.IBCFeeKeeper)
 
+	icqModule := icq.NewIBCModule(app.ICQKeeper)
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter().
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostStack).
 		AddRoute(ibctransfertypes.ModuleName, pmfTransferStack).
-		AddRoute(wasmtypes.ModuleName, wasmStack)
+		AddRoute(wasmtypes.ModuleName, wasmStack).
+		AddRoute(icqtypes.ModuleName, icqModule)
 
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -788,6 +810,7 @@ func NewTerraApp(
 		alliance.NewAppModule(appCodec, app.AllianceKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry, app.GetSubspace(alliancetypes.ModuleName)),
 		feeshare.NewAppModule(app.FeeShareKeeper, app.AccountKeeper, app.GetSubspace(feesharetypes.ModuleName)),
 		pob.NewAppModule(appCodec, app.BuilderKeeper),
+		icq.NewAppModule(app.ICQKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -823,6 +846,7 @@ func NewTerraApp(
 		alliancetypes.ModuleName,
 		feesharetypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		icqtypes.ModuleName,
 		pobtype.ModuleName,
 	)
 
@@ -855,6 +879,7 @@ func NewTerraApp(
 		alliancetypes.ModuleName,
 		feesharetypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		icqtypes.ModuleName,
 		pobtype.ModuleName,
 	)
 
@@ -891,6 +916,7 @@ func NewTerraApp(
 		alliancetypes.ModuleName,
 		feesharetypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		icqtypes.ModuleName,
 		pobtype.ModuleName,
 	)
 
@@ -1002,7 +1028,9 @@ func NewTerraApp(
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	} else if upgradeInfo.Name == terraappconfig.Upgrade2_7 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{},
+			Added: []string{
+				icqtypes.StoreKey,
+			},
 		}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
@@ -1027,6 +1055,7 @@ func NewTerraApp(
 	app.ScopedICAControllerKeeper = scopedICAControllerKeeper
 	app.ScopedICAHostKeeper = scopedICAHostKeeper
 	app.scopedWasmKeeper = scopedWasmKeeper
+	app.ScopedICQKeeper = scopedICQKeeper
 
 	return app
 }
@@ -1215,6 +1244,7 @@ func (app *TerraApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 		v2_7.CreateUpgradeHandler(app.mm,
 			app.configurator,
 			app.appCodec,
+			app.ICQKeeper,
 		),
 	)
 }
@@ -1259,6 +1289,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(alliancetypes.ModuleName).WithKeyTable(alliancetypes.ParamKeyTable())
 	paramsKeeper.Subspace(feesharetypes.ModuleName).WithKeyTable(feesharetypes.ParamKeyTable())
+	paramsKeeper.Subspace(icqtypes.ModuleName)
 
 	paramsKeeper.Subspace(wasmtypes.ModuleName).WithKeyTable(wasmtypes.ParamKeyTable())
 
