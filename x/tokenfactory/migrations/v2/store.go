@@ -1,11 +1,12 @@
 package v2
 
 import (
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/terra-money/core/v2/app/config"
 	"github.com/terra-money/core/v2/x/tokenfactory/exported"
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
+
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func MigrateStore(ctx sdk.Context, legacySubspace exported.Subspace, cdc codec.BinaryCodec) error {

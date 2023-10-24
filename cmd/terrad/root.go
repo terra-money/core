@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/viper"
 
 	tmcfg "github.com/cometbft/cometbft/config"
+
 	"github.com/cosmos/cosmos-sdk/client"
 
 	"github.com/cosmos/cosmos-sdk/client/config"
