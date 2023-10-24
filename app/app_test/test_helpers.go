@@ -16,7 +16,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/terra-money/core/v2/app"
 	terra_app "github.com/terra-money/core/v2/app"
-	"github.com/terra-money/core/v2/app/config"
 	appparams "github.com/terra-money/core/v2/app/params"
 	"github.com/terra-money/core/v2/app/wasmconfig"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
@@ -48,8 +47,7 @@ func (s *AppTestSuite) Setup() {
 	appparams.RegisterAddressesConfig()
 	encCfg := terra_app.MakeEncodingConfig()
 	genesisState := app.NewDefaultGenesisState(encCfg.Marshaler)
-	genesisState.ConfigureBondDenom(encCfg.Marshaler, config.BondDenom)
-	genesisState.ConfigureICA(encCfg.Marshaler)
+	genesisState.SetDefaultTerraConfig(encCfg.Marshaler)
 
 	db := dbm.NewMemDB()
 	s.App = terra_app.NewTerraApp(

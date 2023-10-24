@@ -33,7 +33,7 @@ import (
 func CreateTestInput() (*app.TerraApp, sdk.Context) {
 	encCfg := app.MakeEncodingConfig()
 	genesisState := app.NewDefaultGenesisState(encCfg.Marshaler)
-	genesisState.ConfigureBondDenom(encCfg.Marshaler, "uluna")
+	genesisState.SetDefaultTerraConfig(encCfg.Marshaler)
 	db := dbm.NewMemDB()
 	terraApp := app.NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
