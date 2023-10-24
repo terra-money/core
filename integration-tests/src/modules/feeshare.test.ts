@@ -1,7 +1,5 @@
-import { getMnemonics } from "../helpers/mnemonics";
-import { getLCDClient } from "../helpers/lcd.connection";
+import { getMnemonics, blockInclusion, getLCDClient } from "../helpers";
 import { Coins, Fee, MnemonicKey, MsgExecuteContract, MsgInstantiateContract, MsgRegisterFeeShare, MsgStoreCode } from "@terra-money/feather.js";
-import { blockInclusion } from "../helpers/const";
 import fs from "fs";
 import path from 'path';
 
@@ -58,22 +56,17 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
     });
 
     test('Must contain the expected module params', async () => {
-        try {
-            // Query POB module params
-            const moduleParams = await LCD.chain1.feeshare.params("test-1");
+        // Query feeshare module params
+        const moduleParams = await LCD.chain1.feeshare.params("test-1");
 
-            expect(moduleParams)
-                .toMatchObject({
-                    "params": {
-                        "enable_fee_share": true,
-                        "developer_shares": "0.500000000000000000",
-                        "allowed_denoms": []
-                    }
-                });
-        }
-        catch (e) {
-            expect(e).toBeUndefined();
-        }
+        expect(moduleParams)
+            .toMatchObject({
+                "params": {
+                    "enable_fee_share": true,
+                    "developer_shares": "0.500000000000000000",
+                    "allowed_denoms": []
+                }
+            });
     });
 
     test('Must register fee share', async () => {
@@ -149,7 +142,7 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
             });
             result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
             await blockInclusion();
-            
+
             // Check the tx logs have the expected events
             txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             expect(txResult.logs[0].events)
@@ -187,7 +180,7 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
                     }]
                 }
                 ])
-            
+
             // Query the random account (new owner of the contract)
             // and validate that the account has received 50% of the fees
             const bankAmount = await LCD.chain1.bank.balance(randomAccountAddress);

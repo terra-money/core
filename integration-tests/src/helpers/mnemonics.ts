@@ -36,9 +36,9 @@ export function getMnemonics() {
     let genesisVesting1 = new MnemonicKey({
         mnemonic: "open attitude harsh casino rent attitude midnight debris describe spare cancel crisp olive ride elite gallery leaf buffalo sheriff filter rotate path begin soldier"
     })
-    // let mnemonic = new MnemonicKey({
-    //     mnemonic: "unit question bulk desk slush answer share bird earth brave book wing special gorilla ozone release permit mercy luxury version advice impact unfair drama"
-    // })
+    let icaMnemonic = new MnemonicKey({
+        mnemonic: "unit question bulk desk slush answer share bird earth brave book wing special gorilla ozone release permit mercy luxury version advice impact unfair drama"
+    })
     // let mnemonic = new MnemonicKey({
     //     mnemonic: "year aim panel oyster sunny faint dress skin describe chair guilt possible venue pottery inflict mass debate poverty multiply pulse ability purse situate inmate"
     // })
@@ -53,6 +53,7 @@ export function getMnemonics() {
         pobMnemonic,
         pobMnemonic1,
         genesisVesting,
-        genesisVesting1
+        genesisVesting1,
+        icaMnemonic
     }
 }

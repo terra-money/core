@@ -1,8 +1,14 @@
-import { getLCDClient } from "../helpers/lcd.connection";
+//import { Coin, MsgTransfer } from "@terra-money/feather.js";
+import { blockInclusion, getLCDClient, getMnemonics } from "../helpers";
+//import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
+import { MsgRegisterInterchainAccount } from "@terra-money/feather.js/dist/core/ica/controller/v1/msgs";
 
-describe("ICQ Module (https://github.com/cosmos/ibc-apps/tree/main/modules/async-icq) ", () => {
+describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modules/apps/27-interchain-accounts)", () => {
     // Prepare environment clients, accounts and wallets
     const LCD = getLCDClient();
+    const { icaMnemonic } = getMnemonics();
+    const chain1Wallet = LCD.chain1.wallet(icaMnemonic);
+    const externalAccAddr = icaMnemonic.accAddress("terra");
 
     test('Must contain the expected module params', async () => {
         // Query ica host module params
@@ -46,5 +52,33 @@ describe("ICQ Module (https://github.com/cosmos/ibc-apps/tree/main/modules/async
             .toStrictEqual({
                 controller_enabled: true,
             });
+    });
+
+    test('Must create an interchain account from chain1 to chain2', async () => {
+        try {
+
+        let tx = await chain1Wallet.createAndSignTx({
+            msgs: [new MsgRegisterInterchainAccount(
+                externalAccAddr,
+                "connection-0",
+                ""
+            )],
+            chainID: "test-1",
+        });
+        console.log(tx);
+        let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+        console.log("result",JSON.stringify(result));
+        await blockInclusion();
+        let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
+        expect(txResult).toBeDefined();
+        console.log("txResult",JSON.stringify(txResult));
+
+        let res = await LCD.chain1.icaV1.controllerAccountAddress(externalAccAddr, "connection-0");
+        console.log("Res",JSON.stringify(res))
+        }
+        catch(e) {
+            console.log("Error",e)
+            expect(e).toBeUndefined();
+        }
     });
 });

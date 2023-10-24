@@ -203,7 +203,6 @@ install: go.sum
 
 integration-test-all: init-test-framework \
 	test-relayer \
-	test-ica \
 	test-ibc-hooks \
 	test-tokenfactory 
 
@@ -214,10 +213,6 @@ init-test-framework: clean-testing-data install
 test-relayer:
 	@echo "Testing relayer..."
 	./scripts/tests/relayer/interchain-acc-config/rly-init.sh
-
-test-ica: 
-	@echo "Testing ica..."
-	./scripts/tests/ica/delegate.sh
 
 test-ibc-hooks: 
 	@echo "Testing ibc hooks..."

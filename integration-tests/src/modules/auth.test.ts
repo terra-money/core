@@ -1,8 +1,6 @@
-import { getMnemonics } from "../helpers/mnemonics";
-import { getLCDClient } from "../helpers/lcd.connection";
+import { getMnemonics, getLCDClient, blockInclusion } from "../helpers";
 import { ContinuousVestingAccount, Coins, MnemonicKey, MsgCreateVestingAccount, Coin } from "@terra-money/feather.js";
 import moment from "moment";
-import { blockInclusion } from "../helpers/const";
 
 describe("Auth Module (https://github.com/terra-money/cosmos-sdk/tree/release/v0.47.x/x/auth)", () => {
     // Prepare environment clients, accounts and wallets
@@ -12,22 +10,17 @@ describe("Auth Module (https://github.com/terra-money/cosmos-sdk/tree/release/v0
     const vestAccAddr1 = accounts.genesisVesting1.accAddress("terra");
 
     test('Must contain the expected module params', async () => {
-        try {
-            // Query Auth module params
-            const moduleParams = await LCD.chain1.auth.parameters("test-1");
+        // Query Auth module params
+        const moduleParams = await LCD.chain1.auth.parameters("test-1");
 
-            expect(moduleParams)
-                .toMatchObject({
-                    "max_memo_characters": 256,
-                    "tx_sig_limit": 7,
-                    "tx_size_cost_per_byte": 10,
-                    "sig_verify_cost_ed25519": 590,
-                    "sig_verify_cost_secp256k1": 1000
-                });
-        }
-        catch (e) {
-            expect(e).toBeUndefined();
-        }
+        expect(moduleParams)
+            .toMatchObject({
+                "max_memo_characters": 256,
+                "tx_sig_limit": 7,
+                "tx_size_cost_per_byte": 10,
+                "sig_verify_cost_ed25519": 590,
+                "sig_verify_cost_secp256k1": 1000
+            });
     });
 
     test('Must have vesting accounts created on genesis', async () => {

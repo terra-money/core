@@ -1,8 +1,6 @@
 import { Coins, Fee, MsgSend } from "@terra-money/feather.js";
-import { getMnemonics } from "../helpers/mnemonics";
-import { getLCDClient } from "../helpers/lcd.connection";
+import { getMnemonics, getLCDClient, blockInclusion } from "../helpers";
 import { MsgAuctionBid } from "@terra-money/feather.js/dist/core/pob/MsgAuctionBid";
-import { blockInclusion } from "../helpers/const";
 
 describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
     // Prepare environment clients, accounts and wallets
@@ -12,31 +10,25 @@ describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
     const wallet11 = LCD.chain1.wallet(accounts.pobMnemonic1);
 
     test('Must contain the correct module params', async () => {
-        try {
-            // Query POB module params
-            const moduleParams = await LCD.chain1.pob.params("test-1");
+        const moduleParams = await LCD.chain1.pob.params("test-1");
 
-            expect(moduleParams)
-                .toMatchObject({
-                    "params": {
-                        "escrow_account_address": "32sHF2qbF8xMmvwle9QEcy59Cbc=",
-                        "front_running_protection": true,
-                        "max_bundle_size": 2,
-                        "min_bid_increment": {
-                            "amount": "1",
-                            "denom": "uluna",
-                        },
-                        "proposer_fee": "0.000000000000000000",
-                        "reserve_fee": {
-                            "amount": "1",
-                            "denom": "uluna",
-                        },
+        expect(moduleParams)
+            .toMatchObject({
+                "params": {
+                    "escrow_account_address": "32sHF2qbF8xMmvwle9QEcy59Cbc=",
+                    "front_running_protection": true,
+                    "max_bundle_size": 2,
+                    "min_bid_increment": {
+                        "amount": "1",
+                        "denom": "uluna",
                     },
-                });
-        }
-        catch (e) {
-            expect(e).toBeUndefined();
-        }
+                    "proposer_fee": "0.000000000000000000",
+                    "reserve_fee": {
+                        "amount": "1",
+                        "denom": "uluna",
+                    },
+                },
+            });
     });
 
     test('Must create and order two transactions in block', async () => {

@@ -1,6 +1,6 @@
-import { getLCDClient } from "../helpers/lcd.connection";
+import { getLCDClient } from "../helpers";
 
-describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modules/apps/27-interchain-accounts) ", () => {
+describe("ICQ Module (https://github.com/cosmos/ibc-apps/tree/main/modules/async-icq)", () => {
     // Prepare environment clients, accounts and wallets
     const LCD = getLCDClient();
 
