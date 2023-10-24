@@ -1,6 +1,6 @@
 import { getMnemonics } from "../helpers/mnemonics";
 import { getLCDClient } from "../helpers/lcd.connection";
-import { ContinuousVestingAccount, Coins, MnemonicKey, MsgCreateVestingAccount } from "@terra-money/feather.js";
+import { ContinuousVestingAccount, Coins, MnemonicKey, MsgCreateVestingAccount, Coin } from "@terra-money/feather.js";
 import moment from "moment";
 import { blockInclusion } from "../helpers/const";
 
@@ -31,46 +31,41 @@ describe("Auth Module (https://github.com/terra-money/cosmos-sdk/tree/release/v0
     });
 
     test('Must have vesting accounts created on genesis', async () => {
-        try {
-            // Query genesis vesting account info
-            const vestAccAddr = accounts.genesisVesting.accAddress("terra");
-            const vestAcc = (await LCD.chain1.auth.accountInfo(vestAccAddr)) as ContinuousVestingAccount;
+        // Query genesis vesting account info
+        const vestAccAddr = accounts.genesisVesting.accAddress("terra");
+        const vestAcc = (await LCD.chain1.auth.accountInfo(vestAccAddr)) as ContinuousVestingAccount;
 
-            // Validate the instance of the object
-            expect(vestAcc)
-                .toBeInstanceOf(ContinuousVestingAccount);
-            // Validate the vesting start has been set in the past
-            expect(vestAcc.start_time)
-                .toBeLessThan(moment().unix());
-            // Validate the vesting end has been set in the past
-            expect(vestAcc.base_vesting_account.end_time)
-                .toBeGreaterThan(moment().unix());
-            // Validate the original vesting and delegated vesting
-            expect(vestAcc.base_vesting_account.original_vesting)
-                .toStrictEqual(Coins.fromString("10000000000uluna"));
-            expect(vestAcc.base_vesting_account.delegated_vesting)
-                .toStrictEqual(Coins.fromString("10000000000uluna"));
+        // Validate the instance of the object
+        expect(vestAcc)
+            .toBeInstanceOf(ContinuousVestingAccount);
+        // Validate the vesting start has been set in the past
+        expect(vestAcc.start_time)
+            .toBeLessThan(moment().unix());
+        // Validate the vesting end has been set in the past
+        expect(vestAcc.base_vesting_account.end_time)
+            .toBeGreaterThan(moment().unix());
+        // Validate the original vesting and delegated vesting
+        expect(vestAcc.base_vesting_account.original_vesting)
+            .toStrictEqual(Coins.fromString("10000000000uluna"));
+        expect(vestAcc.base_vesting_account.delegated_vesting)
+            .toStrictEqual(Coins.fromString("10000000000uluna"));
 
-            // Validate other params from base account
-            expect(vestAcc.base_vesting_account.base_account.address)
-                .toBe(vestAccAddr);
-            expect(vestAcc.getAccountNumber())
-                .toBe(3);
-            expect(vestAcc.getPublicKey())
-                .toBeNull();
-            expect(vestAcc.getSequenceNumber())
-                .toBe(0);
+        // Validate other params from base account
+        expect(vestAcc.base_vesting_account.base_account.address)
+            .toBe(vestAccAddr);
+        expect(vestAcc.getAccountNumber())
+            .toBe(3);
+        expect(vestAcc.getPublicKey())
+            .toBeNull();
+        expect(vestAcc.getSequenceNumber())
+            .toBe(0);
 
-            // Query the non-vested account balance
-            const vestAccBalance = await LCD.chain1.bank.balance(vestAccAddr);
+        // Query the non-vested account balance
+        const vestAccBalance = await LCD.chain1.bank.balance(vestAccAddr);
 
-            // Validate the unlocked balance is still available
-            expect(vestAccBalance[0])
-                .toStrictEqual(Coins.fromString("990000000000uluna"));
-        }
-        catch (e) {
-            expect(e).toBeUndefined();
-        }
+        // Validate the unlocked balance is still available
+        expect(vestAccBalance[0].get("uluna"))
+            .toStrictEqual(Coin.fromString("990000000000uluna"));
     });
 
     test('Must create a random vesting account', async () => {
