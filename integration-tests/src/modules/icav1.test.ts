@@ -1,4 +1,4 @@
-import { AccAddress, Coin, MsgTransfer, MsgSend } from "@terra-money/feather.js";
+import { AccAddress, Coin, MsgTransfer, MsgSend, Coins } from "@terra-money/feather.js";
 import { blockInclusion, getLCDClient, getMnemonics } from "../helpers";
 import { MsgRegisterInterchainAccount, MsgSendTx } from "@terra-money/feather.js/dist/core/ica/controller/v1/msgs";
 import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
@@ -195,10 +195,10 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
                 let msgSend = new MsgSend(
                     intechainAccountAddr as string,
                     burnAddress,
-                    [Coin.fromString("100000000" + ibcCoinDenom)],
+                    Coins.fromString("1000" + ibcCoinDenom),
                 )
                 let ibcPacket = new InterchainAccountPacketData(
-                    MsgSend_pb.encode(msgSend.toProto()).string("base64").finish() as any,
+                    MsgSend_pb.encode(msgSend.toProto()).string("base64").finish(),
                 )
                 let tx = await chain1Wallet.createAndSignTx({
                     msgs: [new MsgSendTx(
@@ -225,7 +225,6 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
                             "value": "terra1p4kcrttuxj9kyyvv5px5ccgwf0yrw74yp7jqm6"
                         }]
                     });
-
                 expect(events[2])
                     .toStrictEqual({
                         "type": "message",
