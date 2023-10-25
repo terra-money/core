@@ -202,15 +202,12 @@ install: go.sum
 ###############################################################################
 
 integration-test-all: init-test-framework \
-	test-relayer \
 	test-ibc-hooks \
 	test-tokenfactory 
 
 init-test-framework: clean-testing-data install
 	@echo "Initializing both blockchains..."
 	./scripts/tests/init-test-framework.sh
-
-test-relayer:
 	@echo "Testing relayer..."
 	./scripts/tests/relayer/interchain-acc-config/rly-init.sh
 
@@ -236,7 +233,7 @@ clean-testing-data:
 	-@rm -rf ./_build
 	
 
-.PHONY: integration-test-all init-test-framework test-relayer test-ica test-ibc-hooks test-tokenfactory clean-testing-data
+.PHONY: integration-test-all init-test-framework test-ibc-hooks test-tokenfactory clean-testing-data
 
 ###############################################################################
 ###                                Protobuf                                 ###
