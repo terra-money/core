@@ -2,9 +2,8 @@ import { AccAddress, Coin, MsgTransfer, MsgSend, Coins } from "@terra-money/feat
 import { blockInclusion, getLCDClient, getMnemonics } from "../helpers";
 import { MsgRegisterInterchainAccount, MsgSendTx } from "@terra-money/feather.js/dist/core/ica/controller/v1/msgs";
 import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
-import { InterchainAccountPacketData } from "@terra-money/feather.js/dist/core/ica/controller/v1/InterchainAccountPacketData";
 import Long from "long";
-import { MsgSend as MsgSend_pb } from "@terra-money/terra.proto/cosmos/bank/v1beta1/tx";
+import { Type } from "@terra-money/terra.proto/ibc/applications/interchain_accounts/v1/packet";
 
 describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modules/apps/27-interchain-accounts)", () => {
     // Prepare environment clients, accounts and wallets
@@ -69,6 +68,17 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
         if (res !== undefined) {
             expect(res.address).toBeDefined();
             intechainAccountAddr = res.address;
+            // Check during 5 blocks for the receival 
+            // of the IBC coin on chain-2
+            for (let i = 0; i <= 5; i++) {
+                await blockInclusion();
+                let _ibcCoin = (await LCD.chain2.bank.balance(intechainAccountAddr))[0].find(c => c.denom.startsWith("ibc/"));
+                if (_ibcCoin) {
+                    expect(_ibcCoin.denom.startsWith("ibc/")).toBeTruthy();
+                    ibcCoinDenom = _ibcCoin.denom
+                    break;
+                }
+            }
         }
     });
 
@@ -197,16 +207,18 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
                     burnAddress,
                     Coins.fromString("1000" + ibcCoinDenom),
                 )
-                let ibcPacket = new InterchainAccountPacketData(
-                    MsgSend_pb.encode(msgSend.toProto()).string("base64").finish(),
-                )
+                let msgSendTx = new MsgSendTx(
+                    externalAccAddr,
+                    "connection-0",
+                    Long.fromString((new Date().getTime() * 1000000 + 600000000).toString()),
+                    {
+                        data: msgSend,
+                        memo: "",
+                        type: Type.TYPE_EXECUTE_TX,
+                    },
+                );
                 let tx = await chain1Wallet.createAndSignTx({
-                    msgs: [new MsgSendTx(
-                        externalAccAddr,
-                        "connection-0",
-                        Long.fromString((new Date().getTime() * 1000000 + 600000000).toString()),
-                        ibcPacket,
-                    )],
+                    msgs: [msgSendTx],
                     chainID: "test-1",
                 });
 
