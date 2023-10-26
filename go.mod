@@ -6,8 +6,8 @@ require (
 	cosmossdk.io/errors v1.0.0
 	cosmossdk.io/math v1.1.2
 	cosmossdk.io/tools/rosetta v0.2.1
-	github.com/CosmWasm/wasmd v0.41.0
-	github.com/CosmWasm/wasmvm v1.3.0
+	github.com/CosmWasm/wasmd v0.43.0
+	github.com/CosmWasm/wasmvm v1.4.1
 	github.com/cometbft/cometbft v0.37.2
 	github.com/cometbft/cometbft-db v0.8.0
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
@@ -66,7 +66,7 @@ require (
 	github.com/confio/ics23/go v0.9.0 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
-	github.com/cosmos/iavl v0.20.0 // indirect
+	github.com/cosmos/iavl v0.20.1 // indirect
 	github.com/cosmos/ics23/go v0.10.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.12.2 // indirect
 	github.com/cosmos/ledger-go v0.9.3 // indirect
