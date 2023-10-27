@@ -3,7 +3,8 @@ import { blockInclusion, getLCDClient, getMnemonics } from "../helpers";
 import { MsgRegisterInterchainAccount, MsgSendTx } from "@terra-money/feather.js/dist/core/ica/controller/v1/msgs";
 import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
 import Long from "long";
-import { Type } from "@terra-money/terra.proto/ibc/applications/interchain_accounts/v1/packet";
+import { InterchainAccountPacketData } from "@terra-money/feather.js/dist/core/ica/controller/v1/InterchainAccountPacketData";
+import { CosmosTx } from "@terra-money/feather.js/dist/core/ica/controller/v1/CosmosTx";
 
 describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modules/apps/27-interchain-accounts)", () => {
     // Prepare environment clients, accounts and wallets
@@ -59,12 +60,15 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
     });
 
     test('Must query the interchain account to determine its existance', async () => {
+        // Query the account address of the interchain account
         let res = await LCD.chain1.icaV1.controllerAccountAddress(externalAccAddr, "connection-0")
             .catch(e => {
+                // assert that the expected error is that it failed to retreive the account
                 const expectMsg = "failed to retrieve account address for icacontroller-";
                 expect(e.response.data.message.startsWith(expectMsg)).toBeTruthy();
             })
 
+        // if res is defined then the account exists
         if (res !== undefined) {
             expect(res.address).toBeDefined();
             intechainAccountAddr = res.address;
@@ -199,56 +203,63 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
             }
         });
 
-        test("Must control the interchain account from chain-1 to send funds on chain-2 from the account address to a random account", async () => {
-            try {
-                const burnAddress = "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je";
-                let msgSend = new MsgSend(
+        test("Must control the interchain account from chain-1 to send funds on chain-2 from the account address to a burnAddress", async () => {
+            const burnAddress = "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je";
+            let interchainAccountPacketData = new InterchainAccountPacketData(
+                new CosmosTx([new MsgSend(
                     intechainAccountAddr as string,
                     burnAddress,
                     Coins.fromString("1000" + ibcCoinDenom),
-                )
-                let msgSendTx = new MsgSendTx(
-                    externalAccAddr,
-                    "connection-0",
-                    Long.fromString((new Date().getTime() * 1000000 + 600000000).toString()),
-                    {
-                        data: msgSend,
-                        memo: "",
-                        type: Type.TYPE_EXECUTE_TX,
-                    },
-                );
-                let tx = await chain1Wallet.createAndSignTx({
-                    msgs: [msgSendTx],
-                    chainID: "test-1",
-                });
+                )])
+            )
+            let msgSendTx = new MsgSendTx(
+                externalAccAddr,
+                "connection-0",
+                Long.fromString((new Date().getTime() * 1000000 + 600000000).toString()),
+                interchainAccountPacketData,
+            );
+            let tx = await chain1Wallet.createAndSignTx({
+                msgs: [msgSendTx],
+                chainID: "test-1",
+            });
 
-                let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await blockInclusion();
+            let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
+            const events = txResult.logs[0].events;
+            expect(events[0])
+                .toStrictEqual({
+                    "type": "message",
+                    "attributes": [{
+                        "key": "action",
+                        "value": "/ibc.applications.interchain_accounts.controller.v1.MsgSendTx"
+                    }, {
+                        "key": "sender",
+                        "value": "terra1p4kcrttuxj9kyyvv5px5ccgwf0yrw74yp7jqm6"
+                    }]
+                });
+            expect(events[2])
+                .toStrictEqual({
+                    "type": "message",
+                    "attributes": [{
+                        "key": "module",
+                        "value": "ibc_channel"
+                    }]
+                })
+
+            
+            // Check during 5 blocks for the receival 
+            // of the IBC coin on chain-2
+            for (let i = 0; i <= 5; i++) {
                 await blockInclusion();
-                let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
-                const events = txResult.logs[0].events;
-                expect(events[0])
-                    .toStrictEqual({
-                        "type": "message",
-                        "attributes": [{
-                            "key": "action",
-                            "value": "/ibc.applications.interchain_accounts.controller.v1.MsgSendTx"
-                        }, {
-                            "key": "sender",
-                            "value": "terra1p4kcrttuxj9kyyvv5px5ccgwf0yrw74yp7jqm6"
-                        }]
-                    });
-                expect(events[2])
-                    .toStrictEqual({
-                        "type": "message",
-                        "attributes": [{
-                            "key": "module",
-                            "value": "ibc_channel"
-                        }]
-                    })
-            }
-            catch (e) {
-                console.log(e)
-                expect(e).toBeUndefined()
+                const bankRes = await LCD.chain2.bank.balance(burnAddress);
+                const coins = bankRes[0].find(c => c.denom === ibcCoinDenom);
+                if (coins) {
+                    expect(coins).toBeDefined();
+                    expect(coins?.denom).toStrictEqual(ibcCoinDenom);
+                    expect(coins?.amount.toNumber()).toBeGreaterThanOrEqual(1000);
+                    break;
+                }
             }
         })
     });
