@@ -6,9 +6,10 @@ import (
 
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/spf13/cobra"
 
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
 )

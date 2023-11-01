@@ -7,8 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	terraappconfig "github.com/terra-money/core/v2/app/config"
-
 	cfg "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/libs/cli"
 	tmos "github.com/cometbft/cometbft/libs/os"
@@ -128,8 +126,7 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 
 			appState, err := json.MarshalIndent(
 				terraapp.GenesisState(mbm.DefaultGenesis(cdc)).
-					ConfigureBondDenom(cdc, terraappconfig.BondDenom).
-					ConfigureICA(cdc), "", " ",
+					SetDefaultTerraConfig(cdc), "", " ",
 			)
 			if err != nil {
 				return errors.Wrap(err, "Failed to marshall default genesis state")

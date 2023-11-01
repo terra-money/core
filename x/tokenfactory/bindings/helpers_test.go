@@ -13,24 +13,27 @@ import (
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 
 	dbm "github.com/cometbft/cometbft-db"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/terra-money/core/v2/app"
 	"github.com/terra-money/core/v2/app/wasmconfig"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
+
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
 func CreateTestInput() (*app.TerraApp, sdk.Context) {
 	encCfg := app.MakeEncodingConfig()
 	genesisState := app.NewDefaultGenesisState(encCfg.Marshaler)
-	genesisState.ConfigureBondDenom(encCfg.Marshaler, "uluna")
+	genesisState.SetDefaultTerraConfig(encCfg.Marshaler)
 	db := dbm.NewMemDB()
 	terraApp := app.NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),

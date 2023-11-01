@@ -9,8 +9,6 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	mocktestutils "github.com/cosmos/cosmos-sdk/testutil/mock"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	ibcfee "github.com/cosmos/ibc-go/v7/modules/apps/29-fee"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -19,7 +17,17 @@ import (
 	"github.com/terra-money/core/v2/x/feeshare"
 	"github.com/terra-money/core/v2/x/tokenfactory"
 
+	mocktestutils "github.com/cosmos/cosmos-sdk/testutil/mock"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+
 	tmtypes "github.com/cometbft/cometbft/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
+	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
+	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
+	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
+	ibc "github.com/cosmos/ibc-go/v7/modules/core"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -44,11 +52,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
-	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
-	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
-	ibc "github.com/cosmos/ibc-go/v7/modules/core"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	terra_app "github.com/terra-money/core/v2/app"
@@ -156,6 +159,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 			"genutil":                genutil.AppModule{}.ConsensusVersion(),
 			"gov":                    gov.AppModule{}.ConsensusVersion(),
 			"ibc":                    ibc.AppModule{}.ConsensusVersion(),
+			"interchainquery":        icq.AppModule{}.ConsensusVersion(),
 			"ibchooks":               ibchooks.AppModule{}.ConsensusVersion(),
 			"interchainaccounts":     ica.AppModule{}.ConsensusVersion(),
 			"mint":                   mint.AppModule{}.ConsensusVersion(),
@@ -190,6 +194,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 		"ibc":                    4,
 		"ibchooks":               1,
 		"interchainaccounts":     2,
+		"interchainquery":        1,
 		"mint":                   2,
 		"mock":                   0,
 		"packetfowardmiddleware": 1,

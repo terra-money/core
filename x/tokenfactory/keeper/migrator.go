@@ -1,10 +1,11 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/terra-money/core/v2/x/tokenfactory/exported"
 	v2 "github.com/terra-money/core/v2/x/tokenfactory/migrations/v2"
 	v3 "github.com/terra-money/core/v2/x/tokenfactory/migrations/v3"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type Migrator struct {

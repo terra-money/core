@@ -254,7 +254,7 @@ proto-gen:
 	@echo "Generating Protobuf files"
 	@$(protoImage) sh ./scripts/protocgen.sh
 
-gen-swagger:
+proto-swagger:
 	bash scripts/protoc-swagger-gen.sh
 
 update-swagger-docs: statik
@@ -266,9 +266,7 @@ update-swagger-docs: statik
         echo "Swagger docs are in sync!";\
     fi
 
-apply-swagger: gen-swagger update-swagger-docs
-
-proto-all: proto-gen gen-swagger update-swagger-docs apply-swagger
+proto-all: proto-gen proto-swagger update-swagger-docs
 
 .PHONY: proto-gen gen-swagger update-swagger-docs apply-swagger proto-all
 
