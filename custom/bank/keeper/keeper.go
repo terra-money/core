@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"sort"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -112,50 +110,27 @@ func (k Keeper) DelegateCoins(ctx sdk.Context, delegatorAddr, moduleAccAddr sdk.
 // inputs that correspond to a series of outputs. It returns an error if the
 // inputs and outputs don't line up or if any single transfer of tokens fails.
 func (k Keeper) InputOutputCoins(ctx sdk.Context, inputs []banktypes.Input, outputs []banktypes.Output) error {
-	// ValidateInputsOutputs is executed in the k.Keeper.InputOutputCoins
-	// but we execute it here too just to avoid unnecessary computation
-	// if the inputs and outputs are invalid, that way we can assume things like
-	// the addreeses being valid and the inputs and outputs match balances
-	if err := banktypes.ValidateInputsOutputs(inputs, outputs); err != nil {
-		return err
+	// Only 1 input is allowed for all outputs check the following url:
+	// https://github.com/terra-money/cosmos-sdk/blob/release/v0.47.x/x/bank/types/msgs.go#L87-L89
+	//
+	// This if statement is added here too so we know
+	// when multiple inputs are allowed in the future
+	// because ErrMultipleSenders will fail to import
+	// because will be removed from the code.
+	if len(inputs) != 1 {
+		return banktypes.ErrMultipleSenders
 	}
+	input := inputs[0]
+	inputaddress := sdk.MustAccAddressFromBech32(input.Address)
 
-	// Create a slice to hold OutputCoin structs
-	// to be sorted so the output is deterministic
-	var outputCoinSlice customterratypes.OutputCoinSlice
-
-	// Populate the slice with outputs and corresponding
-	// coins to decrease the algorithm complexity.
 	for _, output := range outputs {
-		for _, coin := range output.Coins {
-			outputCoinSlice = append(outputCoinSlice, customterratypes.OutputCoin{Output: output, Coin: coin})
+		outputaddress := sdk.MustAccAddressFromBech32(output.Address)
+
+		err := k.BlockBeforeSend(ctx, inputaddress, outputaddress, output.Coins)
+		if err != nil {
+			return err
 		}
-	}
-
-	// Sort the slice based on denomination
-	sort.Sort(outputCoinSlice)
-
-	// Iterate through all inputs
-	for _, input := range inputs {
-		// Iterate through all coins in the current input
-		for _, inputCoin := range input.Coins {
-			// Use binary search to find matching outputs
-			index := sort.Search(len(outputCoinSlice), func(i int) bool { return outputCoinSlice[i].Coin.Denom >= inputCoin.Denom })
-
-			for index < len(outputCoinSlice) && outputCoinSlice[index].Coin.Denom == inputCoin.Denom {
-
-				fromAddr := sdk.MustAccAddressFromBech32(input.Address)
-				toAddr := sdk.MustAccAddressFromBech32(outputCoinSlice[index].Output.Address)
-				coins := sdk.NewCoins(inputCoin)
-
-				err := k.BlockBeforeSend(ctx, fromAddr, toAddr, coins)
-				if err != nil {
-					return err
-				}
-				k.TrackBeforeSend(ctx, fromAddr, toAddr, coins)
-				index++
-			}
-		}
+		k.TrackBeforeSend(ctx, inputaddress, outputaddress, output.Coins)
 	}
 
 	return k.Keeper.InputOutputCoins(ctx, inputs, outputs)
