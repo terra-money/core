@@ -1,7 +1,5 @@
-import { getMnemonics } from "../helpers/mnemonics";
-import { getLCDClient } from "../helpers/lcd.connection";
+import { getLCDClient, blockInclusion, votingPeriod, getMnemonics } from "../helpers";
 import { Coins, MsgVote, Fee, MsgSubmitProposal, Proposal, Int } from "@terra-money/feather.js";
-import { blockInclusion, votingPeriod } from "../helpers/const";
 import { ProposalStatus, VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
 
 describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/release/v0.47.x/x/gov) ", () => {
@@ -13,140 +11,134 @@ describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/rele
     let proposalId = 0; // Will be populated on "Must submit a proposal on chain"
 
     test('Must contain the expected module params', async () => {
-        try {
-            // Query All gov module params
-            const moduleParams = await LCD.chain2.gov.params("test-2");
-            // Validate that the params were set correctly on genesis
-            expect(moduleParams)
-                .toStrictEqual({
-                    "deposit_params": {
-                        "max_deposit_period": "172800s",
-                        "min_deposit": [
-                            {
-                                "amount": "10000000",
-                                "denom": "uluna",
-                            },
-                        ],
-                    },
-                    "tally_params": {
-                        "quorum": "0.334000000000000000",
-                        "threshold": "0.500000000000000000",
-                        "veto_threshold": "0.334000000000000000",
-                    },
-                    "voting_params": {
-                        "voting_period": "4s",
-                    },
-                    "params": {
-                        "burn_proposal_deposit_prevote": false,
-                        "burn_vote_quorum": false,
-                        "burn_vote_veto": true,
-                        "max_deposit_period": "172800s",
-                        "min_deposit": [{
+        // Query All gov module params
+        const moduleParams = await LCD.chain2.gov.params("test-2");
+        // Validate that the params were set correctly on genesis
+        expect(moduleParams)
+            .toStrictEqual({
+                "deposit_params": {
+                    "max_deposit_period": "172800s",
+                    "min_deposit": [
+                        {
                             "amount": "10000000",
                             "denom": "uluna",
-                        }],
-                        "min_initial_deposit_ratio": "0.000000000000000000",
-                        "quorum": "0.334000000000000000",
-                        "threshold": "0.500000000000000000",
-                        "veto_threshold": "0.334000000000000000",
-                        "voting_period": "4s",
-                    },
-                });
+                        },
+                    ],
+                },
+                "tally_params": {
+                    "quorum": "0.334000000000000000",
+                    "threshold": "0.500000000000000000",
+                    "veto_threshold": "0.334000000000000000",
+                },
+                "voting_params": {
+                    "voting_period": "4s",
+                },
+                "params": {
+                    "burn_proposal_deposit_prevote": false,
+                    "burn_vote_quorum": false,
+                    "burn_vote_veto": true,
+                    "max_deposit_period": "172800s",
+                    "min_deposit": [{
+                        "amount": "10000000",
+                        "denom": "uluna",
+                    }],
+                    "min_initial_deposit_ratio": "0.000000000000000000",
+                    "quorum": "0.334000000000000000",
+                    "threshold": "0.500000000000000000",
+                    "veto_threshold": "0.334000000000000000",
+                    "voting_period": "4s",
+                },
+            });
 
-            // Query tally module params
-            const tallyParams = await LCD.chain2.gov.tallyParams("test-2");
-            // Validate that the params were set correctly on genesis
-            expect(tallyParams)
-                .toStrictEqual({
-                    "deposit_params": null,
-                    "voting_params": null,
-                    "tally_params": {
-                        "quorum": "0.334000000000000000",
-                        "threshold": "0.500000000000000000",
-                        "veto_threshold": "0.334000000000000000",
-                    },
-                    "params": {
-                        "burn_proposal_deposit_prevote": false,
-                        "burn_vote_quorum": false,
-                        "burn_vote_veto": true,
-                        "max_deposit_period": "172800s",
-                        "min_deposit": [{
+        // Query tally module params
+        const tallyParams = await LCD.chain2.gov.tallyParams("test-2");
+        // Validate that the params were set correctly on genesis
+        expect(tallyParams)
+            .toStrictEqual({
+                "deposit_params": null,
+                "voting_params": null,
+                "tally_params": {
+                    "quorum": "0.334000000000000000",
+                    "threshold": "0.500000000000000000",
+                    "veto_threshold": "0.334000000000000000",
+                },
+                "params": {
+                    "burn_proposal_deposit_prevote": false,
+                    "burn_vote_quorum": false,
+                    "burn_vote_veto": true,
+                    "max_deposit_period": "172800s",
+                    "min_deposit": [{
+                        "amount": "10000000",
+                        "denom": "uluna",
+                    }],
+                    "min_initial_deposit_ratio": "0.000000000000000000",
+                    "quorum": "0.334000000000000000",
+                    "threshold": "0.500000000000000000",
+                    "veto_threshold": "0.334000000000000000",
+                    "voting_period": "4s",
+                },
+            });
+
+        // Query voting gov module params
+        const votingParams = await LCD.chain2.gov.votingParams("test-2");
+        // Validate that the params were set correctly on genesis
+        expect(votingParams)
+            .toStrictEqual({
+                "deposit_params": null,
+                "tally_params": null,
+                "voting_params": {
+                    "voting_period": "4s",
+                },
+                "params": {
+                    "burn_proposal_deposit_prevote": false,
+                    "burn_vote_quorum": false,
+                    "burn_vote_veto": true,
+                    "max_deposit_period": "172800s",
+                    "min_deposit": [{
+                        "amount": "10000000",
+                        "denom": "uluna",
+                    }],
+                    "min_initial_deposit_ratio": "0.000000000000000000",
+                    "quorum": "0.334000000000000000",
+                    "threshold": "0.500000000000000000",
+                    "veto_threshold": "0.334000000000000000",
+                    "voting_period": "4s",
+                },
+            });
+
+
+        // Query deposit gov module params
+        const depositParams = await LCD.chain2.gov.depositParams("test-2");
+        // Validate that the params were set correctly on genesis
+        expect(depositParams)
+            .toStrictEqual({
+                "voting_params": null,
+                "tally_params": null,
+                "deposit_params": {
+                    "max_deposit_period": "172800s",
+                    "min_deposit": [
+                        {
                             "amount": "10000000",
                             "denom": "uluna",
-                        }],
-                        "min_initial_deposit_ratio": "0.000000000000000000",
-                        "quorum": "0.334000000000000000",
-                        "threshold": "0.500000000000000000",
-                        "veto_threshold": "0.334000000000000000",
-                        "voting_period": "4s",
-                    },
-                });
-
-            // Query voting gov module params
-            const votingParams = await LCD.chain2.gov.votingParams("test-2");
-            // Validate that the params were set correctly on genesis
-            expect(votingParams)
-                .toStrictEqual({
-                    "deposit_params": null,
-                    "tally_params": null,
-                    "voting_params": {
-                        "voting_period": "4s",
-                    },
-                    "params": {
-                        "burn_proposal_deposit_prevote": false,
-                        "burn_vote_quorum": false,
-                        "burn_vote_veto": true,
-                        "max_deposit_period": "172800s",
-                        "min_deposit": [{
-                            "amount": "10000000",
-                            "denom": "uluna",
-                        }],
-                        "min_initial_deposit_ratio": "0.000000000000000000",
-                        "quorum": "0.334000000000000000",
-                        "threshold": "0.500000000000000000",
-                        "veto_threshold": "0.334000000000000000",
-                        "voting_period": "4s",
-                    },
-                });
-
-
-            // Query deposit gov module params
-            const depositParams = await LCD.chain2.gov.depositParams("test-2");
-            // Validate that the params were set correctly on genesis
-            expect(depositParams)
-                .toStrictEqual({
-                    "voting_params": null,
-                    "tally_params": null,
-                    "deposit_params": {
-                        "max_deposit_period": "172800s",
-                        "min_deposit": [
-                            {
-                                "amount": "10000000",
-                                "denom": "uluna",
-                            },
-                        ],
-                    },
-                    "params": {
-                        "burn_proposal_deposit_prevote": false,
-                        "burn_vote_quorum": false,
-                        "burn_vote_veto": true,
-                        "max_deposit_period": "172800s",
-                        "min_deposit": [{
-                            "amount": "10000000",
-                            "denom": "uluna",
-                        }],
-                        "min_initial_deposit_ratio": "0.000000000000000000",
-                        "quorum": "0.334000000000000000",
-                        "threshold": "0.500000000000000000",
-                        "veto_threshold": "0.334000000000000000",
-                        "voting_period": "4s",
-                    },
-                });
-        }
-        catch (e) {
-            console.log(e)
-            expect(e).toBeUndefined();
-        }
+                        },
+                    ],
+                },
+                "params": {
+                    "burn_proposal_deposit_prevote": false,
+                    "burn_vote_quorum": false,
+                    "burn_vote_veto": true,
+                    "max_deposit_period": "172800s",
+                    "min_deposit": [{
+                        "amount": "10000000",
+                        "denom": "uluna",
+                    }],
+                    "min_initial_deposit_ratio": "0.000000000000000000",
+                    "quorum": "0.334000000000000000",
+                    "threshold": "0.500000000000000000",
+                    "veto_threshold": "0.334000000000000000",
+                    "voting_period": "4s",
+                },
+            });
     });
 
     test('Must submit an empty proposal on chain', async () => {
@@ -205,7 +197,7 @@ describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/rele
             const res = await LCD.chain2.gov.proposals("test-2");
             let proposal;
             for (const prop of res.proposals) {
-                if (prop.id === proposalId){
+                if (prop.id === proposalId) {
                     proposal = prop;
                 }
             }

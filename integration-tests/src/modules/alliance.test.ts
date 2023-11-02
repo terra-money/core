@@ -1,7 +1,5 @@
-import { getMnemonics } from "../helpers/mnemonics";
-import { getLCDClient } from "../helpers/lcd.connection";
+import { getLCDClient, getMnemonics, blockInclusion, votingPeriod } from "../helpers";
 import { Coin, MsgTransfer, MsgCreateAlliance, Coins, MsgVote, Fee, MsgAllianceDelegate, MsgClaimDelegationRewards, MsgAllianceUndelegate, MsgDeleteAlliance, MsgSubmitProposal } from "@terra-money/feather.js";
-import { blockInclusion, votingPeriod } from "../helpers/const";
 import { VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
 import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
 
@@ -60,20 +58,14 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
     });
 
     test('Must contain the expected module params', async () => {
-        try {
-            // Query Alliance module params
-            const moduleParams = await LCD.chain2.alliance.params("test-2");
+        // Query Alliance module params
+        const moduleParams = await LCD.chain2.alliance.params("test-2");
 
-            // Validate that the params were set correctly on genesis
-            expect(moduleParams.params.take_rate_claim_interval)
-                .toBe("300s");
-            expect(moduleParams.params.reward_delay_time)
-                .toBe("0s");
-        }
-        catch (e) {
-            console.log(e)
-            expect(e).toBeUndefined();
-        }
+        // Validate that the params were set correctly on genesis
+        expect(moduleParams.params.take_rate_claim_interval)
+            .toBe("300s");
+        expect(moduleParams.params.reward_delay_time)
+            .toBe("0s");
     });
 
     test('Must create an alliance', async () => {
