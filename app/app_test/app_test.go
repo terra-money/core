@@ -309,7 +309,7 @@ func TestSimAppEnforceStakingForVestingTokens(t *testing.T) {
 	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
 
 	genesisState[authtypes.ModuleName] = app.GetAppCodec().MustMarshalJSON(authtypes.NewGenesisState(authtypes.DefaultParams(), genAccounts))
-	delegations := app.StakingKeeper.GetAllDelegations(ctx)
+	delegations := app.Keepers.StakingKeeper.GetAllDelegations(ctx)
 	sharePerValidators := make(map[string]sdk.Dec)
 
 	for _, del := range delegations {

@@ -25,7 +25,7 @@ func (s *QueryTestSuite) TestQueriesNeverAlterState() {
 	fundAccsAmount := sdk.NewCoins(sdk.NewCoin(config.BondDenom, math.NewInt(1_000_000_000)))
 	s.FundAcc(s.TestAccs[0], fundAccsAmount)
 	// create new token
-	_, err := s.App.TokenFactoryKeeper.CreateDenom(s.Ctx, s.TestAccs[0].String(), "tokenfactory")
+	_, err := s.App.Keepers.TokenFactoryKeeper.CreateDenom(s.Ctx, s.TestAccs[0].String(), "tokenfactory")
 	s.Require().NoError(err)
 
 	testCases := []struct {
