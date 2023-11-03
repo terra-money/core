@@ -452,7 +452,7 @@ func NewTerraAppKeepers(
 	if err != nil {
 		panic("error while reading wasm config: " + err.Error())
 	}
-	availableCapabilities := "iterator,staking,stargate,cosmwasm_1_1,cosmwasm_1_2,cosmwasm_1_3,token_factory"
+	availableCapabilities := "iterator,staking,stargate,cosmwasm_1_1,cosmwasm_1_2,cosmwasm_1_3,cosmwasm_1_4,token_factory"
 	keepers.WasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
 		keys[wasmtypes.StoreKey],
