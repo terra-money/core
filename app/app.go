@@ -13,6 +13,7 @@ import (
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/terra-money/core/v2/app/keepers"
+	"github.com/terra-money/core/v2/app/post"
 	"github.com/terra-money/core/v2/app/rpc"
 	tokenfactorybindings "github.com/terra-money/core/v2/x/tokenfactory/bindings"
 
@@ -279,6 +280,12 @@ func NewTerraApp(
 	if err != nil {
 		panic(err)
 	}
+	postHandler := post.NewPostHandler(
+		post.HandlerOptions{
+			FeeShareKeeper: app.Keepers.FeeShareKeeper,
+			BankKeeper:     app.Keepers.BankKeeper,
+		},
+	)
 
 	// Create the proposal handler that will be used to build and validate blocks.
 	handler := pobabci.NewProposalHandler(
@@ -304,6 +311,7 @@ func NewTerraApp(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetAnteHandler(anteHandler)
+	app.SetPostHandler(postHandler)
 	app.SetEndBlocker(app.EndBlocker)
 	app.SetMempool(pobMempool)
 	app.SetCheckTx(checkTxHandler.CheckTx())

@@ -6,7 +6,6 @@ import (
 	"github.com/skip-mev/pob/mempool"
 	pobante "github.com/skip-mev/pob/x/builder/ante"
 	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
-	feeshareante "github.com/terra-money/core/v2/x/feeshare/ante"
 	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -73,7 +72,6 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
-		feeshareante.NewFeeSharePayoutDecorator(options.BankKeeper, options.FeeShareKeeper),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
