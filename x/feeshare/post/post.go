@@ -1,18 +1,15 @@
 package ante
 
 import (
-	"encoding/json"
-
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"slices"
 
 	errorsmod "cosmossdk.io/errors"
 
+	"github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/authz"
 
-	"github.com/terra-money/core/v2/x/feeshare/types"
 	feeshare "github.com/terra-money/core/v2/x/feeshare/types"
 )
 
@@ -34,149 +31,152 @@ func NewFeeSharePayoutDecorator(fs FeeShareKeeper, bk BankKeeper) FeeSharePayout
 // involved in the transactin based on the module params.
 func (fsd FeeSharePayoutDecorator) PostHandle(
 	ctx sdk.Context,
-	tx sdk.Tx, simulate,
+	tx sdk.Tx,
+	simulate bool,
 	success bool,
 	next sdk.PostHandler,
 ) (newCtx sdk.Context, err error) {
-	// Check if fee share is enabled
+	// Check if fee share is enabled and shares
+	// to be distribute are greater than zero.
 	params := fsd.feesharekeeper.GetParams(ctx)
-	if !params.EnableFeeShare {
-		return ctx, nil
+	if !params.EnableFeeShare || params.DeveloperShares.IsZero() {
+		return next(ctx, tx, simulate, success)
 	}
-	// Parse the transactions to FeeTx
-	// to get the total fees paid in the future
+
+	// Parse the transactions to FeeTx to get the total fees paid
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {
 		return ctx, errorsmod.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
 	}
+	if feeTx.GetFee().Empty() || feeTx.GetFee().IsZero() {
+		return next(ctx, tx, simulate, success)
+	}
 
-	err = fsd.feeSharePayout(ctx, fsd.bankKeeper, fsd.feesharekeeper, feeTx)
+	err = fsd.FeeSharePayout(ctx, feeTx.GetFee(), params.DeveloperShares, params.AllowedDenoms)
 	if err != nil {
-		return ctx, errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
+		return ctx, errorsmod.Wrapf(sdkerrors.ErrLogic, err.Error())
 	}
 
 	return next(ctx, tx, simulate, success)
 }
-func (fsd FeeSharePayoutDecorator) feeSharePayout(
-	ctx sdk.Context,
-	bankKeeper BankKeeper,
-	feesharekeeper FeeShareKeeper,
-	msgs sdk.FeeTx,
-) error {
-	// Get valid withdraw addresses from contracts
-	toPay := make([]sdk.AccAddress, 0)
 
-	// validAuthz checks if the msg is an authz exec msg and if so, call the validExecuteMsg for each
-	// inner msg. If it is a CosmWasm execute message, that logic runs for nested functions.
-	validAuthz := func(execMsg *authz.MsgExec) error {
-		for _, v := range execMsg.Msgs {
-			var innerMsg sdk.Msg
-			if err := json.Unmarshal(v.Value, &innerMsg); err != nil {
-				return errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "cannot unmarshal authz exec msgs")
-			}
-
-			err := addNewFeeSharePayoutsForMsg(ctx, feesharekeeper, &toPay, innerMsg)
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
+// FeeSharePayout takes the total fees paid for a transaction and
+// split these fees equaly between all the contacts involved in the
+// transaction based on the module params.
+func (fsd FeeSharePayoutDecorator) FeeSharePayout(ctx sdk.Context, txFees sdk.Coins, devShares types.Dec, allowedDenoms []string) (err error) {
+	events := ctx.EventManager().Events()
+	contractAddresses, err := ExtractContractAddrs(events)
+	if err != nil {
+		return err
+	}
+	if len(contractAddresses) == 0 {
+		return err
 	}
 
-	for _, m := range msgs {
-		if msg, ok := m.(*authz.MsgExec); ok {
-			if err := validAuthz(msg); err != nil {
-				return err
-			}
+	withdrawerAddrs, err := GetWithdrawalAddressFromContract(ctx, contractAddresses, fsd.feesharekeeper)
+	if err != nil {
+		return err
+	}
+	if len(withdrawerAddrs) == 0 {
+		return err
+	}
+
+	feeToBePaid := CalculateFee(txFees, devShares, len(withdrawerAddrs), allowedDenoms)
+	if feeToBePaid.IsZero() {
+		return err
+	}
+
+	// pay the fees to the withdrawer addresses
+	for _, withdrawerAddrs := range withdrawerAddrs {
+		err = fsd.bankKeeper.SendCoinsFromModuleToAccount(ctx, authtypes.FeeCollectorName, withdrawerAddrs, feeToBePaid)
+		if err != nil {
+			return err
+		}
+		ctx.EventManager().EmitTypedEvent(
+			&feeshare.FeePayoutEvent{
+				WithdrawAddress: withdrawerAddrs.String(),
+				FeesPaid:        feeToBePaid,
+			},
+		)
+	}
+
+	return err
+}
+
+// Iterate the events and search for the execute event then iterate the
+// attributes in search for _contract_address and get the value which
+// is the contract address to search for all the beneficiaries, info:
+// https://github.com/CosmWasm/wasmd/blob/main/EVENTS.md#validation-rules
+func ExtractContractAddrs(events sdk.Events) ([]string, error) {
+	contractAddresses := []string{}
+	for _, ev := range events {
+		if ev.Type != "execute" {
 			continue
 		}
 
-		if err := addNewFeeSharePayoutsForMsg(ctx, feesharekeeper, &toPay, m); err != nil {
-			return err
+		for _, attr := range ev.Attributes {
+			if attr.Key != "_contract_address" {
+				continue
+			}
+			// if the contract address has already been
+			// added just skip it to avoid duplicates
+			if slices.Contains(contractAddresses, attr.Value) {
+				continue
+			}
+
+			contractAddresses = append(contractAddresses, attr.Value)
 		}
 	}
 
-	// Do nothing if no one needs payment
-	if len(toPay) == 0 {
-		return nil
-	}
-
-	// Get only allowed governance fees to be paid (helps for taxes)
-	var fees sdk.Coins
-	if len(params.AllowedDenoms) == 0 {
-		// If empty, we allow all denoms to be used as payment
-		fees = txFees
-	} else {
-		for _, fee := range txFees.Sort() {
-			for _, allowed := range params.AllowedDenoms {
-				if fee.Denom == allowed {
-					fees = fees.Add(fee)
-				}
-			}
-		}
-	}
-
-	numPairs := len(toPay)
-
-	feesPaidOutput := make([]types.FeePayoutEvent, numPairs)
-	if numPairs > 0 {
-		govPercent := params.DeveloperShares
-		splitFees := FeePayLogic(fees, govPercent, numPairs)
-
-		// pay fees evenly between all withdraw addresses
-		for i, withdrawAddr := range toPay {
-			err := bankKeeper.SendCoinsFromModuleToAccount(ctx, authtypes.FeeCollectorName, withdrawAddr, splitFees)
-			feesPaidOutput[i] = types.FeePayoutEvent{
-				WithdrawAddress: withdrawAddr.String(),
-				FeesPaid:        splitFees,
-			}
-
-			if err != nil {
-				return errorsmod.Wrapf(feeshare.ErrFeeSharePayment, "failed to pay fees to contract developer: %s", err.Error())
-			}
-		}
-	}
-
-	bz, err := json.Marshal(feesPaidOutput)
-	if err != nil {
-		return errorsmod.Wrapf(feeshare.ErrFeeSharePayment, "failed to marshal feesPaidOutput: %s", err.Error())
-	}
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			feeshare.EventTypePayoutFeeShare,
-			sdk.NewAttribute(feeshare.AttributeWithdrawPayouts, string(bz))),
-	)
-
-	return nil
+	return contractAddresses, nil
 }
 
-func FeePayLogic(fees sdk.Coins, govPercent sdk.Dec, numPairs int) sdk.Coins {
+// Iterate the contract addresses and get the
+// withdrawer address from the module store
+func GetWithdrawalAddressFromContract(ctx sdk.Context, contractAddresses []string, fsk FeeShareKeeper) ([]sdk.AccAddress, error) {
+	var withdrawerAddrs []sdk.AccAddress
+
+	for _, contractAddr := range contractAddresses {
+		parsedContractAddr, err := sdk.AccAddressFromBech32(contractAddr)
+		if err != nil {
+			return nil, err
+		}
+
+		shareData, hasfeeshare := fsk.GetFeeShare(ctx, parsedContractAddr)
+
+		if !hasfeeshare {
+			continue
+		}
+
+		withdrawerAddr := shareData.GetWithdrawerAddr()
+		if withdrawerAddr != nil && !withdrawerAddr.Empty() {
+			withdrawerAddrs = append(withdrawerAddrs, withdrawerAddr)
+		}
+	}
+
+	return withdrawerAddrs, nil
+}
+
+// CalculateFee takes the total fees paid for a transaction and split
+// these fees equaly between all number of pairs considering allwoedDenoms
+func CalculateFee(fees sdk.Coins, govPercent sdk.Dec, pairs int, allowedDenoms []string) sdk.Coins {
+	var alloedFeesDenoms sdk.Coins
+	if len(allowedDenoms) == 0 {
+		alloedFeesDenoms = fees
+	} else {
+		for _, fee := range fees {
+			if slices.Contains(allowedDenoms, fee.Denom) {
+				alloedFeesDenoms = alloedFeesDenoms.Add(fee)
+			}
+		}
+	}
+
 	var splitFees sdk.Coins
-	for _, c := range fees.Sort() {
-		rewardAmount := govPercent.MulInt(c.Amount).QuoInt64(int64(numPairs)).RoundInt()
+	for _, c := range alloedFeesDenoms.Sort() {
+		rewardAmount := govPercent.MulInt(c.Amount).QuoInt64(int64(pairs)).RoundInt()
 		if !rewardAmount.IsZero() {
 			splitFees = splitFees.Add(sdk.NewCoin(c.Denom, rewardAmount))
 		}
 	}
 	return splitFees
-}
-
-func addNewFeeSharePayoutsForMsg(ctx sdk.Context, feesharekeeper FeeShareKeeper, toPay *[]sdk.AccAddress, m sdk.Msg) error {
-	if msg, ok := m.(*wasmtypes.MsgExecuteContract); ok {
-		contractAddr, err := sdk.AccAddressFromBech32(msg.Contract)
-		if err != nil {
-			return err
-		}
-
-		shareData, _ := feesharekeeper.GetFeeShare(ctx, contractAddr)
-
-		withdrawAddr := shareData.GetWithdrawerAddr()
-		if withdrawAddr != nil && !withdrawAddr.Empty() {
-			*toPay = append(*toPay, withdrawAddr)
-		}
-	}
-
-	return nil
 }

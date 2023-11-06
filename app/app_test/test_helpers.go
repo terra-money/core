@@ -121,6 +121,16 @@ func (s *AppTestSuite) FundAcc(acc sdk.AccAddress, amounts sdk.Coins) (err error
 	return s.App.Keepers.BankKeeper.SendCoinsFromModuleToAccount(s.Ctx, minttypes.ModuleName, acc, amounts)
 }
 
+// FundAcc funds target address with specified amount.
+func (s *AppTestSuite) FundModule(moduleAccount string, amounts sdk.Coins) (err error) {
+	s.Require().NoError(err)
+	if err := s.App.Keepers.BankKeeper.MintCoins(s.Ctx, minttypes.ModuleName, amounts); err != nil {
+		return err
+	}
+
+	return s.App.Keepers.BankKeeper.SendCoinsFromModuleToModule(s.Ctx, minttypes.ModuleName, moduleAccount, amounts)
+}
+
 func SetupGenesisValSet(
 	valSet *tmtypes.ValidatorSet,
 	genAccs []authtypes.GenesisAccount,

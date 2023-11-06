@@ -124,7 +124,8 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
             // Check that querying all feeshares returns at least one feeshares
             let feesharesByWallet = await LCD.chain1.feeshare.feeshares("test-1");
             expect(feesharesByWallet.feeshare.length).toBeGreaterThan(0);
-
+            await blockInclusion();
+            
             // Send an execute message to the reflect contract
             let msgExecute = new MsgExecuteContract(
                 feeshareAccountAddress,
@@ -145,6 +146,8 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
 
             // Check the tx logs have the expected events
             txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
+            console.log(result.txhash)
+            console.log(JSON.stringify(txResult.logs))
             expect(txResult.logs[0].events)
                 .toMatchObject([{
                     "type": "message",
@@ -180,7 +183,8 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
                     }]
                 }
                 ])
-
+            await blockInclusion()
+            
             // Query the random account (new owner of the contract)
             // and validate that the account has received 50% of the fees
             const bankAmount = await LCD.chain1.bank.balance(randomAccountAddress);
