@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	customterratypes "github.com/terra-money/core/v2/custom/bank/types"
+	customterratypes "github.com/terra-money/core/v2/x/bank/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

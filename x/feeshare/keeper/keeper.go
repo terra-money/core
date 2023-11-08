@@ -3,7 +3,7 @@ package keeper
 import (
 	"fmt"
 
-	customwasmkeeper "github.com/terra-money/core/v2/custom/wasmd/keeper"
+	customwasmkeeper "github.com/terra-money/core/v2/x/wasm/keeper"
 
 	"github.com/cometbft/cometbft/libs/log"
 

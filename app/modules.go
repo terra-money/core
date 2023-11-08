@@ -68,8 +68,8 @@ import (
 	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
-	custombankmodule "github.com/terra-money/core/v2/custom/bank"
-	customwasmodule "github.com/terra-money/core/v2/custom/wasmd"
+	custombankmodule "github.com/terra-money/core/v2/x/bank"
+	customwasmodule "github.com/terra-money/core/v2/x/wasm"
 
 	"github.com/terra-money/core/v2/x/tokenfactory"
 

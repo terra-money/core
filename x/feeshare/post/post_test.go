@@ -20,68 +20,6 @@ func TestAnteSuite(t *testing.T) {
 	suite.Run(t, new(AnteTestSuite))
 }
 
-func (suite *AnteTestSuite) TestExtractContractAddrs() {
-	testCases := []struct {
-		name              string
-		events            sdk.Events
-		expectedAddresses []string
-	}{
-		{
-			"no events",
-			sdk.Events{},
-			[]string{},
-		},
-		{
-			"no execute events",
-			sdk.Events{
-				sdk.NewEvent("transfer",
-					sdk.NewAttribute("_contract_address", "address1"),
-				),
-			},
-			[]string{},
-		},
-		{
-			"single execute event",
-			sdk.Events{
-				sdk.NewEvent("execute",
-					sdk.NewAttribute("_contract_address", "address1"),
-				),
-			},
-			[]string{"address1"},
-		},
-		{
-			"multiple execute events",
-			sdk.Events{
-				sdk.NewEvent("execute",
-					sdk.NewAttribute("_contract_address", "address1"),
-				),
-				sdk.NewEvent("execute",
-					sdk.NewAttribute("_contract_address", "address2"),
-				),
-			},
-			[]string{"address1", "address2"},
-		},
-		{
-			"duplicate execute events",
-			sdk.Events{
-				sdk.NewEvent("execute",
-					sdk.NewAttribute("_contract_address", "address1"),
-				),
-				sdk.NewEvent("execute",
-					sdk.NewAttribute("_contract_address", "address1"),
-				),
-			},
-			[]string{"address1"},
-		},
-	}
-
-	for _, tc := range testCases {
-		addresses, err := post.ExtractContractAddrs(tc.events)
-		suite.Require().NoError(err, tc.name)
-		suite.Require().Equal(tc.expectedAddresses, addresses, tc.name)
-	}
-}
-
 func (suite *AnteTestSuite) TestGetWithdrawalAddressFromContract() {
 	suite.Setup()
 

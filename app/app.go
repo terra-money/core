@@ -52,8 +52,8 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/evidence"
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
-	custombankmodule "github.com/terra-money/core/v2/custom/bank"
-	customwasmodule "github.com/terra-money/core/v2/custom/wasmd"
+	custombankmodule "github.com/terra-money/core/v2/x/bank"
+	customwasmodule "github.com/terra-money/core/v2/x/wasm"
 
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
@@ -284,6 +284,7 @@ func NewTerraApp(
 		post.HandlerOptions{
 			FeeShareKeeper: app.Keepers.FeeShareKeeper,
 			BankKeeper:     app.Keepers.BankKeeper,
+			WasmKeeper:     app.Keepers.WasmKeeper,
 		},
 	)
 

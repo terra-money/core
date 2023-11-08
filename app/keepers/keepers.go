@@ -85,7 +85,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	icahost "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host"
-	customwasmkeeper "github.com/terra-money/core/v2/custom/wasmd/keeper"
+	customwasmkeeper "github.com/terra-money/core/v2/x/wasm/keeper"
 
 	icacontroller "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/keeper"
@@ -96,7 +96,7 @@ import (
 	"github.com/terra-money/alliance/x/alliance"
 	alliancekeeper "github.com/terra-money/alliance/x/alliance/keeper"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
-	custombankkeeper "github.com/terra-money/core/v2/custom/bank/keeper"
+	custombankkeeper "github.com/terra-money/core/v2/x/bank/keeper"
 	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 

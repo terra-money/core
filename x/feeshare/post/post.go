@@ -5,23 +5,25 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	"github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	feeshare "github.com/terra-money/core/v2/x/feeshare/types"
+	customwasmkeeper "github.com/terra-money/core/v2/x/wasm/keeper"
 )
 
 type FeeSharePayoutDecorator struct {
 	feesharekeeper FeeShareKeeper
 	bankKeeper     BankKeeper
+	wasmKeeper     customwasmkeeper.Keeper
 }
 
-func NewFeeSharePayoutDecorator(fs FeeShareKeeper, bk BankKeeper) FeeSharePayoutDecorator {
+func NewFeeSharePayoutDecorator(fs FeeShareKeeper, bk BankKeeper, wk customwasmkeeper.Keeper) FeeSharePayoutDecorator {
 	return FeeSharePayoutDecorator{
 		feesharekeeper: fs,
 		bankKeeper:     bk,
+		wasmKeeper:     wk,
 	}
 }
 
@@ -63,12 +65,12 @@ func (fsd FeeSharePayoutDecorator) PostHandle(
 // FeeSharePayout takes the total fees paid for a transaction and
 // split these fees equaly between all the contacts involved in the
 // transaction based on the module params.
-func (fsd FeeSharePayoutDecorator) FeeSharePayout(ctx sdk.Context, txFees sdk.Coins, devShares types.Dec, allowedDenoms []string) (err error) {
-	events := ctx.EventManager().Events()
-	contractAddresses, err := ExtractContractAddrs(events)
-	if err != nil {
+func (fsd FeeSharePayoutDecorator) FeeSharePayout(ctx sdk.Context, txFees sdk.Coins, devShares sdk.Dec, allowedDenoms []string) (err error) {
+	executedContracts, found := fsd.wasmKeeper.GetExecutedContractAddresses(ctx)
+	if !found {
 		return err
 	}
+	contractAddresses := executedContracts.ContractAddresses
 	if len(contractAddresses) == 0 {
 		return err
 	}
@@ -101,34 +103,6 @@ func (fsd FeeSharePayoutDecorator) FeeSharePayout(ctx sdk.Context, txFees sdk.Co
 	}
 
 	return err
-}
-
-// Iterate the events and search for the execute event then iterate the
-// attributes in search for _contract_address and get the value which
-// is the contract address to search for all the beneficiaries, info:
-// https://github.com/CosmWasm/wasmd/blob/main/EVENTS.md#validation-rules
-func ExtractContractAddrs(events sdk.Events) ([]string, error) {
-	contractAddresses := []string{}
-	for _, ev := range events {
-		if ev.Type != "execute" {
-			continue
-		}
-
-		for _, attr := range ev.Attributes {
-			if attr.Key != "_contract_address" {
-				continue
-			}
-			// if the contract address has already been
-			// added just skip it to avoid duplicates
-			if slices.Contains(contractAddresses, attr.Value) {
-				continue
-			}
-
-			contractAddresses = append(contractAddresses, attr.Value)
-		}
-	}
-
-	return contractAddresses, nil
 }
 
 // Iterate the contract addresses and get the
