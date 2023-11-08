@@ -85,6 +85,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	icahost "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host"
+	customwasmkeeper "github.com/terra-money/core/v2/custom/wasmd/keeper"
 
 	icacontroller "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/keeper"
@@ -173,7 +174,7 @@ type TerraAppKeepers struct {
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
 	ScopedICQKeeper           capabilitykeeper.ScopedKeeper
 
-	WasmKeeper       wasmkeeper.Keeper
+	WasmKeeper       customwasmkeeper.Keeper
 	scopedWasmKeeper capabilitykeeper.ScopedKeeper
 
 	// BuilderKeeper is the keeper that handles processing auction transactions
@@ -453,7 +454,7 @@ func NewTerraAppKeepers(
 		panic("error while reading wasm config: " + err.Error())
 	}
 	availableCapabilities := "iterator,staking,stargate,cosmwasm_1_1,cosmwasm_1_2,cosmwasm_1_3,cosmwasm_1_4,token_factory"
-	keepers.WasmKeeper = wasmkeeper.NewKeeper(
+	keepers.WasmKeeper = customwasmkeeper.NewKeeper(
 		appCodec,
 		keys[wasmtypes.StoreKey],
 		keepers.AccountKeeper,
@@ -474,7 +475,7 @@ func NewTerraAppKeepers(
 		wasmOpts...,
 	)
 
-	keepers.Ics20WasmHooks.ContractKeeper = &keepers.WasmKeeper
+	keepers.Ics20WasmHooks.ContractKeeper = keepers.WasmKeeper.Keeper
 	// Setup the contract keepers.WasmKeeper before the
 	// hook for the BankKeeper othrwise the WasmKeeper
 	// will be nil inside the hooks.

@@ -3,7 +3,7 @@ package keeper
 import (
 	"fmt"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	customwasmkeeper "github.com/terra-money/core/v2/custom/wasmd/keeper"
 
 	"github.com/cometbft/cometbft/libs/log"
 
@@ -21,7 +21,7 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	bankKeeper    revtypes.BankKeeper
-	wasmKeeper    wasmkeeper.Keeper
+	wasmKeeper    customwasmkeeper.Keeper
 	accountKeeper revtypes.AccountKeeper
 
 	feeCollectorName string
@@ -36,7 +36,7 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
 	bk revtypes.BankKeeper,
-	wk wasmkeeper.Keeper,
+	wk customwasmkeeper.Keeper,
 	ak revtypes.AccountKeeper,
 	feeCollector string,
 	authority string,
