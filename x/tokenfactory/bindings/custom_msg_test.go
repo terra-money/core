@@ -241,7 +241,7 @@ func TestMintMsg(t *testing.T) {
 	fundAccount(t, ctx, app, reflect, reflectAmount)
 
 	// lucky was broke
-	balances := app.BankKeeper.GetAllBalances(ctx, lucky)
+	balances := app.Keepers.BankKeeper.GetAllBalances(ctx, lucky)
 	require.Empty(t, balances)
 
 	// Create denom for minting
@@ -262,7 +262,7 @@ func TestMintMsg(t *testing.T) {
 	err = executeCustom(t, ctx, app, reflect, lucky, msg, sdk.Coin{})
 	require.NoError(t, err)
 
-	balances = app.BankKeeper.GetAllBalances(ctx, lucky)
+	balances = app.Keepers.BankKeeper.GetAllBalances(ctx, lucky)
 	require.Len(t, balances, 1)
 	coin := balances[0]
 	require.Equal(t, amount, coin.Amount)
@@ -285,7 +285,7 @@ func TestMintMsg(t *testing.T) {
 	err = executeCustom(t, ctx, app, reflect, lucky, msg, sdk.Coin{})
 	require.NoError(t, err)
 
-	balances = app.BankKeeper.GetAllBalances(ctx, lucky)
+	balances = app.Keepers.BankKeeper.GetAllBalances(ctx, lucky)
 	require.Len(t, balances, 1)
 	coin = balances[0]
 	require.Equal(t, amount.MulRaw(2), coin.Amount)
@@ -322,7 +322,7 @@ func TestMintMsg(t *testing.T) {
 	err = executeCustom(t, ctx, app, reflect, lucky, msg, sdk.Coin{})
 	require.NoError(t, err)
 
-	balances = app.BankKeeper.GetAllBalances(ctx, lucky)
+	balances = app.Keepers.BankKeeper.GetAllBalances(ctx, lucky)
 	require.Len(t, balances, 2)
 	coin = balances[0]
 	require.Equal(t, amount, coin.Amount)
@@ -373,7 +373,7 @@ func TestBurnMsg(t *testing.T) {
 	fundAccount(t, ctx, app, reflect, reflectAmount)
 
 	// lucky was broke
-	balances := app.BankKeeper.GetAllBalances(ctx, lucky)
+	balances := app.Keepers.BankKeeper.GetAllBalances(ctx, lucky)
 	require.Empty(t, balances)
 
 	// Create denom for minting
@@ -405,8 +405,8 @@ func TestBurnMsg(t *testing.T) {
 	require.Error(t, err)
 
 	// lucky needs to send balance to reflect contract to burn it
-	luckyBalance := app.BankKeeper.GetAllBalances(ctx, lucky)
-	err = app.BankKeeper.SendCoins(ctx, lucky, reflect, luckyBalance)
+	luckyBalance := app.Keepers.BankKeeper.GetAllBalances(ctx, lucky)
+	err = app.Keepers.BankKeeper.SendCoins(ctx, lucky, reflect, luckyBalance)
 	require.NoError(t, err)
 
 	msg = bindings.TokenMsg{BurnTokens: &bindings.BurnTokens{
@@ -455,7 +455,7 @@ func executeCustom(t *testing.T, ctx sdk.Context, app *app.TerraApp, contract sd
 		coins = sdk.Coins{funds}
 	}
 
-	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	contractKeeper := keeper.NewDefaultPermissionKeeper(app.Keepers.WasmKeeper)
 	_, err = contractKeeper.Execute(ctx, contract, sender, reflectBz, coins)
 	return err
 }

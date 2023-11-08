@@ -173,7 +173,7 @@ func (s *KeeperTestSuite) TestInfiniteTrackBeforeSend() {
 			}
 
 			// send the mint module tokenToSend
-			if err := s.App.BankKeeper.MintCoins(s.Ctx, minttypes.ModuleName, tokenToSend); err != nil {
+			if err := s.App.Keepers.BankKeeper.MintCoins(s.Ctx, minttypes.ModuleName, tokenToSend); err != nil {
 				s.Require().NoError(err)
 			}
 
@@ -186,12 +186,12 @@ func (s *KeeperTestSuite) TestInfiniteTrackBeforeSend() {
 			s.Require().NoError(err, "test: %v", tc.name)
 
 			// track before send suppresses in any case, thus we expect no error
-			err = s.App.BankKeeper.SendCoinsFromModuleToModule(s.Ctx, "mint", "distribution", tokenToSend)
+			err = s.App.Keepers.BankKeeper.SendCoinsFromModuleToModule(s.Ctx, "mint", "distribution", tokenToSend)
 			s.Require().NoError(err)
 
 			// send should happen regardless of trackBeforeSend results
-			distributionModuleAddress := s.App.AccountKeeper.GetModuleAddress("distribution")
-			distributionModuleBalances := s.App.BankKeeper.GetAllBalances(s.Ctx, distributionModuleAddress)
+			distributionModuleAddress := s.App.Keepers.AccountKeeper.GetModuleAddress("distribution")
+			distributionModuleBalances := s.App.Keepers.BankKeeper.GetAllBalances(s.Ctx, distributionModuleAddress)
 			s.Require().True(distributionModuleBalances[0].IsEqual(tokenToSend[0]))
 		})
 	}
@@ -225,7 +225,7 @@ func (s *KeeperTestSuite) TestCoinsFromSDK() {
 
 // Test get before send hook with no hook set
 func (s *KeeperTestSuite) TestGetBeforeSendHook() {
-	res := s.App.TokenFactoryKeeper.GetBeforeSendHook(s.Ctx, "foo")
+	res := s.App.Keepers.TokenFactoryKeeper.GetBeforeSendHook(s.Ctx, "foo")
 
 	expected := ""
 

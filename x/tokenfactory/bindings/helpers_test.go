@@ -48,19 +48,19 @@ func CreateTestInput() (*app.TerraApp, sdk.Context) {
 		wasmconfig.DefaultConfig(),
 	)
 	ctx := terraApp.BaseApp.NewContext(true, tmproto.Header{Height: 1, ChainID: "phoenix-1", Time: time.Now()})
-	err := terraApp.WasmKeeper.SetParams(ctx, wasmtypes.DefaultParams())
+	err := terraApp.Keepers.WasmKeeper.SetParams(ctx, wasmtypes.DefaultParams())
 	if err != nil {
 		panic(err)
 	}
-	terraApp.BankKeeper.SetParams(ctx, banktypes.NewParams(true))
+	terraApp.Keepers.BankKeeper.SetParams(ctx, banktypes.NewParams(true))
 	if err != nil {
 		panic(err)
 	}
-	terraApp.TokenFactoryKeeper.SetParams(ctx, tokenfactorytypes.DefaultParams())
+	terraApp.Keepers.TokenFactoryKeeper.SetParams(ctx, tokenfactorytypes.DefaultParams())
 	if err != nil {
 		panic(err)
 	}
-	terraApp.DistrKeeper.SetFeePool(ctx, distrtypes.InitialFeePool())
+	terraApp.Keepers.DistrKeeper.SetFeePool(ctx, distrtypes.InitialFeePool())
 	if err != nil {
 		panic(err)
 	}
@@ -93,7 +93,7 @@ func storeReflectCode(t *testing.T, ctx sdk.Context, app *app.TerraApp, addr sdk
 	wasmCode, err := os.ReadFile("./testdata/token_reflect.wasm")
 	require.NoError(t, err)
 
-	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	contractKeeper := keeper.NewDefaultPermissionKeeper(app.Keepers.WasmKeeper)
 	codeID, _, err := contractKeeper.Create(ctx, addr, wasmCode, &wasmtypes.AccessConfig{Permission: wasmtypes.AccessTypeEverybody})
 	require.NoError(t, err)
 
@@ -103,7 +103,7 @@ func storeReflectCode(t *testing.T, ctx sdk.Context, app *app.TerraApp, addr sdk
 func instantiateReflectContract(t *testing.T, ctx sdk.Context, app *app.TerraApp, funder sdk.AccAddress) sdk.AccAddress {
 	t.Helper()
 	initMsgBz := []byte("{}")
-	contractKeeper := keeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	contractKeeper := keeper.NewDefaultPermissionKeeper(app.Keepers.WasmKeeper)
 	codeID := uint64(1)
 	addr, _, err := contractKeeper.Instantiate(ctx, codeID, funder, funder, initMsgBz, "demo contract", nil)
 	require.NoError(t, err)
@@ -113,9 +113,9 @@ func instantiateReflectContract(t *testing.T, ctx sdk.Context, app *app.TerraApp
 
 func fundAccount(t *testing.T, ctx sdk.Context, app *app.TerraApp, addr sdk.AccAddress, coins sdk.Coins) {
 	t.Helper()
-	err := app.BankKeeper.MintCoins(ctx, minttypes.ModuleName, coins)
+	err := app.Keepers.BankKeeper.MintCoins(ctx, minttypes.ModuleName, coins)
 	require.NoError(t, err)
-	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, addr, coins)
+	err = app.Keepers.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, addr, coins)
 	require.NoError(t, err)
 }
 
@@ -125,7 +125,7 @@ func SetupCustomApp(t *testing.T, addr sdk.AccAddress) (*app.TerraApp, sdk.Conte
 
 	storeReflectCode(t, ctx, app, addr)
 
-	cInfo := app.WasmKeeper.GetCodeInfo(ctx, 1)
+	cInfo := app.Keepers.WasmKeeper.GetCodeInfo(ctx, 1)
 	require.NotNil(t, cInfo)
 
 	return app, ctx

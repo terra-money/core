@@ -159,7 +159,7 @@ func queryCustom(t *testing.T, ctx sdk.Context, app *app.TerraApp, contract sdk.
 		return err
 	}
 
-	resBz, err := app.WasmKeeper.QuerySmart(ctx, contract, queryBz)
+	resBz, err := app.Keepers.WasmKeeper.QuerySmart(ctx, contract, queryBz)
 	if err != nil {
 		return err
 	}

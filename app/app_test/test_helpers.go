@@ -68,19 +68,19 @@ func (s *AppTestSuite) Setup() {
 		GRPCQueryRouter: s.App.GRPCQueryRouter(),
 		Ctx:             s.Ctx,
 	}
-	err := s.App.BankKeeper.SetParams(s.Ctx, banktypes.NewParams(true))
+	err := s.App.Keepers.BankKeeper.SetParams(s.Ctx, banktypes.NewParams(true))
 	s.Require().NoError(err)
 
-	err = s.App.WasmKeeper.SetParams(s.Ctx, wasmtypes.DefaultParams())
+	err = s.App.Keepers.WasmKeeper.SetParams(s.Ctx, wasmtypes.DefaultParams())
 	s.Require().NoError(err)
 
-	err = s.App.FeeShareKeeper.SetParams(s.Ctx, feesharetypes.DefaultParams())
+	err = s.App.Keepers.FeeShareKeeper.SetParams(s.Ctx, feesharetypes.DefaultParams())
 	s.Require().NoError(err)
 
-	err = s.App.TokenFactoryKeeper.SetParams(s.Ctx, tokenfactorytypes.DefaultParams())
+	err = s.App.Keepers.TokenFactoryKeeper.SetParams(s.Ctx, tokenfactorytypes.DefaultParams())
 	s.Require().NoError(err)
 
-	s.App.DistrKeeper.SetFeePool(s.Ctx, distrtypes.InitialFeePool())
+	s.App.Keepers.DistrKeeper.SetFeePool(s.Ctx, distrtypes.InitialFeePool())
 
 	s.TestAccs = s.CreateRandomAccounts(3)
 }
@@ -114,11 +114,11 @@ func (s *AppTestSuite) CreateRandomAccounts(numAccts int) []sdk.AccAddress {
 // FundAcc funds target address with specified amount.
 func (s *AppTestSuite) FundAcc(acc sdk.AccAddress, amounts sdk.Coins) (err error) {
 	s.Require().NoError(err)
-	if err := s.App.BankKeeper.MintCoins(s.Ctx, minttypes.ModuleName, amounts); err != nil {
+	if err := s.App.Keepers.BankKeeper.MintCoins(s.Ctx, minttypes.ModuleName, amounts); err != nil {
 		return err
 	}
 
-	return s.App.BankKeeper.SendCoinsFromModuleToAccount(s.Ctx, minttypes.ModuleName, acc, amounts)
+	return s.App.Keepers.BankKeeper.SendCoinsFromModuleToAccount(s.Ctx, minttypes.ModuleName, acc, amounts)
 }
 
 func SetupGenesisValSet(

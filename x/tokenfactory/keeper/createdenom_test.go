@@ -12,16 +12,16 @@ import (
 
 func (s *KeeperTestSuite) TestMsgCreateDenom() {
 	var (
-		tokenFactoryKeeper = s.App.TokenFactoryKeeper
-		bankKeeper         = s.App.BankKeeper
+		tokenFactoryKeeper = s.App.Keepers.TokenFactoryKeeper
+		bankKeeper         = s.App.Keepers.BankKeeper
 		denomCreationFee   = sdk.NewCoins(sdk.NewCoin("uluna", sdk.NewInt(1000000)))
 	)
 
 	// Set the denom creation fee. It is currently turned off in favor
 	// of gas charge by default.
-	params := s.App.TokenFactoryKeeper.GetParams(s.Ctx)
+	params := s.App.Keepers.TokenFactoryKeeper.GetParams(s.Ctx)
 	params.DenomCreationFee = denomCreationFee
-	s.App.TokenFactoryKeeper.SetParams(s.Ctx, params)
+	s.App.Keepers.TokenFactoryKeeper.SetParams(s.Ctx, params)
 
 	// Fund denom creation fee for every execution of MsgCreateDenom.
 	s.FundAcc(s.TestAccs[0], denomCreationFee)
@@ -133,8 +133,8 @@ func (s *KeeperTestSuite) TestCreateDenom() {
 			if tc.setup != nil {
 				tc.setup()
 			}
-			tokenFactoryKeeper := s.App.TokenFactoryKeeper
-			bankKeeper := s.App.BankKeeper
+			tokenFactoryKeeper := s.App.Keepers.TokenFactoryKeeper
+			bankKeeper := s.App.Keepers.BankKeeper
 			// Set denom creation fee in params
 			s.FundAcc(s.TestAccs[0], defaultDenomCreationFee.DenomCreationFee)
 			tokenFactoryKeeper.SetParams(s.Ctx, tc.denomCreationFee)
@@ -221,7 +221,7 @@ func (s *KeeperTestSuite) TestGasConsume() {
 		s.SetupTest()
 		s.Run(fmt.Sprintf("Case %s", tc.desc), func() {
 			// set params with the gas consume amount
-			s.App.TokenFactoryKeeper.SetParams(s.Ctx, types.NewParams(nil, tc.gasConsume))
+			s.App.Keepers.TokenFactoryKeeper.SetParams(s.Ctx, types.NewParams(nil, tc.gasConsume))
 
 			// amount of gas consumed prior to the denom creation
 			gasConsumedBefore := s.Ctx.GasMeter().GasConsumed()

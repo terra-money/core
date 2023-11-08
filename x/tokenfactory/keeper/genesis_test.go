@@ -37,31 +37,31 @@ func (s *KeeperTestSuite) TestGenesis() {
 	for i, denom := range genesisState.FactoryDenoms {
 		// hacky, sets bank metadata to exist if i != 0, to cover both cases.
 		if i != 0 {
-			app.BankKeeper.SetDenomMetaData(s.Ctx, banktypes.Metadata{Base: denom.GetDenom(), Display: "test"})
+			app.Keepers.BankKeeper.SetDenomMetaData(s.Ctx, banktypes.Metadata{Base: denom.GetDenom(), Display: "test"})
 		}
 	}
 
 	// check before initGenesis that the module account is nil
-	tokenfactoryModuleAccount := app.AccountKeeper.GetAccount(s.Ctx, app.AccountKeeper.GetModuleAddress(types.ModuleName))
+	tokenfactoryModuleAccount := app.Keepers.AccountKeeper.GetAccount(s.Ctx, app.Keepers.AccountKeeper.GetModuleAddress(types.ModuleName))
 	s.Require().Nil(tokenfactoryModuleAccount)
 
-	app.TokenFactoryKeeper.SetParams(s.Ctx, types.Params{DenomCreationFee: sdk.Coins{sdk.NewInt64Coin("uosmo", 100)}})
-	app.TokenFactoryKeeper.InitGenesis(s.Ctx, genesisState)
+	app.Keepers.TokenFactoryKeeper.SetParams(s.Ctx, types.Params{DenomCreationFee: sdk.Coins{sdk.NewInt64Coin("uosmo", 100)}})
+	app.Keepers.TokenFactoryKeeper.InitGenesis(s.Ctx, genesisState)
 
 	// check that the module account is now initialized
-	tokenfactoryModuleAccount = app.AccountKeeper.GetAccount(s.Ctx, app.AccountKeeper.GetModuleAddress(types.ModuleName))
+	tokenfactoryModuleAccount = app.Keepers.AccountKeeper.GetAccount(s.Ctx, app.Keepers.AccountKeeper.GetModuleAddress(types.ModuleName))
 	s.Require().NotNil(tokenfactoryModuleAccount)
 
-	exportedGenesis := app.TokenFactoryKeeper.ExportGenesis(s.Ctx)
+	exportedGenesis := app.Keepers.TokenFactoryKeeper.ExportGenesis(s.Ctx)
 	s.Require().NotNil(exportedGenesis)
 	s.Require().Equal(genesisState, *exportedGenesis)
 
-	app.BankKeeper.SetParams(s.Ctx, banktypes.DefaultParams())
-	app.BankKeeper.InitGenesis(s.Ctx, app.BankKeeper.ExportGenesis(s.Ctx))
+	app.Keepers.BankKeeper.SetParams(s.Ctx, banktypes.DefaultParams())
+	app.Keepers.BankKeeper.InitGenesis(s.Ctx, app.Keepers.BankKeeper.ExportGenesis(s.Ctx))
 	for i, denom := range genesisState.FactoryDenoms {
 		// hacky, check whether bank metadata is not replaced if i != 0, to cover both cases.
 		if i != 0 {
-			metadata, found := app.BankKeeper.GetDenomMetaData(s.Ctx, denom.GetDenom())
+			metadata, found := app.Keepers.BankKeeper.GetDenomMetaData(s.Ctx, denom.GetDenom())
 			s.Require().True(found)
 			s.Require().Equal(metadata, banktypes.Metadata{Base: denom.GetDenom(), Display: "test"})
 		}
