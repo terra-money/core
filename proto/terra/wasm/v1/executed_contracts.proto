@@ -2,7 +2,7 @@ syntax = "proto3";
 package terra.wasm.v1;
 
 
-option go_package = "github.com/terra-money/core/v2/x/wasmd/types";
+option go_package = "github.com/terra-money/core/v2/x/wasm/types";
 
 // ExecutedContracts is a structure type that contains the list of executed contracts
 // in a specific transaction.
