@@ -39,12 +39,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
 	routertypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
@@ -59,6 +53,13 @@ import (
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
+
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
+	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
 
@@ -79,9 +80,10 @@ import (
 	pob "github.com/skip-mev/pob/x/builder"
 	pobtype "github.com/skip-mev/pob/x/builder/types"
 
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	terrappsparams "github.com/terra-money/core/v2/app/params"
+
+	"github.com/cosmos/cosmos-sdk/x/feegrant"
 )
 
 // ModuleBasics defines the module BasicManager is in charge of setting up basic,

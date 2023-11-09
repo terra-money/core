@@ -1,8 +1,6 @@
 package ante
 
 import (
-	"slices"
-
 	errorsmod "cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -139,8 +137,11 @@ func CalculateFee(fees sdk.Coins, govPercent sdk.Dec, pairs int, allowedDenoms [
 		alloedFeesDenoms = fees
 	} else {
 		for _, fee := range fees {
-			if slices.Contains(allowedDenoms, fee.Denom) {
-				alloedFeesDenoms = alloedFeesDenoms.Add(fee)
+			for _, allowedDenom := range allowedDenoms {
+				if fee.Denom == allowedDenom {
+					alloedFeesDenoms = alloedFeesDenoms.Add(fee)
+					break
+				}
 			}
 		}
 	}

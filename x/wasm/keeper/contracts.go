@@ -1,8 +1,9 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/terra-money/core/v2/x/wasm/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (k Keeper) GetExecutedContractAddresses(ctx sdk.Context) (contracts types.ExecutedContracts, found bool) {

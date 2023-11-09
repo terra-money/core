@@ -1,10 +1,11 @@
 package post
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	feesharepost "github.com/terra-money/core/v2/x/feeshare/post"
 	customwasmkeeper "github.com/terra-money/core/v2/x/wasm/keeper"
 	wasmpost "github.com/terra-money/core/v2/x/wasm/post"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type HandlerOptions struct {

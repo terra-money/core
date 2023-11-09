@@ -1,9 +1,8 @@
 package keeper
 
 import (
-	"slices"
-
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -83,10 +82,11 @@ func (k Keeper) AfterExecuteContract(ctx sdk.Context, msg *types.MsgExecuteContr
 			}
 			// if the contract address has already been
 			// added just skip it to avoid duplicates
-			if slices.Contains(contractAddresses, attr.Value) {
-				continue
+			for _, item := range contractAddresses {
+				if item == attr.Value {
+					continue
+				}
 			}
-
 			contractAddresses = append(contractAddresses, attr.Value)
 		}
 	}

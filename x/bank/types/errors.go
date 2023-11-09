@@ -4,6 +4,7 @@ package types
 
 import (
 	sdkerrors "cosmossdk.io/errors"
+
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 

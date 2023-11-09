@@ -1,6 +1,6 @@
 <p>&nbsp;</p>
 <p align="center">
-    <a href="https://terra.money/"><img src="core_logo.svg" width=500>
+    <a href="https://terra.money/"><img src="docs/core_logo.svg" width=500>
     </a>
 </p>
 
@@ -98,7 +98,7 @@ If you are interested in contributing to the Terra Core source code, please revi
 
 <p>&nbsp;</p>
 <p align="center">
-    <a href="https://terra.money/"><img src="https://assets.website-files.com/611153e7af981472d8da199c/61794f2b6b1c7a1cb9444489_symbol-terra-blue.svg" align="center" width=200/></a>
+    <a href="https://terra.money/"><img src="docs/terra_logo.svg" align="center" width=200/></a>
     <br />
     <br />
     © 2023 Terraform Labs, PTE LTD

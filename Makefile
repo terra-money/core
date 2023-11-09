@@ -328,11 +328,16 @@ lint:
 
 lint-fix:
 	golangci-lint run --fix --out-format=tab --issues-exit-code=0
-	
-.PHONY: lint lint-fix
 
-format:
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' -not -path "./_build/*" | xargs gofmt -w -s
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' -not -path "./_build/*" | xargs misspell -w
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' -not -path "./_build/*" | xargs goimports -w -local github.com/cosmos/cosmos-sdk
-.PHONY: format
+format-tools:
+	go install mvdan.cc/gofumpt@latest
+	go install github.com/client9/misspell/cmd/misspell@latest
+	go install golang.org/x/tools/cmd/goimports@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+format: format-tools
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*statik*" -not -name '*.pb.go' | xargs gofmt -w -s
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*statik*" -not -name '*.pb.go' | xargs misspell -w
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*statik*" -not -name '*.pb.go' | xargs goimports -w -local github.com/cosmos/cosmos-sdk
+
+.PHONY: lint format-tools format

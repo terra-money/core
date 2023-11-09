@@ -8,8 +8,9 @@ import (
 	"path/filepath"
 	"reflect" // #nosec G702
 
-	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	"github.com/prometheus/client_golang/prometheus"
+
+	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/terra-money/core/v2/app/keepers"
@@ -27,6 +28,9 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec/types"
+
+	custombankmodule "github.com/terra-money/core/v2/x/bank"
+	customwasmodule "github.com/terra-money/core/v2/x/wasm"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
@@ -52,8 +56,6 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/evidence"
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
-	custombankmodule "github.com/terra-money/core/v2/x/bank"
-	customwasmodule "github.com/terra-money/core/v2/x/wasm"
 
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"

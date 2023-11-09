@@ -11,8 +11,9 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/simulation"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 
-	"github.com/cosmos/cosmos-sdk/types/module"
 	customwasmkeeper "github.com/terra-money/core/v2/x/wasm/keeper"
+
+	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
 // AppModule implements an application module for the wasm module.
