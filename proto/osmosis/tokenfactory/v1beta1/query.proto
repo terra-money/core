@@ -16,8 +16,10 @@ service Query {
     option (google.api.http).get = "/osmosis/tokenfactory/v1beta1/params";
   }
 
-  // DenomAuthorityMetadata defines a gRPC query method for fetching
-  // DenomAuthorityMetadata for a particular denom.
+  // Given the denom, returns the authority metadata for the denom.
+  // This method can receive both the denom encoded to URL (for the LCD requests)
+  // and the denom not encoded:
+  // e.g. factory%2Fterra1v0eee20gjl68fuk0chyrkch2z7suw2mhg3wkxf%2Futoken931
   rpc DenomAuthorityMetadata(QueryDenomAuthorityMetadataRequest)
       returns (QueryDenomAuthorityMetadataResponse) {
     option (google.api.http).get =

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"net/url"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -19,6 +20,10 @@ func (k Keeper) Params(ctx context.Context, req *types.QueryParamsRequest) (*typ
 
 func (k Keeper) DenomAuthorityMetadata(ctx context.Context, req *types.QueryDenomAuthorityMetadataRequest) (*types.QueryDenomAuthorityMetadataResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	decodedDenom, err := url.QueryUnescape(req.Denom)
+	if err == nil {
+		req.Denom = decodedDenom
+	}
 
 	authorityMetadata, err := k.GetAuthorityMetadata(sdkCtx, req.GetDenom())
 	if err != nil {
