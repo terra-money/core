@@ -1,4 +1,4 @@
-import { getMnemonics, blockInclusion, getLCDClient } from "../helpers";
+import { getMnemonics, blockInclusion, getLCDClient } from "../../helpers";
 import { Coins, Fee, MnemonicKey, MsgExecuteContract, MsgInstantiateContract, MsgRegisterFeeShare, MsgStoreCode } from "@terra-money/feather.js";
 import fs from "fs";
 import path from 'path';
@@ -20,7 +20,7 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
             let tx = await wallet.createAndSignTx({
                 msgs: [new MsgStoreCode(
                     feeshareAccountAddress,
-                    fs.readFileSync(path.join(__dirname, "/../contracts/reflect.wasm")).toString("base64"),
+                    fs.readFileSync(path.join(__dirname, "/../../contracts/reflect.wasm")).toString("base64"),
                 )],
                 chainID: "test-1",
             });
@@ -47,7 +47,7 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
             result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
             await blockInclusion();
             txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
-            contractAddress = txResult.logs[0].eventsByType.instantiate._contract_address[0];
+            contractAddress = txResult.logs[0].events[4].attributes[0].value;
             expect(contractAddress).toBeDefined();
         }
         catch (e) {
@@ -146,8 +146,6 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
 
             // Check the tx logs have the expected events
             txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
-            console.log(result.txhash)
-            console.log(JSON.stringify(txResult.logs))
             expect(txResult.logs[0].events)
                 .toMatchObject([{
                     "type": "message",

@@ -1,4 +1,4 @@
-import { getLCDClient, getMnemonics, blockInclusion, votingPeriod } from "../helpers";
+import { getLCDClient, getMnemonics, blockInclusion, votingPeriod } from "../../helpers";
 import { Coin, MsgTransfer, MsgCreateAlliance, Coins, MsgVote, Fee, MsgAllianceDelegate, MsgClaimDelegationRewards, MsgAllianceUndelegate, MsgDeleteAlliance, MsgSubmitProposal } from "@terra-money/feather.js";
 import { VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
 import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
