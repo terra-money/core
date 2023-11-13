@@ -1131,8 +1131,8 @@ github.com/terra-money/cosmos-sdk v0.47.5-terra.2 h1:wMqM+qGsymt/gPnl+51y/ADGXPV
 github.com/terra-money/cosmos-sdk v0.47.5-terra.2/go.mod h1:EHwCeN9IXonsjKcjpS12MqeStdZvIdxt3VYXhus3G3c=
 github.com/terra-money/ledger-terra-go v0.11.2 h1:BVXZl+OhJOri6vFNjjVaTabRLApw9MuG7mxWL4V718c=
 github.com/terra-money/ledger-terra-go v0.11.2/go.mod h1:ClJ2XMj1ptcnONzKH+GhVPi7Y8pXIT+UzJ0TNt0tfZE=
-github.com/terra-money/wasmd v0.43.0-terra-rc1 h1:GFQCuQZN4yhzGegI03fiefGAe+wQ56x5pn5rbKxHlDE=
-github.com/terra-money/wasmd v0.43.0-terra-rc1/go.mod h1:gpri8YvkRErBz+qDme5jOThGZmSlHfyN532bWibXOl4=
+github.com/terra-money/wasmd v0.43.0-terra h1:gxcnlW+0GsEa6qM/e7rVEiRFMiuPY/1ROw9o5cAetsw=
+github.com/terra-money/wasmd v0.43.0-terra/go.mod h1:gpri8YvkRErBz+qDme5jOThGZmSlHfyN532bWibXOl4=
 github.com/tidwall/btree v1.6.0 h1:LDZfKfQIBHGHWSwckhXI0RPSXzlo+KYdjK7FWSqOzzg=
 github.com/tidwall/btree v1.6.0/go.mod h1:twD9XRA5jj9VUQGELzDO4HPQTNJsoWWfYEL+EUQ2cKY=
 github.com/tidwall/gjson v1.12.1/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
