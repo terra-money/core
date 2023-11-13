@@ -92,12 +92,15 @@ func (fsd FeeSharePayoutDecorator) FeeSharePayout(ctx sdk.Context, txFees sdk.Co
 		if err != nil {
 			return err
 		}
-		ctx.EventManager().EmitTypedEvent(
+		err := ctx.EventManager().EmitTypedEvent(
 			&feeshare.FeePayoutEvent{
 				WithdrawAddress: withdrawerAddrs.String(),
 				FeesPaid:        feeToBePaid,
 			},
 		)
+		if err != nil {
+			return err
+		}
 	}
 
 	return err

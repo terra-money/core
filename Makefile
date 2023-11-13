@@ -329,6 +329,9 @@ lint:
 lint-fix:
 	golangci-lint run --fix --out-format=tab --issues-exit-code=0
 
+lint-docker:
+	docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:latest golangci-lint run --timeout 10m
+
 format-tools:
 	go install mvdan.cc/gofumpt@latest
 	go install github.com/client9/misspell/cmd/misspell@latest
@@ -340,4 +343,4 @@ format: format-tools
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*statik*" -not -name '*.pb.go' | xargs misspell -w
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*statik*" -not -name '*.pb.go' | xargs goimports -w -local github.com/cosmos/cosmos-sdk
 
-.PHONY: lint format-tools format
+.PHONY: lint  lint-fix lint-docker format-tools format
