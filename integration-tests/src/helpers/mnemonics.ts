@@ -39,9 +39,9 @@ export function getMnemonics() {
     let icaMnemonic = new MnemonicKey({
         mnemonic: "unit question bulk desk slush answer share bird earth brave book wing special gorilla ozone release permit mercy luxury version advice impact unfair drama"
     })
-    // let mnemonic = new MnemonicKey({
-    //     mnemonic: "year aim panel oyster sunny faint dress skin describe chair guilt possible venue pottery inflict mass debate poverty multiply pulse ability purse situate inmate"
-    // })
+    let tokenFactoryMnemonic = new MnemonicKey({
+        mnemonic: "year aim panel oyster sunny faint dress skin describe chair guilt possible venue pottery inflict mass debate poverty multiply pulse ability purse situate inmate"
+    })
 
     return {
         val1,
@@ -54,6 +54,7 @@ export function getMnemonics() {
         pobMnemonic1,
         genesisVesting,
         genesisVesting1,
-        icaMnemonic
+        icaMnemonic,
+        tokenFactoryMnemonic
     }
 }

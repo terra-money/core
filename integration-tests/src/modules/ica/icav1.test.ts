@@ -1,5 +1,5 @@
 import { AccAddress, Coin, MsgTransfer, MsgSend, Coins } from "@terra-money/feather.js";
-import { blockInclusion, getLCDClient, getMnemonics } from "../helpers";
+import { blockInclusion, getLCDClient, getMnemonics } from "../../helpers";
 import { MsgRegisterInterchainAccount, MsgSendTx } from "@terra-money/feather.js/dist/core/ica/controller/v1/msgs";
 import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
 import Long from "long";

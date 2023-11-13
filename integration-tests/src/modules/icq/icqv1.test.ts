@@ -1,4 +1,4 @@
-import { getLCDClient } from "../helpers";
+import { getLCDClient } from "../../helpers";
 
 describe("ICQ Module (https://github.com/cosmos/ibc-apps/tree/main/modules/async-icq)", () => {
     // Prepare environment clients, accounts and wallets

@@ -1,4 +1,4 @@
-import { getMnemonics, getLCDClient, blockInclusion } from "../helpers";
+import { getMnemonics, getLCDClient, blockInclusion } from "../../helpers";
 import { ContinuousVestingAccount, Coins, MnemonicKey, MsgCreateVestingAccount, Coin } from "@terra-money/feather.js";
 import moment from "moment";
 

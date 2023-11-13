@@ -1,5 +1,5 @@
 import { Coins, Fee, MsgSend } from "@terra-money/feather.js";
-import { getMnemonics, getLCDClient, blockInclusion } from "../helpers";
+import { getMnemonics, getLCDClient, blockInclusion } from "../../helpers";
 import { MsgAuctionBid } from "@terra-money/feather.js/dist/core/pob/MsgAuctionBid";
 
 describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
