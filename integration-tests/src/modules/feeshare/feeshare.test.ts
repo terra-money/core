@@ -12,7 +12,7 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
     const randomAccountAddress = new MnemonicKey().accAddress("terra");
     let contractAddress: string;
 
-    // Reat the reflect contract, store on chain, 
+    // Read the reflect contract, store on chain, 
     // instantiate to be used in the following tests
     // and finally save the contract address.
     beforeAll(async () => {
