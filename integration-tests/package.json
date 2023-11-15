@@ -4,7 +4,7 @@
   "description": "Integration tests for Core using feather.js",
   "main": "index.ts",
   "scripts": {
-    "test": "jest --maxConcurrency=4"
+    "test": "jest"
   },
   "repository": {
     "type": "git",

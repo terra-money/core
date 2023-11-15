@@ -5,4 +5,5 @@ module.exports = {
   testMatch: ['**/*.test.ts'],
   verbose: true,
   testTimeout: 30000,
+  maxConcurrency: 4,
 };
