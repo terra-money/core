@@ -188,6 +188,7 @@ require (
 replace (
 	// This is a temporary fix since the latest version updated some function signatures. To remove when updating to cosmos 47
 	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d
+	github.com/CosmWasm/wasmd => github.com/terra-money/wasmd v0.43.0-terra
 	github.com/cosmos/cosmos-sdk => github.com/terra-money/cosmos-sdk v0.47.5-terra.2
 	github.com/cosmos/ibc-go/v7 => github.com/terra-money/ibc-go/v7 v7.0.0-20231025094952-d0d14bc2e7ae
 	github.com/cosmos/ledger-cosmos-go => github.com/terra-money/ledger-terra-go v0.11.2
