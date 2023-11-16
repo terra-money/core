@@ -1,4 +1,5 @@
 import { Coin, Coins, MsgInstantiateContract, MsgStoreCode, MsgTransfer } from "@terra-money/feather.js";
+import { deriveIbcHooksSender } from "@terra-money/feather.js/dist/core/ibc-hooks";
 import { ibcTransfer, getMnemonics, getLCDClient, blockInclusion } from "../../helpers";
 import fs from "fs";
 import path from 'path';
@@ -55,27 +56,80 @@ describe("IbcHooks Module (github.com/cosmos/ibc-apps/modules/ibc-hooks/v7) ", (
 
     describe("Must send IBC messages from chain 2 to chain 1", () => {
         test('must incrementing the counter', async () => {
-            try {
-                const resw = await LCD.chain1.wasm.contractQuery(
-                    contractAddress,
-                    {
-                        "get_count": {
-                            "addr": walletAddress
-                        }
+            let tx = await chain2Wallet.createAndSignTx({
+                msgs: [
+                    new MsgTransfer(
+                        "transfer",
+                        "channel-0",
+                        Coin.fromString("1uluna"),
+                        walletAddress,
+                        contractAddress,
+                        undefined,
+                        moment.utc().add(1, "minute").unix().toString() + "000000000",
+                        `{"wasm":{"contract": "${contractAddress}" ,"msg": {"increment": {}}}}`
+                    ),
+                    new MsgTransfer(
+                        "transfer",
+                        "channel-0",
+                        Coin.fromString("1uluna"),
+                        walletAddress,
+                        contractAddress,
+                        undefined,
+                        moment.utc().add(1, "minute").unix().toString() + "000000000",
+                        `{"wasm":{"contract": "${contractAddress}" ,"msg": {"increment": {}}}}`
+                    ),
+                ],
+                chainID: "test-2",
+            });
+            let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
+            await ibcTransfer();
+            let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;
+            expect(txResult.logs[0].eventsByType.ibc_transfer)
+                .toStrictEqual({
+                    "sender": [walletAddress],
+                    "receiver": [contractAddress],
+                    "amount": ["1"],
+                    "denom": ["uluna"],
+                    "memo": [`{"wasm":{"contract": "${contractAddress}" ,"msg": {"increment": {}}}}`]
+                });
+
+            const res = await LCD.chain1.wasm.contractQuery(
+                contractAddress,
+                {
+                    "get_count": {
+                        "addr": deriveIbcHooksSender("channel-0", walletAddress, "terra")
                     }
-                );
-                console.log(JSON.stringify(resw));
+                }
+            );
+            expect(res)
+                .toStrictEqual({ "count": 1 });
+        });
+    })
+
+    describe("Must send IBC messages from chain 2 to chain 1", ()=> {
+        test('must incrementing the counter with a callback', async () => {
+            try {
                 let tx = await chain2Wallet.createAndSignTx({
                     msgs: [
                         new MsgTransfer(
                             "transfer",
                             "channel-0",
-                            Coin.fromString("10000000uluna"),
+                            Coin.fromString("1uluna"),
                             walletAddress,
                             contractAddress,
                             undefined,
-                            moment.utc().add(1.5, "day").unix().toString() + "000000000",
-                            `{"wasm":{"contract": "${contractAddress}" ,"msg": {"increment": {}}}}`
+                            moment.utc().add(1,"minute").unix().toString() + "000000000",
+                            `{"ibc_callback": "${contractAddress}"}`
+                        ),
+                        new MsgTransfer(
+                            "transfer",
+                            "channel-0",
+                            Coin.fromString("1uluna"),
+                            walletAddress,
+                            contractAddress,
+                            undefined,
+                            moment.utc().add(1,"minute").unix().toString() + "000000000",
+                            `{"ibc_callback": "${contractAddress}"}`
                         ),
                     ],
                     chainID: "test-2",
@@ -87,20 +141,23 @@ describe("IbcHooks Module (github.com/cosmos/ibc-apps/modules/ibc-hooks/v7) ", (
                     .toStrictEqual({
                         "sender": [walletAddress],
                         "receiver": [contractAddress],
-                        "amount": ["10000000"],
+                        "amount": ["1"],
                         "denom": ["uluna"],
-                        "memo": [`{"wasm":{"contract": "${contractAddress}" ,"msg": {"increment": {}}}}`]
+                        "memo": [`{"ibc_callback": "${contractAddress}"}`]
                     });
 
                 const res = await LCD.chain1.wasm.contractQuery(
                     contractAddress,
                     {
                         "get_count": {
-                            "addr": walletAddress
+                            "addr": deriveIbcHooksSender("channel-0", walletAddress, "terra")
                         }
                     }
                 );
-                console.log(JSON.stringify(res));
+                await ibcTransfer();
+                await ibcTransfer();
+                expect(res)
+                    .toStrictEqual({ "count": 22 });
             }
             catch (e) {
                 console.log(e)
