@@ -1,30 +1,32 @@
 package app_test
 
 import (
-	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
 	"os"
 	"testing"
 
+	dbm "github.com/cometbft/cometbft-db"
+	"github.com/cometbft/cometbft/libs/log"
+
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/stretchr/testify/require"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/terra-money/core/v2/app"
 	"github.com/terra-money/core/v2/app/wasmconfig"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/simapp"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
+	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
 )
 
 func init() {
-	simapp.GetSimulatorFlags()
+	simcli.GetSimulatorFlags()
 }
 
-type SimApp interface {
+type terraApp interface {
 	app.TerraApp
 	GetBaseApp() *baseapp.BaseApp
 	AppCodec() codec.Codec
@@ -43,10 +45,12 @@ type SimApp interface {
 // Running as go benchmark test:
 // `go test -benchmem -run=^$ -bench ^BenchmarkSimulation ./app -NumBlocks=200 -BlockSize 50 -Commit=true -Verbose=true -Enabled=true`
 func BenchmarkSimulation(b *testing.B) {
-	simapp.FlagEnabledValue = true
-	simapp.FlagCommitValue = true
+	config := simcli.NewConfigFromFlags()
+	simcli.FlagEnabledValue = true
+	simcli.FlagCommitValue = true
+	enabled := simcli.FlagEnabledValue
 
-	config, db, dir, logger, _, err := simapp.SetupSimulation("goleveldb-app-sim", "Simulation")
+	db, dir, logger, _, err := simtestutil.SetupSimulation(config, "goleveldb-app-sim", "Simulation", true, enabled)
 	require.NoError(b, err, "simulation setup failed")
 
 	b.Cleanup(func() {
@@ -57,7 +61,7 @@ func BenchmarkSimulation(b *testing.B) {
 
 	encoding := app.MakeEncodingConfig()
 
-	simApp := app.NewTerraApp(
+	terraApp := app.NewTerraApp(
 		logger,
 		db,
 		nil,
@@ -66,7 +70,7 @@ func BenchmarkSimulation(b *testing.B) {
 		app.DefaultNodeHome,
 		0,
 		encoding,
-		simapp.EmptyAppOptions{},
+		simtestutil.EmptyAppOptions{},
 		wasmconfig.DefaultConfig(),
 	)
 
@@ -74,22 +78,22 @@ func BenchmarkSimulation(b *testing.B) {
 	_, simParams, simErr := simulation.SimulateFromSeed(
 		b,
 		os.Stdout,
-		simApp.BaseApp,
-		simapp.AppStateFn(simApp.AppCodec(), simApp.SimulationManager()),
+		terraApp.BaseApp,
+		simtestutil.AppStateFn(terraApp.AppCodec(), terraApp.SimulationManager(), terraApp.DefaultGenesis()),
 		simulationtypes.RandomAccounts,
-		simapp.SimulationOperations(simApp, simApp.AppCodec(), config),
-		simApp.ModuleAccountAddrs(),
+		simtestutil.SimulationOperations(terraApp, terraApp.AppCodec(), config),
+		terraApp.ModuleAccountAddrs(),
 		config,
-		simApp.AppCodec(),
+		terraApp.AppCodec(),
 	)
 
 	// export state and simParams before the simulation error is checked
-	err = simapp.CheckExportSimulation(simApp, config, simParams)
+	err = simtestutil.CheckExportSimulation(terraApp, config, simParams)
 	require.NoError(b, err)
 	require.NoError(b, simErr)
 
 	if config.Commit {
-		simapp.PrintStats(db)
+		simtestutil.PrintStats(db)
 	}
 }
 
@@ -97,7 +101,7 @@ func TestSimulationManager(t *testing.T) {
 	db := dbm.NewMemDB()
 	encoding := app.MakeEncodingConfig()
 
-	simApp := app.NewTerraApp(
+	terraApp := app.NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db,
 		nil,
@@ -106,9 +110,9 @@ func TestSimulationManager(t *testing.T) {
 		app.DefaultNodeHome,
 		0,
 		encoding,
-		simapp.EmptyAppOptions{},
+		simtestutil.EmptyAppOptions{},
 		wasmconfig.DefaultConfig(),
 	)
-	sm := simApp.SimulationManager()
+	sm := terraApp.SimulationManager()
 	require.NotNil(t, sm)
 }

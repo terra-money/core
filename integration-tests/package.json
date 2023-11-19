@@ -1,0 +1,37 @@
+{
+  "name": "@terra-money/core-integration-tests",
+  "version": "v2.6.2",
+  "description": "Integration tests for Core using feather.js",
+  "main": "index.ts",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/terra-money/core.git"
+  },
+  "keywords": [
+    "integration",
+    "tests",
+    "blockchain",
+    "core",
+    "terra"
+  ],
+  "author": "Terra Engineering",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/terra-money/core/issues"
+  },
+  "homepage": "https://github.com/terra-money/core#readme",
+  "devDependencies": {
+    "@types/jest": "^29.5.5",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@terra-money/feather.js": "^2.0.0-beta.1",
+    "@terra-money/terra.proto": "^4.0.1",
+    "moment": "^2.29.4"
+  }
+}

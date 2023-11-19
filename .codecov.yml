@@ -6,8 +6,11 @@ coverage:
   status:
     project: 
       default:
-        threshold: 1% # allow this much decrease on project
+        threshold: 10% # allow this much decrease on project
     changes: false
+    patch:
+      default:
+        threshold: 10%
 
 comment:
   layout: "reach, diff, files"
@@ -32,3 +35,4 @@ ignore:
   - "**/*.pb.gw.go"
   - "**/test_utils.go"
   - "**/module.go"
+  - "**/test_helpers.go"

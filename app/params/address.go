@@ -20,5 +20,6 @@ func RegisterAddressesConfig() *sdk.Config {
 	sdkConfig.SetBech32PrefixForValidator(validatorAddressPrefix, validatorPubKeyPrefix)
 	sdkConfig.SetBech32PrefixForConsensusNode(consNodeAddressPrefix, consNodePubKeyPrefix)
 	sdkConfig.SetAddressVerifier(wasmtypes.VerifyAddressLen())
-	return sdkConfig.Seal()
+
+	return sdkConfig
 }

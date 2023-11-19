@@ -9077,7 +9077,7 @@
                         width: "30",
                         src: f.default,
                         alt: "Swagger UI"
-                    }), c.default.createElement("span", null, "swagger")), c.default.createElement("form", {
+                    }), c.default.createElement("span", null, "Terra Blockchain")), c.default.createElement("form", {
                         className: "download-url-wrapper",
                         onSubmit: h
                     }, p.map(function(t, e) {

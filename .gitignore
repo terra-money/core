@@ -21,7 +21,7 @@ tools/bin/*
 examples/build/*
 docs/_build
 tools-stamp
-
+tmp-swagger-gen
 # Data - ideally these don't exist
 examples/basecoin/app/data
 baseapp/data/*
@@ -34,6 +34,9 @@ mytestnet
 coverage.txt
 profile.out
 sim_log_file
+
+_build
+.testnet
 
 # Vagrant
 .vagrant/
@@ -56,3 +59,4 @@ dependency-graph.png
 # Tests
 scripts/tests/ibc-hooks/counter/target
 scripts/tests/vesting-accounts/.vesting-periods.json
+node_modules

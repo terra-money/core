@@ -3,7 +3,6 @@ package app
 import (
 	"encoding/json"
 
-	tokenfactorytypes "github.com/CosmWasm/wasmd/x/tokenfactory/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
@@ -11,11 +10,13 @@ import (
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	icacontrollertypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller/types"
-	icagenesistypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/genesis/types"
-	icahosttypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/host/types"
-	icatypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/types"
+	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
+	icagenesistypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/genesis/types"
+	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
+	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	buildertypes "github.com/skip-mev/pob/x/builder/types"
 	"github.com/terra-money/core/v2/app/config"
+	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
 // GenesisState - The genesis state of the blockchain is represented here as a map of raw json
@@ -47,7 +48,7 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 
 	var govGenState govtypesv1.GenesisState
 	cdc.MustUnmarshalJSON(genState[govtypes.ModuleName], &govGenState)
-	govGenState.DepositParams.MinDeposit[0].Denom = bondDenom
+	govGenState.Params.MinDeposit[0].Denom = bondDenom
 	genState[govtypes.ModuleName] = cdc.MustMarshalJSON(&govGenState)
 
 	var mintGenState minttypes.GenesisState
@@ -59,6 +60,12 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	cdc.MustUnmarshalJSON(genState[tokenfactorytypes.ModuleName], &tokenFactoryGenState)
 	tokenFactoryGenState.Params.DenomCreationFee = sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(10000000)))
 	genState[tokenfactorytypes.ModuleName] = cdc.MustMarshalJSON(&tokenFactoryGenState)
+
+	var builderGenState buildertypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[buildertypes.ModuleName], &builderGenState)
+	builderGenState.Params.ReserveFee = sdk.NewCoin(bondDenom, sdk.NewInt(1))
+	builderGenState.Params.MinBidIncrement = sdk.NewCoin(bondDenom, sdk.NewInt(1))
+	genState[buildertypes.ModuleName] = cdc.MustMarshalJSON(&builderGenState)
 
 	return genState
 }
