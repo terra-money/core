@@ -508,7 +508,9 @@ func NewTerraAppKeepers(
 		keepers.BankKeeper,
 		keepers.StakingKeeper,
 		baseApp.MsgServiceRouter(),
-		govtypes.DefaultConfig(),
+		govtypes.Config{
+			MaxMetadataLen: 5100, // define the length of the governance proposal's title and description
+		},
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
