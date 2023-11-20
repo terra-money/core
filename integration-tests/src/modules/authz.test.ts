@@ -18,11 +18,7 @@ describe("Authz Module (https://github.com/terra-money/cosmos-sdk/tree/release/v
 
     test('Must register the granter', async () => {
         let tx = await granterWallet.createAndSignTx({
-            msgs: [new MsgDelegate(
-                granterAddr,
-                val2Addr,
-                Coin.fromString("1000000uluna"),
-            ),new MsgGrantAuthorization(
+            msgs: [new MsgGrantAuthorization(
                 granterAddr,
                 granteeAddr,
                 new AuthorizationGrant(
@@ -85,7 +81,68 @@ describe("Authz Module (https://github.com/terra-money/cosmos-sdk/tree/release/v
                 let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
                 await blockInclusion();
 
-                console.log(result);
+                let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;
+                let eventsList = txResult.logs[0].events;
+                expect(eventsList[0])
+                    .toStrictEqual({
+                        "type": "message",
+                        "attributes": [{
+                            "key": "action",
+                            "value": "/cosmos.authz.v1beta1.MsgExec"
+                        }, {
+                            "key": "sender",
+                            "value": "terra1v0eee20gjl68fuk0chyrkch2z7suw2mhg3wkxf"
+                        }, {
+                            "key": "module",
+                            "value": "authz"
+                        }]
+                    });
+                expect(eventsList[1])
+                    .toStrictEqual({
+                            "type": "cosmos.authz.v1beta1.EventRevoke",
+                            "attributes": [{
+                                "key": "grantee",
+                                "value": "\"terra1v0eee20gjl68fuk0chyrkch2z7suw2mhg3wkxf\""
+                            }, {
+                                "key": "granter",
+                                "value": "\"terra120rzk7n6cd2vufkmwrat34adqh0rgca9tkyfe5\""
+                            }, {
+                                "key": "msg_type_url",
+                                "value": "\"/cosmos.staking.v1beta1.MsgDelegate\""
+                            }]
+                        });
+                expect(eventsList[5])
+                    .toStrictEqual({
+                        "type": "message",
+                        "attributes": [{
+                            "key": "sender",
+                            "value": "terra1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8pm7utl"
+                        }, {
+                            "key": "authz_msg_index",
+                            "value": "0"
+                        }]
+                    });
+
+                expect(eventsList[9])
+                    .toStrictEqual({
+                        "type": "delegate",
+                        "attributes": [{
+                            "key": "validator",
+                            "value": "terravaloper1llgzglr9yyy4gyjh8p5kepgm5wyl358de47rqk"
+                        }, {
+                            "key": "delegator",
+                            "value": "terra120rzk7n6cd2vufkmwrat34adqh0rgca9tkyfe5"
+                        }, {
+                            "key": "amount",
+                            "value": "1000000uluna"
+                        }, {
+                            "key": "new_shares",
+                            "value": "1000000.000000000000000000"
+                        }, {
+                            "key": "authz_msg_index",
+                            "value": "0"
+                        }]
+                    });
             }
             catch (e) {
                 console.log(e)

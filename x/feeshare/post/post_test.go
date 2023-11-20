@@ -85,8 +85,8 @@ func (suite *AnteTestSuite) TestCalculateFee() {
 	testCases := []struct {
 		name               string
 		incomingFee        sdk.Coins
-		govPercent         sdk.Dec
-		numContracts       int
+		devShares          sdk.Dec
+		numOfdevs          int
 		allowdDenoms       []string
 		expectedFeePayment sdk.Coins
 	}{
@@ -173,7 +173,7 @@ func (suite *AnteTestSuite) TestCalculateFee() {
 	}
 
 	for _, tc := range testCases {
-		feeToBePaid := post.CalculateFee(tc.incomingFee, tc.govPercent, tc.numContracts, tc.allowdDenoms)
+		feeToBePaid := post.CalculateFee(tc.incomingFee, tc.devShares, tc.numOfdevs, tc.allowdDenoms)
 
 		suite.Require().Equal(tc.expectedFeePayment, feeToBePaid, tc.name)
 	}

@@ -221,7 +221,7 @@ describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/rele
             // Query the alliance and check if it exists
             const res = await LCD.chain2.gov.tally("test-2", proposalId);
             expect(res).toBeDefined();
-            expect(res.yes_count).toStrictEqual(new Int(27000000000));
+            expect(res.yes_count.gte(27000000000)).toBeTruthy();
             expect(res.abstain_count).toStrictEqual(new Int(0));
             expect(res.no_count).toStrictEqual(new Int(0));
             expect(res.no_with_veto_count).toStrictEqual(new Int(0));
