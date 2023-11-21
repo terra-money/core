@@ -36,10 +36,11 @@ import (
 type AppTestSuite struct {
 	suite.Suite
 
-	App         *app.TerraApp
-	Ctx         sdk.Context
-	QueryHelper *baseapp.QueryServiceTestHelper
-	TestAccs    []sdk.AccAddress
+	App            *app.TerraApp
+	Ctx            sdk.Context
+	QueryHelper    *baseapp.QueryServiceTestHelper
+	TestAccs       []sdk.AccAddress
+	EncodingConfig appparams.EncodingConfig
 }
 
 // Setup sets up basic environment for suite (App, Ctx, and test accounts)
@@ -62,6 +63,7 @@ func (s *AppTestSuite) Setup() {
 		simtestutil.EmptyAppOptions{},
 		wasmconfig.DefaultConfig(),
 	)
+	s.EncodingConfig = encCfg
 
 	s.Ctx = s.App.NewContext(true, tmproto.Header{Height: 1, Time: time.Now()})
 	s.QueryHelper = &baseapp.QueryServiceTestHelper{
@@ -78,6 +80,9 @@ func (s *AppTestSuite) Setup() {
 	s.Require().NoError(err)
 
 	err = s.App.Keepers.TokenFactoryKeeper.SetParams(s.Ctx, tokenfactorytypes.DefaultParams())
+	s.Require().NoError(err)
+
+	err = s.FundModule(authtypes.FeeCollectorName, sdk.NewCoins(sdk.NewCoin("uluna", sdk.NewInt(1000)), sdk.NewCoin("utoken", sdk.NewInt(500))))
 	s.Require().NoError(err)
 
 	s.App.Keepers.DistrKeeper.SetFeePool(s.Ctx, distrtypes.InitialFeePool())
