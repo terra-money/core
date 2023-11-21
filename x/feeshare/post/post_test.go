@@ -3,13 +3,20 @@ package ante_test
 import (
 	"testing"
 
+	errorsmod "cosmossdk.io/errors"
 	"github.com/stretchr/testify/suite"
+	"go.uber.org/mock/gomock"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 	app "github.com/terra-money/core/v2/app/app_test"
+	"github.com/terra-money/core/v2/app/post/mocks"
 	post "github.com/terra-money/core/v2/x/feeshare/post"
 	"github.com/terra-money/core/v2/x/feeshare/types"
+	customwasmtypes "github.com/terra-money/core/v2/x/wasm/types"
 )
 
 type AnteTestSuite struct {
@@ -44,6 +51,17 @@ func (suite *AnteTestSuite) TestGetWithdrawalAddressFromContract() {
 		{
 			"valid contract addresses",
 			[]string{"terra1jwyzzsaag4t0evnuukc35ysyrx9arzdde2kg9cld28alhjurtthq0prs2s"},
+			[]sdk.AccAddress{
+				sdk.MustAccAddressFromBech32("terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je"),
+			},
+			false,
+		},
+		{
+			"two valid contract addresses with one not registered",
+			[]string{
+				"terra1u3z42fpctuhh8mranz4tatacqhty6a8yk7l5wvj7dshsuytcms2qda4f5x", // not registered address
+				"terra1jwyzzsaag4t0evnuukc35ysyrx9arzdde2kg9cld28alhjurtthq0prs2s",
+			},
 			[]sdk.AccAddress{
 				sdk.MustAccAddressFromBech32("terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je"),
 			},
@@ -177,4 +195,331 @@ func (suite *AnteTestSuite) TestCalculateFee() {
 
 		suite.Require().Equal(tc.expectedFeePayment, feeToBePaid, tc.name)
 	}
+}
+
+func (suite *AnteTestSuite) TestPostHandler() {
+	suite.Setup()
+
+	// Create a mocked next post hanlder to assert the function being called.
+	ctrl := gomock.NewController(suite.T())
+	mockedPostDecorator := mocks.NewMockPostDecorator(ctrl)
+
+	// Register the feeshare contract...
+	suite.App.Keepers.FeeShareKeeper.SetFeeShare(suite.Ctx, types.FeeShare{
+		ContractAddress:   "terra1mdpvgjc8jmv60a4x68nggsh9w8uyv69sqls04a76m9med5hsqmwsse8sxa",
+		DeployerAddress:   "",
+		WithdrawerAddress: "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je",
+	})
+	// ... append the executed contract addresses in the wasm keeper ...
+	suite.App.Keepers.WasmKeeper.SetExecutedContractAddresses(suite.Ctx, customwasmtypes.ExecutedContracts{
+		ContractAddresses: []string{"terra1mdpvgjc8jmv60a4x68nggsh9w8uyv69sqls04a76m9med5hsqmwsse8sxa"},
+	})
+
+	// build a tx with a fee amount ...
+	txFee := sdk.NewCoins(sdk.NewCoin("uluna", sdk.NewInt(500)), sdk.NewCoin("utoken", sdk.NewInt(250)))
+	txBuilder := suite.EncodingConfig.TxConfig.NewTxBuilder()
+	txBuilder.SetFeeAmount(txFee)
+	txBuilder.SetMsgs(&wasmtypes.MsgExecuteContract{
+		Sender:   "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je",
+		Contract: "terra1mdpvgjc8jmv60a4x68nggsh9w8uyv69sqls04a76m9med5hsqmwsse8sxa",
+		Msg:      nil,
+		Funds:    nil,
+	})
+	// ... create the feeshare post handler ...
+	handler := post.NewFeeSharePayoutDecorator(
+		suite.App.Keepers.FeeShareKeeper,
+		suite.App.Keepers.BankKeeper,
+		suite.App.Keepers.WasmKeeper,
+	)
+	// Remove all events from the context to assert the events being added correctly.
+	suite.Ctx = suite.Ctx.WithEventManager(sdk.NewEventManager())
+
+	// Assert the next hanlder is called once
+	mockedPostDecorator.
+		EXPECT().
+		PostHandle(gomock.Any(), gomock.Any(), false, true, gomock.Any()).
+		Times(1)
+
+	// Execute the PostHandle function
+	_, err := handler.PostHandle(
+		suite.Ctx,
+		txBuilder.GetTx(),
+		false,
+		true,
+		func(ctx sdk.Context, tx sdk.Tx, simulate bool, success bool) (sdk.Context, error) {
+			return mockedPostDecorator.PostHandle(ctx, tx, simulate, success, nil)
+		},
+	)
+	suite.Require().NoError(err)
+	suite.Require().Equal(suite.Ctx.EventManager().ABCIEvents(),
+		[]abci.Event{
+			{
+				Type: "coin_spent",
+				Attributes: []abci.EventAttribute{
+					{Key: "spender", Value: "terra17xpfvakm2amg962yls6f84z3kell8c5lkaeqfa", Index: false},
+					{Key: "amount", Value: "250uluna,125utoken", Index: false},
+				},
+			},
+			{
+				Type: "coin_received",
+				Attributes: []abci.EventAttribute{
+					{Key: "receiver", Value: "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je", Index: false},
+					{Key: "amount", Value: "250uluna,125utoken", Index: false},
+				},
+			},
+			{
+				Type: "transfer",
+				Attributes: []abci.EventAttribute{
+					{Key: "recipient", Value: "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je", Index: false},
+					{Key: "sender", Value: "terra17xpfvakm2amg962yls6f84z3kell8c5lkaeqfa", Index: false},
+					{Key: "amount", Value: "250uluna,125utoken", Index: false},
+				},
+			},
+			{
+				Type: "message",
+				Attributes: []abci.EventAttribute{
+					{Key: "sender", Value: "terra17xpfvakm2amg962yls6f84z3kell8c5lkaeqfa", Index: false},
+				},
+			},
+			{
+				Type: "juno.feeshare.v1.FeePayoutEvent",
+				Attributes: []abci.EventAttribute{
+					{Key: "fees_paid", Value: "[{\"denom\":\"uluna\",\"amount\":\"250\"},{\"denom\":\"utoken\",\"amount\":\"125\"}]", Index: false},
+					{Key: "withdraw_address", Value: "\"terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je\"", Index: false},
+				},
+			},
+		})
+}
+
+func (suite *AnteTestSuite) TestDisabledPostHandle() {
+	suite.Setup()
+
+	// Create a mocked next post hanlder to assert the function being called.
+	ctrl := gomock.NewController(suite.T())
+	mockedPostDecorator := mocks.NewMockPostDecorator(ctrl)
+
+	// Disable the feeshare module...
+	err := suite.App.Keepers.FeeShareKeeper.SetParams(suite.Ctx, types.Params{
+		EnableFeeShare:  false,
+		DeveloperShares: sdk.MustNewDecFromStr("0.5"),
+		AllowedDenoms:   []string{},
+	})
+	suite.Require().NoError(err)
+
+	// build a tx with a fee amount ...
+	txFee := sdk.NewCoins(sdk.NewCoin("uluna", sdk.NewInt(500)), sdk.NewCoin("utoken", sdk.NewInt(250)))
+	txBuilder := suite.EncodingConfig.TxConfig.NewTxBuilder()
+	txBuilder.SetFeeAmount(txFee)
+	txBuilder.SetMsgs(&wasmtypes.MsgExecuteContract{})
+
+	// ... create the feeshare post handler ...
+	handler := post.NewFeeSharePayoutDecorator(
+		suite.App.Keepers.FeeShareKeeper,
+		suite.App.Keepers.BankKeeper,
+		suite.App.Keepers.WasmKeeper,
+	)
+
+	// Assert the next hanlder is called once
+	mockedPostDecorator.
+		EXPECT().
+		PostHandle(gomock.Any(), gomock.Any(), false, true, gomock.Any()).
+		Times(1)
+
+	// Execute the PostHandle function
+	_, err = handler.PostHandle(
+		suite.Ctx,
+		txBuilder.GetTx(),
+		false,
+		true,
+		func(ctx sdk.Context, tx sdk.Tx, simulate bool, success bool) (sdk.Context, error) {
+			return mockedPostDecorator.PostHandle(ctx, tx, simulate, success, nil)
+		},
+	)
+	suite.Require().NoError(err)
+}
+
+func (suite *AnteTestSuite) TestWithZeroFeesPostHandle() {
+	suite.Setup()
+
+	// Create a mocked next post hanlder to assert the function being called.
+	ctrl := gomock.NewController(suite.T())
+	mockedPostDecorator := mocks.NewMockPostDecorator(ctrl)
+
+	// Build a tx with a fee amount ...
+	txBuilder := suite.EncodingConfig.TxConfig.NewTxBuilder()
+
+	// ... create the feeshare post handler ...
+	handler := post.NewFeeSharePayoutDecorator(
+		suite.App.Keepers.FeeShareKeeper,
+		suite.App.Keepers.BankKeeper,
+		suite.App.Keepers.WasmKeeper,
+	)
+
+	// Assert the next hanlder is called once
+	mockedPostDecorator.
+		EXPECT().
+		PostHandle(gomock.Any(), gomock.Any(), false, true, gomock.Any()).
+		Times(1)
+
+	// Execute the PostHandle function
+	_, err := handler.PostHandle(
+		suite.Ctx,
+		txBuilder.GetTx(),
+		false,
+		true,
+		func(ctx sdk.Context, tx sdk.Tx, simulate bool, success bool) (sdk.Context, error) {
+			return mockedPostDecorator.PostHandle(ctx, tx, simulate, success, nil)
+		},
+	)
+	suite.Require().NoError(err)
+}
+
+func (suite *AnteTestSuite) TestPostHandlerWithEmptySmartContractStore() {
+	suite.Setup()
+
+	// Create a mocked next post hanlder to assert the function being called.
+	ctrl := gomock.NewController(suite.T())
+	mockedPostDecorator := mocks.NewMockPostDecorator(ctrl)
+
+	// Register the feeshare contract...
+	suite.App.Keepers.FeeShareKeeper.SetFeeShare(suite.Ctx, types.FeeShare{
+		ContractAddress:   "terra1mdpvgjc8jmv60a4x68nggsh9w8uyv69sqls04a76m9med5hsqmwsse8sxa",
+		DeployerAddress:   "",
+		WithdrawerAddress: "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je",
+	})
+
+	// build a tx with a fee amount ...
+	txFee := sdk.NewCoins(sdk.NewCoin("uluna", sdk.NewInt(500)), sdk.NewCoin("utoken", sdk.NewInt(250)))
+	txBuilder := suite.EncodingConfig.TxConfig.NewTxBuilder()
+	txBuilder.SetFeeAmount(txFee)
+	txBuilder.SetMsgs(&wasmtypes.MsgExecuteContract{
+		Sender:   "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je",
+		Contract: "terra1mdpvgjc8jmv60a4x68nggsh9w8uyv69sqls04a76m9med5hsqmwsse8sxa",
+		Msg:      nil,
+		Funds:    nil,
+	})
+	// ... create the feeshare post handler ...
+	handler := post.NewFeeSharePayoutDecorator(
+		suite.App.Keepers.FeeShareKeeper,
+		suite.App.Keepers.BankKeeper,
+		suite.App.Keepers.WasmKeeper,
+	)
+
+	// Assert the next hanlder is called once
+	mockedPostDecorator.
+		EXPECT().
+		PostHandle(gomock.Any(), gomock.Any(), false, true, gomock.Any()).
+		Times(1)
+
+	// Execute the PostHandle function
+	_, err := handler.PostHandle(
+		suite.Ctx,
+		txBuilder.GetTx(),
+		false,
+		true,
+		func(ctx sdk.Context, tx sdk.Tx, simulate bool, success bool) (sdk.Context, error) {
+			return mockedPostDecorator.PostHandle(ctx, tx, simulate, success, nil)
+		},
+	)
+	suite.Require().NoError(err)
+}
+
+func (suite *AnteTestSuite) TestPostHandlerNoSmartContractExecuted() {
+	suite.Setup()
+
+	// Create a mocked next post hanlder to assert the function being called.
+	ctrl := gomock.NewController(suite.T())
+	mockedPostDecorator := mocks.NewMockPostDecorator(ctrl)
+
+	// Register the feeshare contract...
+	suite.App.Keepers.FeeShareKeeper.SetFeeShare(suite.Ctx, types.FeeShare{
+		ContractAddress:   "terra1mdpvgjc8jmv60a4x68nggsh9w8uyv69sqls04a76m9med5hsqmwsse8sxa",
+		DeployerAddress:   "",
+		WithdrawerAddress: "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je",
+	})
+	// ... create the store key ...
+	suite.App.Keepers.WasmKeeper.SetExecutedContractAddresses(suite.Ctx, customwasmtypes.ExecutedContracts{
+		ContractAddresses: []string{},
+	})
+
+	// build a tx with a fee amount ...
+	txFee := sdk.NewCoins(sdk.NewCoin("uluna", sdk.NewInt(500)), sdk.NewCoin("utoken", sdk.NewInt(250)))
+	txBuilder := suite.EncodingConfig.TxConfig.NewTxBuilder()
+	txBuilder.SetFeeAmount(txFee)
+	txBuilder.SetMsgs(&wasmtypes.MsgExecuteContract{
+		Sender:   "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je",
+		Contract: "terra1mdpvgjc8jmv60a4x68nggsh9w8uyv69sqls04a76m9med5hsqmwsse8sxa",
+		Msg:      nil,
+		Funds:    nil,
+	})
+	// ... create the feeshare post handler ...
+	handler := post.NewFeeSharePayoutDecorator(
+		suite.App.Keepers.FeeShareKeeper,
+		suite.App.Keepers.BankKeeper,
+		suite.App.Keepers.WasmKeeper,
+	)
+
+	// Assert the next hanlder is called once
+	mockedPostDecorator.
+		EXPECT().
+		PostHandle(gomock.Any(), gomock.Any(), false, true, gomock.Any()).
+		Times(1)
+
+	// Execute the PostHandle function
+	_, err := handler.PostHandle(
+		suite.Ctx,
+		txBuilder.GetTx(),
+		false,
+		true,
+		func(ctx sdk.Context, tx sdk.Tx, simulate bool, success bool) (sdk.Context, error) {
+			return mockedPostDecorator.PostHandle(ctx, tx, simulate, success, nil)
+		},
+	)
+	suite.Require().NoError(err)
+}
+
+func (suite *AnteTestSuite) TestPostHandlerWithInvalidContractAddrOnExecution() {
+	suite.Setup()
+
+	// Create a mocked next post hanlder to assert the function being called.
+	ctrl := gomock.NewController(suite.T())
+	mockedPostDecorator := mocks.NewMockPostDecorator(ctrl)
+
+	// Register the feeshare contract...
+	suite.App.Keepers.FeeShareKeeper.SetFeeShare(suite.Ctx, types.FeeShare{
+		ContractAddress:   "terra1mdpvgjc8jmv60a4x68nggsh9w8uyv69sqls04a76m9med5hsqmwsse8sxa",
+		DeployerAddress:   "",
+		WithdrawerAddress: "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je",
+	})
+	// ... create the store key ...
+	suite.App.Keepers.WasmKeeper.SetExecutedContractAddresses(suite.Ctx, customwasmtypes.ExecutedContracts{
+		ContractAddresses: []string{"invalid_contract_addr"},
+	})
+
+	// build a tx with a fee amount ...
+	txFee := sdk.NewCoins(sdk.NewCoin("uluna", sdk.NewInt(500)), sdk.NewCoin("utoken", sdk.NewInt(250)))
+	txBuilder := suite.EncodingConfig.TxConfig.NewTxBuilder()
+	txBuilder.SetFeeAmount(txFee)
+	txBuilder.SetMsgs(&wasmtypes.MsgExecuteContract{})
+
+	// ... create the feeshare post handler ...
+	handler := post.NewFeeSharePayoutDecorator(
+		suite.App.Keepers.FeeShareKeeper,
+		suite.App.Keepers.BankKeeper,
+		suite.App.Keepers.WasmKeeper,
+	)
+
+	// Execute the PostHandle function
+	_, err := handler.PostHandle(
+		suite.Ctx,
+		txBuilder.GetTx(),
+		false,
+		true,
+		func(ctx sdk.Context, tx sdk.Tx, simulate bool, success bool) (sdk.Context, error) {
+			return mockedPostDecorator.PostHandle(ctx, tx, simulate, success, nil)
+		},
+	)
+	suite.
+		Require().
+		ErrorIs(err, errorsmod.Wrapf(sdkerrors.ErrLogic, err.Error()))
 }
