@@ -134,15 +134,15 @@ func GetWithdrawalAddressFromContract(ctx sdk.Context, contractAddresses []strin
 
 // CalculateFee takes the total fees paid for a transaction and split
 // these fees equaly between all number of pairs considering allwoedDenoms
-func CalculateFee(fees sdk.Coins, govPercent sdk.Dec, pairs int, allowedDenoms []string) sdk.Coins {
-	var alloedFeesDenoms sdk.Coins
+func CalculateFee(fees sdk.Coins, devShares sdk.Dec, numOfdevs int, allowedDenoms []string) sdk.Coins {
+	var allowedFeesDenoms sdk.Coins
 	if len(allowedDenoms) == 0 {
-		alloedFeesDenoms = fees
+		allowedFeesDenoms = fees
 	} else {
 		for _, fee := range fees {
 			for _, allowedDenom := range allowedDenoms {
 				if fee.Denom == allowedDenom {
-					alloedFeesDenoms = alloedFeesDenoms.Add(fee)
+					allowedFeesDenoms = allowedFeesDenoms.Add(fee)
 					break
 				}
 			}
@@ -150,8 +150,8 @@ func CalculateFee(fees sdk.Coins, govPercent sdk.Dec, pairs int, allowedDenoms [
 	}
 
 	var splitFees sdk.Coins
-	for _, c := range alloedFeesDenoms.Sort() {
-		rewardAmount := govPercent.MulInt(c.Amount).QuoInt64(int64(pairs)).RoundInt()
+	for _, c := range allowedFeesDenoms.Sort() {
+		rewardAmount := devShares.MulInt(c.Amount).QuoInt64(int64(numOfdevs)).RoundInt()
 		if !rewardAmount.IsZero() {
 			splitFees = splitFees.Add(sdk.NewCoin(c.Denom, rewardAmount))
 		}

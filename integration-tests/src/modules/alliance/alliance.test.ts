@@ -52,7 +52,6 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
             }
         }
         catch (e) {
-            console.log(e)
             expect(e).toBeUndefined();
         }
     });

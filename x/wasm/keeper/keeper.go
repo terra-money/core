@@ -67,40 +67,27 @@ func NewKeeper(
 	}
 }
 
+// After executing the contract, get all executed
+// contract addresses from the store, if there is
+// a store already then check if the contract address
+// exists in the list, if not then update the store,
+// If the contract does not exist in the store, add it.
 func (k Keeper) AfterExecuteContract(ctx sdk.Context, msg *types.MsgExecuteContract, res *types.MsgExecuteContractResponse) error {
-	events := ctx.EventManager().Events()
-	contractAddresses := []string{}
+	contracts, found := k.GetExecutedContractAddresses(ctx)
 
-	for _, ev := range events {
-		if ev.Type != "execute" {
-			continue
-		}
-
-		for _, attr := range ev.Attributes {
-			if attr.Key != "_contract_address" {
-				continue
+	if found {
+		for _, contract := range contracts.ContractAddresses {
+			if contract == msg.Contract {
+				return nil
 			}
-			// if the contract address has already been
-			// added just skip it to avoid duplicates
-			for _, item := range contractAddresses {
-				if item == attr.Value {
-					continue
-				}
-			}
-			contractAddresses = append(contractAddresses, attr.Value)
 		}
 	}
 
-	if len(contractAddresses) != 0 {
-		executedContracts := keepertypes.ExecutedContracts{
-			ContractAddresses: contractAddresses,
-		}
+	contracts.ContractAddresses = append(contracts.ContractAddresses, msg.Contract)
 
-		err := k.SetExecutedContractAddresses(ctx, executedContracts)
-		if err != nil {
-			return err
-		}
+	err := k.SetExecutedContractAddresses(ctx, contracts)
+	if err != nil {
+		return err
 	}
-
 	return nil
 }
