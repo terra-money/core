@@ -39,12 +39,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
 	routertypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
@@ -60,6 +54,13 @@ import (
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
+	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+
 	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
 
 	solomachine "github.com/cosmos/ibc-go/v7/modules/light-clients/06-solomachine"
@@ -68,19 +69,21 @@ import (
 	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
+	custombankmodule "github.com/terra-money/core/v2/x/bank"
+	customwasmodule "github.com/terra-money/core/v2/x/wasm"
 
 	"github.com/terra-money/core/v2/x/tokenfactory"
 
 	"github.com/terra-money/alliance/x/alliance"
-	terracustombank "github.com/terra-money/core/v2/custom/bank"
 	feeshare "github.com/terra-money/core/v2/x/feeshare"
 
 	pob "github.com/skip-mev/pob/x/builder"
 	pobtype "github.com/skip-mev/pob/x/builder/types"
 
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	terrappsparams "github.com/terra-money/core/v2/app/params"
+
+	"github.com/cosmos/cosmos-sdk/x/feegrant"
 )
 
 // ModuleBasics defines the module BasicManager is in charge of setting up basic,
@@ -130,7 +133,7 @@ func appModules(app *TerraApp, encodingConfig terrappsparams.EncodingConfig, ski
 		),
 		auth.NewAppModule(app.appCodec, app.Keepers.AccountKeeper, nil, app.GetSubspace(authtypes.ModuleName)),
 		vesting.NewAppModule(app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.Keepers.DistrKeeper, app.Keepers.StakingKeeper),
-		terracustombank.NewAppModule(app.appCodec, app.Keepers.BankKeeper, app.Keepers.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
+		custombankmodule.NewAppModule(app.appCodec, app.Keepers.BankKeeper, app.Keepers.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
 		capability.NewAppModule(app.appCodec, *app.Keepers.CapabilityKeeper, false),
 		crisis.NewAppModule(&app.Keepers.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 		feegrantmodule.NewAppModule(app.appCodec, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.Keepers.FeeGrantKeeper, app.interfaceRegistry),
@@ -149,7 +152,7 @@ func appModules(app *TerraApp, encodingConfig terrappsparams.EncodingConfig, ski
 		ibcfee.NewAppModule(app.Keepers.IBCFeeKeeper),
 		ica.NewAppModule(&app.Keepers.ICAControllerKeeper, &app.Keepers.ICAHostKeeper),
 		router.NewAppModule(&app.Keepers.RouterKeeper),
-		wasm.NewAppModule(app.appCodec, &app.Keepers.WasmKeeper, app.Keepers.StakingKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
+		customwasmodule.NewAppModule(app.appCodec, &app.Keepers.WasmKeeper, app.Keepers.StakingKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		ibchooks.NewAppModule(app.Keepers.AccountKeeper),
 		tokenfactory.NewAppModule(app.Keepers.TokenFactoryKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.GetSubspace(tokenfactorytypes.ModuleName)),
 		alliance.NewAppModule(app.appCodec, app.Keepers.AllianceKeeper, app.Keepers.StakingKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.interfaceRegistry, app.GetSubspace(alliancetypes.ModuleName)),

@@ -1,0 +1,18 @@
+syntax = "proto3";
+package juno.feeshare.v1;
+
+import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/CosmosContracts/juno/x/feeshare/types";
+
+// FeeShareEvent defines an instance that organizes fee distribution conditions for
+// the owner of a given smart contract
+message FeePayoutEvent {
+    // Address of the account that will receive the payout
+    string withdraw_address = 1;
+    // Amount of the payout
+    repeated cosmos.base.v1beta1.Coin fees_paid = 2 [
+    (gogoproto.nullable) = false
+  ];
+}

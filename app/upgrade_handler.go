@@ -1,10 +1,6 @@
 package app
 
 import (
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
 	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
@@ -19,6 +15,11 @@ import (
 	v2_7 "github.com/terra-money/core/v2/app/upgrades/v2.7"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
+
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
+	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 )

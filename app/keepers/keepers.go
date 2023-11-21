@@ -6,6 +6,12 @@ import (
 
 	"path/filepath"
 
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	ibctransfer "github.com/cosmos/ibc-go/v7/modules/apps/transfer"
+	ibcclient "github.com/cosmos/ibc-go/v7/modules/core/02-client"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	"github.com/spf13/cast"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -28,11 +34,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
-	ibctransfer "github.com/cosmos/ibc-go/v7/modules/apps/transfer"
-	ibcclient "github.com/cosmos/ibc-go/v7/modules/core/02-client"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	"github.com/spf13/cast"
 
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
@@ -58,7 +59,6 @@ import (
 	routerkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
 	routertypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 
-	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
 	icahostkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/keeper"
@@ -70,6 +70,8 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+
+	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 
 	icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
@@ -85,6 +87,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	icahost "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host"
+	customwasmkeeper "github.com/terra-money/core/v2/x/wasm/keeper"
 
 	icacontroller "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/keeper"
@@ -95,7 +98,7 @@ import (
 	"github.com/terra-money/alliance/x/alliance"
 	alliancekeeper "github.com/terra-money/alliance/x/alliance/keeper"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
-	custombankkeeper "github.com/terra-money/core/v2/custom/bank/keeper"
+	custombankkeeper "github.com/terra-money/core/v2/x/bank/keeper"
 	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 
@@ -173,7 +176,7 @@ type TerraAppKeepers struct {
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
 	ScopedICQKeeper           capabilitykeeper.ScopedKeeper
 
-	WasmKeeper       wasmkeeper.Keeper
+	WasmKeeper       customwasmkeeper.Keeper
 	scopedWasmKeeper capabilitykeeper.ScopedKeeper
 
 	// BuilderKeeper is the keeper that handles processing auction transactions
@@ -453,7 +456,7 @@ func NewTerraAppKeepers(
 		panic("error while reading wasm config: " + err.Error())
 	}
 	availableCapabilities := "iterator,staking,stargate,cosmwasm_1_1,cosmwasm_1_2,cosmwasm_1_3,cosmwasm_1_4,token_factory"
-	keepers.WasmKeeper = wasmkeeper.NewKeeper(
+	keepers.WasmKeeper = customwasmkeeper.NewKeeper(
 		appCodec,
 		keys[wasmtypes.StoreKey],
 		keepers.AccountKeeper,
@@ -474,7 +477,7 @@ func NewTerraAppKeepers(
 		wasmOpts...,
 	)
 
-	keepers.Ics20WasmHooks.ContractKeeper = &keepers.WasmKeeper
+	keepers.Ics20WasmHooks.ContractKeeper = keepers.WasmKeeper.Keeper
 	// Setup the contract keepers.WasmKeeper before the
 	// hook for the BankKeeper othrwise the WasmKeeper
 	// will be nil inside the hooks.

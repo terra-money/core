@@ -11,7 +11,7 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	customtypes "github.com/terra-money/core/v2/custom/bank/keeper"
+	customtypes "github.com/terra-money/core/v2/x/bank/keeper"
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
