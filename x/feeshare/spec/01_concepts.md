@@ -6,22 +6,37 @@ order: 1
 
 ## FeeShare
 
-The FeeShare module is a revenue-per-transaction model, which allows developers to get paid for deploying their decentralized applications (dApps) on Juno. This helps developers to generate revenue every time a user interacts with their contracts on the chain. This registration is permissionless to sign up for and begin earning fees from. By default, 50% of all transaction fees for Execute Messages are shared. This can be changed by governance and implemented by the `x/feeshare` module.
+The FeeShare module enables the splitting of revenue from transaction fees between validators and registered smart contracts. Developers can register their smart contracts and every time someone interacts with a registered smart contract, the contract deployer or their assigned withdrawal account receives a part of the transaction fees. By default, 50% of all transaction fees for Execute Messages are shared. This parameter can be changed by governance and implemented by the `x/feeshare` module.
 
 ## Registration
 
-Developers register their contract applications to gain their cut of fees per execution. Any contract can be registered by a developer by submitting a signed transaction. After the transaction is executed successfully, the developer will start receiving a portion of the transaction fees paid when a user interacts with the registered contract. The developer can have the funds sent to their wallet, a DAO, or any other wallet address on the Juno Network.
+Contracts must register to receive their allocation of fees. Registration is permissionless, and is completed by submitting a signed registration transaction. After the transaction is executed successfully, the withdrawal address stipulated  during registration will start receiving a portion of the transaction fees paid when a user interacts with the registered contract. A withdrawal address can be any address. 
 
 ::: tip
- **NOTE**: If your contract is part of a development project, please ensure that the deployer of the contract (or the factory/DAO that deployed the contract) is an account that is owned by that project. This avoids the situation, that an individual deployer who leaves your project could become malicious.
+ **NOTE**: If your contract is part of a development project, please ensure that the deployer of the contract is an account that is owned by that project and not just an individual contributor, who could become malicious. 
 :::
 
-## Fee Distribution
+## Fees
 
-As described above, developers will earn a portion of the transaction fee after registering their contracts. To understand how transaction fees are distributed, we will look at the following in detail:
+Registered contracts will earn a portion of the transaction fee after registering their contracts. Only [Wasm Execute Txs](https://github.com/CosmWasm/wasmd/blob/main/proto/cosmwasm/wasm/v1/tx.proto#L115-L127) (`MsgExecuteContract`) are eligible for feesharing.
 
-* The transactions eligible are only [Wasm Execute Txs](https://github.com/CosmWasm/wasmd/blob/main/proto/cosmwasm/wasm/v1/tx.proto#L115-L127) (`MsgExecuteContract`).
+Users pay transaction fees to pay to interact with smart contracts and execute transactions. When a transaction is executed, the entire fee amount (`gas limit * gas price`) is sent to the `FeeCollector` module account during the [Cosmos SDK AnteHandler](https://docs.cosmos.network/main/modules/auth/#antehandlers) execution.
 
-### WASM Transaction Fees
+If a transaction's fees are not denominated in a coin permitted by the `AllowedDenoms` parameter, there is no payout to involved contracts.  If a user sends a message and it does not interact with any contracts (ex: bankSend), then the entire fee is sent to the `FeeCollector` as expected.
 
-Users pay transaction fees to pay to interact with smart contracts on Juno. When a transaction is executed, the entire fee amount (`gas limit * gas price`) is sent to the `FeeCollector` module account during the [Cosmos SDK AnteHandler](https://docs.cosmos.network/main/modules/auth/#antehandlers) execution. After this step, the `FeeCollector` sends 50% of the funds and splits them between contracts that were executed on the transaction. If the fees paid are not accepted by governance, there is no payout to the developers (for example, niche base tokens) for tax purposes. If a user sends a message and it does not interact with any contracts (ex: bankSend), then the entire fee is sent to the `FeeCollector` as expected.
+### Fee distribution
+
+
+After collecting fees, the `FeeCollector` sends 50% of the total collected transaction fees divided equally among the withdrawal addresses of any contract involved in the transaction. 
+
+The original FeeShare module implementation only rewarded registered contracts that took part in the execution of a transaction. However, this approach has been modified to reward *any* registered contract that participates in a transaction. 
+
+All registered contracts involved in a transaction will receive an equal portion of the FeeShare allocation (currently set to 50%). For example, if a transaction involves the participation of 5 contracts, and 3 of them are registered, each registered contract will receive 1/3 of the 50% FeeShare allocation to their withdrawer addresses. 
+
+This equitable distribution is achieved by wrapping the official WASM module in a [custom implementation](../../wasm/README.md) that keeps track of all contracts involved in a transaction. When a contract is executed, the custom WASM module keeps track of each participating contract address in a list. When the transaction is completed, the `PostHandler` from the FeeShare module distributes the rewards between the listed participants, and the `PostHandler` from the custom WASM module removes the contract addresses from the store.
+
+
+
+
+
+
