@@ -25,10 +25,10 @@ func NewFeeSharePayoutDecorator(fs FeeShareKeeper, bk BankKeeper, wk customwasmk
 	}
 }
 
-// FeeSharePostHandler if the feeshare module is neabled
+// FeeSharePostHandler if the feeshare module is enabled
 // takes the total fees paid for each transaction and
-// split these fees equaly between all the contacts
-// involved in the transactin based on the module params.
+// split these fees equally between all the contacts
+// involved in the transaction based on the module params.
 func (fsd FeeSharePayoutDecorator) PostHandle(
 	ctx sdk.Context,
 	tx sdk.Tx,
@@ -61,7 +61,7 @@ func (fsd FeeSharePayoutDecorator) PostHandle(
 }
 
 // FeeSharePayout takes the total fees paid for a transaction and
-// split these fees equaly between all the contacts involved in the
+// split these fees equally between all the contacts involved in the
 // transaction based on the module params.
 func (fsd FeeSharePayoutDecorator) FeeSharePayout(ctx sdk.Context, txFees sdk.Coins, devShares sdk.Dec, allowedDenoms []string) (err error) {
 	executedContracts, found := fsd.wasmKeeper.GetExecutedContractAddresses(ctx)
