@@ -9,7 +9,7 @@
     <br />
     <br />
     <a href="https://codecov.io/gh/terra-money/core">
-        <img src="https://codecov.io/gh/terra-money/core/branch/main/graph/badge.svg">
+        <img src="https://codecov.io/gh/terra-money/core/branch/release/v2.8/graph/badge.svg">
     </a>
     <a href="https://goreportcard.com/report/github.com/terra-money/core">
         <img src="https://goreportcard.com/badge/github.com/terra-money/core">
