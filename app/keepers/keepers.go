@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/cast"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -189,6 +188,7 @@ func NewTerraAppKeepers(
 	cdc *codec.LegacyAmino,
 	appOpts servertypes.AppOptions,
 	wasmOpts []wasmkeeper.Option,
+	homePath string,
 ) (keepers TerraAppKeepers) {
 	// Set keys KVStoreKey, TransientStoreKey, MemoryStoreKey
 	keepers.GenerateKeys()
@@ -284,7 +284,6 @@ func NewTerraAppKeepers(
 	for _, h := range cast.ToIntSlice(appOpts.Get(server.FlagUnsafeSkipUpgrades)) {
 		skipUpgradeHeights[int64(h)] = true
 	}
-	homePath := cast.ToString(appOpts.Get(flags.FlagHome))
 	keepers.UpgradeKeeper = upgradekeeper.NewKeeper(
 		skipUpgradeHeights,
 		keys[upgradetypes.StoreKey],
