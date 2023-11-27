@@ -97,7 +97,6 @@ import (
 	"github.com/terra-money/core/v2/app/ante"
 	terraappconfig "github.com/terra-money/core/v2/app/config"
 	terraappparams "github.com/terra-money/core/v2/app/params"
-	"github.com/terra-money/core/v2/app/wasmconfig"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/terra-money/core/v2/client/docs/statik"
@@ -190,7 +189,7 @@ func NewTerraApp(
 	invCheckPeriod uint,
 	encodingConfig terraappparams.EncodingConfig,
 	appOpts servertypes.AppOptions,
-	wasmConfig *wasmconfig.Config,
+	wasmConfig wasmtypes.WasmConfig,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *TerraApp {
 	appCodec := encodingConfig.Marshaler
@@ -273,7 +272,7 @@ func NewTerraApp(
 			FeeShareKeeper:    app.Keepers.FeeShareKeeper,
 			IBCkeeper:         app.Keepers.IBCKeeper,
 			TxCounterStoreKey: app.keys[wasmtypes.StoreKey],
-			WasmConfig:        wasmConfig.ToWasmConfig(),
+			WasmConfig:        wasmConfig,
 			PobBuilderKeeper:  app.Keepers.BuilderKeeper,
 			TxConfig:          encodingConfig.TxConfig,
 			PobMempool:        pobMempool,

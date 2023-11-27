@@ -23,7 +23,6 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/terra-money/core/v2/app"
-	"github.com/terra-money/core/v2/app/wasmconfig"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -45,7 +44,7 @@ func CreateTestInput() (*app.TerraApp, sdk.Context) {
 		0,
 		encCfg,
 		simtestutil.EmptyAppOptions{},
-		wasmconfig.DefaultConfig(),
+		wasmtypes.DefaultWasmConfig(),
 	)
 	ctx := terraApp.BaseApp.NewContext(true, tmproto.Header{Height: 1, ChainID: "phoenix-1", Time: time.Now()})
 	err := terraApp.Keepers.WasmKeeper.SetParams(ctx, wasmtypes.DefaultParams())
