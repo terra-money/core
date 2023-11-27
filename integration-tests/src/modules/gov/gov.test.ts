@@ -31,7 +31,7 @@ describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/rele
                     "veto_threshold": "0.334000000000000000",
                 },
                 "voting_params": {
-                    "voting_period": "4s",
+                    "voting_period": "2s",
                 },
                 "params": {
                     "burn_proposal_deposit_prevote": false,
@@ -46,7 +46,7 @@ describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/rele
                     "quorum": "0.334000000000000000",
                     "threshold": "0.500000000000000000",
                     "veto_threshold": "0.334000000000000000",
-                    "voting_period": "4s",
+                    "voting_period": "2s",
                 },
             });
 
@@ -75,7 +75,7 @@ describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/rele
                     "quorum": "0.334000000000000000",
                     "threshold": "0.500000000000000000",
                     "veto_threshold": "0.334000000000000000",
-                    "voting_period": "4s",
+                    "voting_period": "2s",
                 },
             });
 
@@ -87,7 +87,7 @@ describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/rele
                 "deposit_params": null,
                 "tally_params": null,
                 "voting_params": {
-                    "voting_period": "4s",
+                    "voting_period": "2s",
                 },
                 "params": {
                     "burn_proposal_deposit_prevote": false,
@@ -102,7 +102,7 @@ describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/rele
                     "quorum": "0.334000000000000000",
                     "threshold": "0.500000000000000000",
                     "veto_threshold": "0.334000000000000000",
-                    "voting_period": "4s",
+                    "voting_period": "2s",
                 },
             });
 
@@ -136,7 +136,7 @@ describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/rele
                     "quorum": "0.334000000000000000",
                     "threshold": "0.500000000000000000",
                     "veto_threshold": "0.334000000000000000",
-                    "voting_period": "4s",
+                    "voting_period": "2s",
                 },
             });
     });

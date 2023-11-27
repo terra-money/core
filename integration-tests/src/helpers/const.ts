@@ -1,4 +1,4 @@
-export const SAFE_VOTING_PERIOD_TIME = 4100;
+export const SAFE_VOTING_PERIOD_TIME = 2100;
 export const SAFE_IBC_TRANSFER = 4100;
 export const SAFE_BLOCK_INCLUSION_TIME = 1100;
 

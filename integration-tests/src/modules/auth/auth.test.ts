@@ -47,7 +47,7 @@ describe("Auth Module (https://github.com/terra-money/cosmos-sdk/tree/release/v0
         expect(vestAcc.base_vesting_account.base_account.address)
             .toBe(vestAccAddr);
         expect(vestAcc.getAccountNumber())
-            .toBe(3);
+            .toBe(4);
         expect(vestAcc.getPublicKey())
             .toBeNull();
         expect(vestAcc.getSequenceNumber())

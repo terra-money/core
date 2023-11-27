@@ -18,6 +18,12 @@ WALLET_MNEMONIC_6="broken title little open demand ladder mimic keen execute wor
 WALLET_MNEMONIC_7="unit question bulk desk slush answer share bird earth brave book wing special gorilla ozone release permit mercy luxury version advice impact unfair drama"
 WALLET_MNEMONIC_8="year aim panel oyster sunny faint dress skin describe chair guilt possible venue pottery inflict mass debate poverty multiply pulse ability purse situate inmate"
 WALLET_MNEMONIC_9="leave side blue panel curve ancient suspect slide seminar neutral doctor boring only curious spell surround remind obtain slogan hire giant soccer crunch system"
+WALLET_MNEMONIC_10="degree under tray object thought mercy mushroom captain bus work faint basic twice cube noble man ripple close flush bunker dish spare hungry arm"
+WALLET_MNEMONIC_11="range struggle season mesh antenna delay sell light yard path risk curve brain nut cabin injury dilemma fun comfort crumble today transfer bring draft"
+WALLET_MNEMONIC_12="giraffe trim element wheel cannon nothing enrich shiver upon output iron recall already fix appear produce fix behind scissors artefact excite tennis into side"
+WALLET_MNEMONIC_13="run turn cup combine sad toast roof already melt chimney arctic save avocado theory bracket cherry cotton fee once favorite swarm ignore dream element"
+WALLET_MNEMONIC_14="script key fold coyote cage squirrel prevent pole auction slide vintage shoot mirror erosion equip goose capable critic test space sketch monkey eight candy"
+WALLET_MNEMONIC_15="work clap clarify edit explain exact depth ramp law hard feel beauty stumble occur prevent crush distance purpose scrap current describe skirt panther skirt"
 
 # Chain2
 VAL_MNEMONIC_2="angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice"
@@ -62,9 +68,13 @@ $BINARY init test --home $CHAIN_DIR/$CHAINID_1 --chain-id=$CHAINID_1 &> /dev/nul
 $BINARY init test --home $CHAIN_DIR/$CHAINID_2 --chain-id=$CHAINID_2 &> /dev/null
 
 echo "Adding genesis accounts..."
+## Special wallets for validator and relayer
 echo $VAL_MNEMONIC_1 | $BINARY keys add val1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
-echo $RLY_MNEMONIC_1 | $BINARY keys add rly1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test 
+echo $RLY_MNEMONIC_1 | $BINARY keys add rly1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
+echo $VAL_MNEMONIC_2 | $BINARY keys add val2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
+echo $RLY_MNEMONIC_2 | $BINARY keys add rly2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test 
 
+## Other wallets with funds at genesis
 echo $WALLET_MNEMONIC_1 | $BINARY keys add wallet1 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
 echo $WALLET_MNEMONIC_2 | $BINARY keys add wallet2 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
 echo $WALLET_MNEMONIC_3 | $BINARY keys add wallet3 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
@@ -74,6 +84,12 @@ echo $WALLET_MNEMONIC_6 | $BINARY keys add wallet6 --home $CHAIN_DIR/$CHAINID_1 
 echo $WALLET_MNEMONIC_7 | $BINARY keys add wallet7 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
 echo $WALLET_MNEMONIC_8 | $BINARY keys add wallet8 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
 echo $WALLET_MNEMONIC_9 | $BINARY keys add wallet9 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_10 | $BINARY keys add wallet10 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_11 | $BINARY keys add wallet11 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_12 | $BINARY keys add wallet12 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_13 | $BINARY keys add wallet13 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_14 | $BINARY keys add wallet14 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_15 | $BINARY keys add wallet15 --home $CHAIN_DIR/$CHAINID_1 --recover --keyring-backend=test
 
 echo $WALLET_MNEMONIC_1 | $BINARY keys add wallet1 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
 echo $WALLET_MNEMONIC_2 | $BINARY keys add wallet2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
@@ -84,26 +100,43 @@ echo $WALLET_MNEMONIC_6 | $BINARY keys add wallet6 --home $CHAIN_DIR/$CHAINID_2 
 echo $WALLET_MNEMONIC_7 | $BINARY keys add wallet7 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
 echo $WALLET_MNEMONIC_8 | $BINARY keys add wallet8 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
 echo $WALLET_MNEMONIC_9 | $BINARY keys add wallet9 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_10 | $BINARY keys add wallet10 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_11 | $BINARY keys add wallet11 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_12 | $BINARY keys add wallet12 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_13 | $BINARY keys add wallet13 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_14 | $BINARY keys add wallet14 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
+echo $WALLET_MNEMONIC_15 | $BINARY keys add wallet15 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
 
-echo $VAL_MNEMONIC_2 | $BINARY keys add val2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test
-echo $RLY_MNEMONIC_2 | $BINARY keys add rly2 --home $CHAIN_DIR/$CHAINID_2 --recover --keyring-backend=test 
-
+## Special Wallets
 VAL1_ADDR=$($BINARY keys show val1 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
-WALLET1_ADDR=$($BINARY keys show wallet1 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
-WALLET3_ADDR=$($BINARY keys show wallet3 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
-WALLET5_ADDR=$($BINARY keys show wallet5 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
-WALLET7_ADDR=$($BINARY keys show wallet7 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
-WALLET9_ADDR=$($BINARY keys show wallet9 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
-RLY1_ADDR=$($BINARY keys show rly1 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
-
 VAL2_ADDR=$($BINARY keys show val2 --home $CHAIN_DIR/$CHAINID_2 --keyring-backend test -a)
-WALLET2_ADDR=$($BINARY keys show wallet2 --home $CHAIN_DIR/$CHAINID_2 --keyring-backend test -a)
-WALLET4_ADDR=$($BINARY keys show wallet4 --home $CHAIN_DIR/$CHAINID_2 --keyring-backend test -a)
-WALLET6_ADDR=$($BINARY keys show wallet6 --home $CHAIN_DIR/$CHAINID_2 --keyring-backend test -a)
-WALLET8_ADDR=$($BINARY keys show wallet8 --home $CHAIN_DIR/$CHAINID_2 --keyring-backend test -a)
+RLY1_ADDR=$($BINARY keys show rly1 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
 RLY2_ADDR=$($BINARY keys show rly2 --home $CHAIN_DIR/$CHAINID_2 --keyring-backend test -a)
 
+## Other wallets with funds at genesis
+WALLET1_ADDR=$($BINARY keys show wallet1 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET2_ADDR=$($BINARY keys show wallet2 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET3_ADDR=$($BINARY keys show wallet3 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET4_ADDR=$($BINARY keys show wallet4 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET5_ADDR=$($BINARY keys show wallet5 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET6_ADDR=$($BINARY keys show wallet6 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET7_ADDR=$($BINARY keys show wallet7 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET8_ADDR=$($BINARY keys show wallet8 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET9_ADDR=$($BINARY keys show wallet9 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET10_ADDR=$($BINARY keys show wallet10 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET11_ADDR=$($BINARY keys show wallet11 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET12_ADDR=$($BINARY keys show wallet12 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET13_ADDR=$($BINARY keys show wallet13 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET14_ADDR=$($BINARY keys show wallet14 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+WALLET15_ADDR=$($BINARY keys show wallet15 --home $CHAIN_DIR/$CHAINID_1 --keyring-backend test -a)
+
+
 $BINARY genesis add-genesis-account $VAL1_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY genesis add-genesis-account $VAL2_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
+$BINARY genesis add-genesis-account $RLY1_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY genesis add-genesis-account $RLY2_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
+
+
 $BINARY genesis add-genesis-account $WALLET1_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
 $BINARY genesis add-genesis-account $WALLET2_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
 $BINARY genesis add-genesis-account $WALLET3_ADDR 1000000000000uluna --vesting-amount 10000000000uluna --vesting-start-time $(date +%s) --vesting-end-time $(($(date '+%s') + 100000023)) --home $CHAIN_DIR/$CHAINID_1
@@ -113,9 +146,13 @@ $BINARY genesis add-genesis-account $WALLET6_ADDR 1000000000000uluna --home $CHA
 $BINARY genesis add-genesis-account $WALLET7_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
 $BINARY genesis add-genesis-account $WALLET8_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
 $BINARY genesis add-genesis-account $WALLET9_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
-$BINARY genesis add-genesis-account $RLY1_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY genesis add-genesis-account $WALLET10_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY genesis add-genesis-account $WALLET11_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY genesis add-genesis-account $WALLET12_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY genesis add-genesis-account $WALLET13_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY genesis add-genesis-account $WALLET14_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
+$BINARY genesis add-genesis-account $WALLET15_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_1
 
-$BINARY genesis add-genesis-account $VAL2_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
 $BINARY genesis add-genesis-account $WALLET1_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
 $BINARY genesis add-genesis-account $WALLET2_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
 $BINARY genesis add-genesis-account $WALLET3_ADDR 1000000000000uluna --vesting-amount 10000000000uluna --vesting-start-time $(date +%s) --vesting-end-time $(($(date '+%s') + 100000023)) --home $CHAIN_DIR/$CHAINID_2
@@ -125,7 +162,12 @@ $BINARY genesis add-genesis-account $WALLET6_ADDR 1000000000000uluna --home $CHA
 $BINARY genesis add-genesis-account $WALLET7_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
 $BINARY genesis add-genesis-account $WALLET8_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
 $BINARY genesis add-genesis-account $WALLET9_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
-$BINARY genesis add-genesis-account $RLY2_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
+$BINARY genesis add-genesis-account $WALLET10_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
+$BINARY genesis add-genesis-account $WALLET11_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
+$BINARY genesis add-genesis-account $WALLET12_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
+$BINARY genesis add-genesis-account $WALLET13_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
+$BINARY genesis add-genesis-account $WALLET14_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
+$BINARY genesis add-genesis-account $WALLET15_ADDR 1000000000000uluna --home $CHAIN_DIR/$CHAINID_2
 
 echo "Creating and collecting gentx..."
 $BINARY genesis gentx val1 7000000000uluna --home $CHAIN_DIR/$CHAINID_1 --chain-id $CHAINID_1 --keyring-backend test
@@ -157,8 +199,8 @@ sed -i -e 's#"tcp://localhost:1317"#"tcp://localhost:'"$RESTPORT_2"'"#g' $CHAIN_
 sed -i -e 's#":8080"#":'"$ROSETTA_2"'"#g' $CHAIN_DIR/$CHAINID_2/config/app.toml
 
 echo "Chaning genesis.json..."
-sed -i -e 's/"voting_period": "172800s"/"voting_period": "4s"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
-sed -i -e 's/"voting_period": "172800s"/"voting_period": "4s"/g' $CHAIN_DIR/$CHAINID_2/config/genesis.json
+sed -i -e 's/"voting_period": "172800s"/"voting_period": "2s"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
+sed -i -e 's/"voting_period": "172800s"/"voting_period": "2s"/g' $CHAIN_DIR/$CHAINID_2/config/genesis.json
 sed -i -e 's/"reward_delay_time": "604800s"/"reward_delay_time": "0s"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
 sed -i -e 's/"reward_delay_time": "604800s"/"reward_delay_time": "0s"/g' $CHAIN_DIR/$CHAINID_2/config/genesis.json
 
