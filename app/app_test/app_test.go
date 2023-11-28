@@ -13,7 +13,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	"github.com/terra-money/alliance/x/alliance"
-	"github.com/terra-money/core/v2/app/wasmconfig"
 	"github.com/terra-money/core/v2/x/feeshare"
 	"github.com/terra-money/core/v2/x/tokenfactory"
 
@@ -54,6 +53,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	terra_app "github.com/terra-money/core/v2/app"
 )
 
@@ -78,7 +78,7 @@ func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	app := terra_app.NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db, nil, true, map[int64]bool{}, terra_app.DefaultNodeHome, 0, encCfg,
-		simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		simtestutil.EmptyAppOptions{}, wasmtypes.DefaultWasmConfig())
 
 	// generate validator private/public key
 	privVal := mocktestutils.NewPV()
@@ -114,7 +114,7 @@ func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	app2 := terra_app.NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db, nil, true, map[int64]bool{}, terra_app.DefaultNodeHome, 0,
-		encCfg, simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		encCfg, simtestutil.EmptyAppOptions{}, wasmtypes.DefaultWasmConfig())
 	_, err = app2.ExportAppStateAndValidators(false, []string{}, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 }
@@ -125,7 +125,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 	app := terra_app.NewTerraApp(
 		logger, db, nil, true, map[int64]bool{},
-		terra_app.DefaultNodeHome, 0, encCfg, simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		terra_app.DefaultNodeHome, 0, encCfg, simtestutil.EmptyAppOptions{}, wasmtypes.DefaultWasmConfig())
 
 	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
 
@@ -215,7 +215,7 @@ func TestLegacyAmino(t *testing.T) {
 	app := terra_app.NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db, nil, true, map[int64]bool{}, terra_app.DefaultNodeHome, 0,
-		encCfg, simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		encCfg, simtestutil.EmptyAppOptions{}, wasmtypes.DefaultWasmConfig())
 
 	require.Equal(t, encCfg.Amino, app.LegacyAmino())
 }
@@ -226,7 +226,7 @@ func TestAppCodec(t *testing.T) {
 	app := terra_app.NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db, nil, true, map[int64]bool{}, terra_app.DefaultNodeHome, 0,
-		encCfg, simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		encCfg, simtestutil.EmptyAppOptions{}, wasmtypes.DefaultWasmConfig())
 
 	require.Equal(t, encCfg.Marshaler, app.AppCodec())
 }
@@ -237,7 +237,7 @@ func TestInterfaceRegistry(t *testing.T) {
 	app := terra_app.NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db, nil, true, map[int64]bool{}, terra_app.DefaultNodeHome, 0,
-		encCfg, simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		encCfg, simtestutil.EmptyAppOptions{}, wasmtypes.DefaultWasmConfig())
 
 	require.Equal(t, encCfg.InterfaceRegistry, app.InterfaceRegistry())
 }
@@ -248,7 +248,7 @@ func TestGetKey(t *testing.T) {
 	app := terra_app.NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db, nil, true, map[int64]bool{}, terra_app.DefaultNodeHome, 0,
-		encCfg, simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig())
+		encCfg, simtestutil.EmptyAppOptions{}, wasmtypes.DefaultWasmConfig())
 
 	require.NotEmpty(t, app.GetKey(banktypes.StoreKey))
 	require.NotEmpty(t, app.GetTKey(paramstypes.TStoreKey))
@@ -261,7 +261,7 @@ func TestSimAppEnforceStakingForVestingTokens(t *testing.T) {
 	app := terra_app.NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db, nil, true, map[int64]bool{}, terra_app.DefaultNodeHome, 0, encCfg,
-		simtestutil.EmptyAppOptions{}, wasmconfig.DefaultConfig(),
+		simtestutil.EmptyAppOptions{}, wasmtypes.DefaultWasmConfig(),
 	)
 	genAccounts := authtypes.GenesisAccounts{
 		vestingtypes.NewContinuousVestingAccount(

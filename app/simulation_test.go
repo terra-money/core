@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/terra-money/core/v2/app"
 	"github.com/terra-money/core/v2/app/keepers"
-	"github.com/terra-money/core/v2/app/wasmconfig"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
@@ -54,7 +54,7 @@ func BenchmarkSimulation(b *testing.B) {
 		0,
 		encoding,
 		simtestutil.EmptyAppOptions{},
-		wasmconfig.DefaultConfig(),
+		wasmtypes.DefaultWasmConfig(),
 	)
 
 	// Run randomized simulations
@@ -94,7 +94,7 @@ func TestSimulationManager(t *testing.T) {
 		0,
 		encoding,
 		simtestutil.EmptyAppOptions{},
-		wasmconfig.DefaultConfig(),
+		wasmtypes.DefaultWasmConfig(),
 	)
 	sm := terraApp.SimulationManager()
 	require.NotNil(t, sm)
