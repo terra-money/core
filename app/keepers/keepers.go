@@ -220,8 +220,8 @@ func NewTerraAppKeepers(
 	keepers.ScopedTransferKeeper = keepers.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	keepers.ScopedICAControllerKeeper = keepers.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	keepers.ScopedICAHostKeeper = keepers.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
-	keepers.scopedWasmKeeper = keepers.CapabilityKeeper.ScopeToModule(icqtypes.ModuleName)
-	keepers.ScopedICQKeeper = keepers.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
+	keepers.scopedWasmKeeper = keepers.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
+	keepers.ScopedICQKeeper = keepers.CapabilityKeeper.ScopeToModule(icqtypes.ModuleName)
 
 	keepers.AccountKeeper = authkeeper.NewAccountKeeper(
 		appCodec,
