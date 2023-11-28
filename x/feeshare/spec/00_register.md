@@ -1,6 +1,10 @@
 # Register a contract
 
-`junod tx feeshare register [contract_bech32] [withdraw_bech32] --from [key]`
+Use this guide to register your contract. For a more in-depth guide on registering, visit the [Terra Docs feeshare tutorial](https://docs.terra.money/develop/guides/register-feeshare)
+
+## Using terrad
+
+`terrad tx feeshare register [contract_bech32] [withdraw_bech32] --from [key]`
 
 Registers the withdrawal address for the given contract.
 
@@ -24,8 +28,14 @@ This command can only be run by the admin of the contract. If there is no admin,
 withdraw_bech32 can not be the community pool (distribution) address. This is a limitation of the way the SDK handles this module account
 ```
 
-```text
-For contracts created or administered by a contract factory, the withdrawal address can only be the same as the contract address. This can be registered by anyone, but it's unchangeable. This is helpful for SubDAOs or public goods to save fees in the treasury.
+# Update a Contract's Withdrawal Address
 
-If you create a contract like this, it's best to create an execution method for withdrawing fees to an account. To do this, you'll need to save the withdrawal address in the contract's state before uploading a non-migratable contract.
+This can be changed at any time, as long as the sender still the admin or creator of the contract:
+
+`terrad tx feeshare update [contract] [new_withdraw_address]`
+
+## Update Exception
+
+```text
+This can not be done if the contract was created from or is administered by another contract (a contract factory). There is not currently a way for a contract to change its own withdrawal address directly.
 ```

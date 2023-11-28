@@ -14,10 +14,8 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/stretchr/testify/suite"
-	"github.com/terra-money/core/v2/app"
 	terra_app "github.com/terra-money/core/v2/app"
 	appparams "github.com/terra-money/core/v2/app/params"
-	"github.com/terra-money/core/v2/app/wasmconfig"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
@@ -36,7 +34,7 @@ import (
 type AppTestSuite struct {
 	suite.Suite
 
-	App            *app.TerraApp
+	App            *terra_app.TerraApp
 	Ctx            sdk.Context
 	QueryHelper    *baseapp.QueryServiceTestHelper
 	TestAccs       []sdk.AccAddress
@@ -47,7 +45,7 @@ type AppTestSuite struct {
 func (s *AppTestSuite) Setup() {
 	appparams.RegisterAddressesConfig()
 	encCfg := terra_app.MakeEncodingConfig()
-	genesisState := app.NewDefaultGenesisState(encCfg.Marshaler)
+	genesisState := terra_app.NewDefaultGenesisState(encCfg.Marshaler)
 	genesisState.SetDefaultTerraConfig(encCfg.Marshaler)
 
 	db := dbm.NewMemDB()
@@ -61,7 +59,7 @@ func (s *AppTestSuite) Setup() {
 		0,
 		encCfg,
 		simtestutil.EmptyAppOptions{},
-		wasmconfig.DefaultConfig(),
+		wasmtypes.DefaultWasmConfig(),
 	)
 	s.EncodingConfig = encCfg
 

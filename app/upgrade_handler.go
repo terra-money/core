@@ -13,6 +13,7 @@ import (
 	v2_5 "github.com/terra-money/core/v2/app/upgrades/v2.5"
 	v2_6 "github.com/terra-money/core/v2/app/upgrades/v2.6"
 	v2_7 "github.com/terra-money/core/v2/app/upgrades/v2.7"
+	v2_8 "github.com/terra-money/core/v2/app/upgrades/v2.8"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
@@ -73,6 +74,14 @@ func (app *TerraApp) RegisterUpgradeHandlers() {
 			app.GetConfigurator(),
 			app.GetAppCodec(),
 			app.Keepers.ICQKeeper,
+		),
+	)
+	app.Keepers.UpgradeKeeper.SetUpgradeHandler(
+		terraappconfig.Upgrade2_8,
+		v2_8.CreateUpgradeHandler(
+			app.GetModuleManager(),
+			app.GetConfigurator(),
+			app.GetAppCodec(),
 		),
 	)
 }
