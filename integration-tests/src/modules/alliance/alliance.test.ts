@@ -19,40 +19,35 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
     // the same wallet on both chains and start
     // an Alliance creation process
     beforeAll(async () => {
-        try {
-            let blockHeight = (await LCD.chain1.tendermint.blockInfo("test-1")).block.header.height;
-            let tx = await chain1Wallet.createAndSignTx({
-                msgs: [new MsgTransfer(
-                    "transfer",
-                    "channel-0",
-                    Coin.fromString("100000000uluna"),
-                    allianceAccountAddress,
-                    allianceAccountAddress,
-                    new Height(2, parseInt(blockHeight) + 100),
-                    undefined,
-                    ""
-                )],
-                chainID: "test-1",
-            });
+        let blockHeight = (await LCD.chain1.tendermint.blockInfo("test-1")).block.header.height;
+        let tx = await chain1Wallet.createAndSignTx({
+            msgs: [new MsgTransfer(
+                "transfer",
+                "channel-0",
+                Coin.fromString("100000000uluna"),
+                allianceAccountAddress,
+                allianceAccountAddress,
+                new Height(2, parseInt(blockHeight) + 100),
+                undefined,
+                ""
+            )],
+            chainID: "test-1",
+        });
 
-            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+        let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+        await blockInclusion();
+        let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
+        expect(txResult).toBeDefined();
+
+        // Check during 5 blocks for the receival 
+        // of the IBC coin on chain-2
+        for (let i = 0; i <= 5; i++) {
             await blockInclusion();
-            let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
-            expect(txResult).toBeDefined();
-
-            // Check during 5 blocks for the receival 
-            // of the IBC coin on chain-2
-            for (let i = 0; i <= 5; i++) {
-                await blockInclusion();
-                let _ibcCoin = (await LCD.chain2.bank.balance(allianceAccountAddress))[0].find(c => c.denom.startsWith("ibc/"));
-                if (_ibcCoin) {
-                    expect(_ibcCoin.denom.startsWith("ibc/")).toBeTruthy();
-                    break;
-                }
+            let _ibcCoin = (await LCD.chain2.bank.balance(allianceAccountAddress))[0].find(c => c.denom.startsWith("ibc/"));
+            if (_ibcCoin) {
+                expect(_ibcCoin.denom.startsWith("ibc/")).toBeTruthy();
+                break;
             }
-        }
-        catch (e) {
-            expect(e).toBeUndefined();
         }
     });
 

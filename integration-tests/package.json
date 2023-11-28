@@ -4,7 +4,12 @@
   "description": "Integration tests for Core using feather.js",
   "main": "index.ts",
   "scripts": {
-    "test": "jest"
+    "test:init" : "bash src/setup/init-test-framework.sh",
+    "test:relayer": "bash src/setup/relayer/init-relayer.sh",
+    "test:chain:upgrade" : "bash src/setup/chain-upgrade/chain-upgrade.sh",
+    "test:start" : "jest",
+    "start": "npm run test:init && npm run test:relayer && npm run test:start",
+    "test:clean": "rm -rf test-data chain-upgrade-data && pkill terrad && pkill terrad && pkill rly"
   },
   "repository": {
     "type": "git",

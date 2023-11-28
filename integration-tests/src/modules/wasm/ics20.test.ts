@@ -1,5 +1,5 @@
 
-import { MsgInstantiateContract, MsgStoreCode } from "@terra-money/feather.js";
+import { MsgExecuteContract, MsgInstantiateContract, MsgStoreCode } from "@terra-money/feather.js";
 import { getMnemonics, getLCDClient, blockInclusion } from "../../helpers";
 import fs from "fs";
 import path from 'path';
@@ -101,6 +101,39 @@ describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) "
             txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             ics20ContractAddr = txResult.logs[0].events[1].attributes[0].value;
             expect(ics20ContractAddr).toBeDefined();
+        })
+    })
+
+    describe("after contracts have been deployed", () => {
+        test("Must instantiate *cw20_base* and *cw20_ics20* contract", async () => {
+            try {
+                // SubMessage to Transfer the funds thoguht the IBC channel
+                // which must be parsed to base64 and embeded into the "send"
+                // message. (we're not using JSON.stringify(object) because it causes and error)
+                let subMsg = Buffer.from(`{"channel":"channel-0","remote_address":"${walletAddress}"}`).toString("base64");
+
+                let tx = await wallet.createAndSignTx({
+                    msgs: [new MsgExecuteContract(
+                        walletAddress,
+                        cw20ContractAddr,
+                        {
+                            send: {
+                                contract: ics20ContractAddr,
+                                amount: "100000",
+                                msg: subMsg
+                            }
+                        },
+                    )],
+                    chainID: "test-1",
+                });
+                let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+                await blockInclusion();
+                let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
+                console.log("txResult", txResult)
+            }
+            catch (e) {
+                console.log(e)
+            }
         })
     })
 });

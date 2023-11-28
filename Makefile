@@ -196,41 +196,6 @@ install: go.sum
 
 .PHONY: build build-linux install
 
-
-###############################################################################
-###                        Integration Tests                                ###
-###############################################################################
-
-integration-test-all: init-test-framework \
-	test-ibc-hooks \
-	test-tokenfactory 
-
-init-test-framework: clean-testing-data install
-	@echo "Initializing both blockchains..."
-	./scripts/tests/init-test-framework.sh
-	@echo "Testing relayer..."
-	./scripts/tests/relayer/interchain-acc-config/rly-init.sh
-
-test-tokenfactory: 
-	@echo "Testing tokenfactory..."
-	./scripts/tests/tokenfactory/tokenfactory.sh
-
-test-chain-upgrade:
-	@echo "Testing software upgrade..."
-	bash ./scripts/tests/chain-upgrade/chain-upgrade.sh
-
-clean-testing-data:
-	@echo "Killing terrad and removing previous data"
-	-@pkill terrad 2>/dev/null
-	-@pkill rly 2>/dev/null
-	-@pkill terrad_new 2>/dev/null
-	-@pkill terrad_old 2>/dev/null
-	-@rm -rf ./data
-	-@rm -rf ./_build
-	
-
-.PHONY: integration-test-all init-test-framework test-ibc-hooks test-tokenfactory clean-testing-data
-
 ###############################################################################
 ###                                Protobuf                                 ###
 ###############################################################################

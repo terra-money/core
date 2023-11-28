@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BINARY=terrad
-CHAIN_DIR=$(pwd)/data
+CHAIN_DIR=$(pwd)/test-data
 CHAINID_1=test-1
 CHAINID_2=test-2
 
@@ -49,8 +49,12 @@ if pgrep -x "$BINARY" >/dev/null; then
 fi
 
 echo "Removing previous data..."
-rm -rf $CHAIN_DIR/$CHAINID_1 &> /dev/null
-rm -rf $CHAIN_DIR/$CHAINID_2 &> /dev/null
+rm -rf $CHAIN_DIR
+
+echo "Stopping any processes related with the tests..."
+pkill terrad
+pkill terrad
+pkill rly
 
 # Add directories for both chains, exit if an error occurs
 if ! mkdir -p $CHAIN_DIR/$CHAINID_1 2>/dev/null; then

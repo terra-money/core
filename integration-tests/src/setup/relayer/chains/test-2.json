@@ -4,7 +4,7 @@
     "key": "testkey",
     "chain-id": "test-2",
     "rpc-addr": "http://localhost:26657",
-    "grpc-addr": "",
+    "grpc-addr": "http://localhost:8090",
     "account-prefix": "terra",
     "keyring-backend": "test",
     "default-denom": "uluna",
