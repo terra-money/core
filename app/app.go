@@ -213,6 +213,7 @@ func NewTerraApp(
 		cdc,
 		appOpts,
 		app.GetWasmOpts(appOpts),
+		homePath,
 	)
 	app.keys = app.Keepers.GetKVStoreKey()
 	app.tkeys = app.Keepers.GetTransientStoreKey()
