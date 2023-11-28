@@ -3,7 +3,7 @@ import { getMnemonics, getLCDClient, blockInclusion } from "../../helpers";
 import fs from "fs";
 import path from 'path';
 
-describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.7/x/feeshare) ", () => {
+describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/v2.7/x/tokenfactory) ", () => {
     // Prepare environment clients, accounts and wallets
     const LCD = getLCDClient();
     const accounts = getMnemonics();

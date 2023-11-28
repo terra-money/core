@@ -211,10 +211,6 @@ init-test-framework: clean-testing-data install
 	@echo "Testing relayer..."
 	./scripts/tests/relayer/interchain-acc-config/rly-init.sh
 
-test-ibc-hooks: 
-	@echo "Testing ibc hooks..."
-	./scripts/tests/ibc-hooks/increment.sh
-
 test-tokenfactory: 
 	@echo "Testing tokenfactory..."
 	./scripts/tests/tokenfactory/tokenfactory.sh

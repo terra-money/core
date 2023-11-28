@@ -42,6 +42,9 @@ export function getMnemonics() {
     let tokenFactoryMnemonic = new MnemonicKey({
         mnemonic: "year aim panel oyster sunny faint dress skin describe chair guilt possible venue pottery inflict mass debate poverty multiply pulse ability purse situate inmate"
     })
+    let ibcHooksMnemonic = new MnemonicKey({
+        mnemonic: "leave side blue panel curve ancient suspect slide seminar neutral doctor boring only curious spell surround remind obtain slogan hire giant soccer crunch system"
+    })
 
     return {
         val1,
@@ -55,6 +58,7 @@ export function getMnemonics() {
         genesisVesting,
         genesisVesting1,
         icaMnemonic,
-        tokenFactoryMnemonic
+        tokenFactoryMnemonic,
+        ibcHooksMnemonic
     }
 }
