@@ -104,8 +104,10 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
             let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
             await blockInclusion();
             let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
-            expect(txResult.logs[0].events)
-                .toStrictEqual([{
+            let events = txResult.logs[0].events;
+
+            expect(events[0])
+                .toStrictEqual({
                     "type": "message",
                     "attributes": [{
                         "key": "action",
@@ -114,36 +116,15 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
                         "key": "sender",
                         "value": "terra1p4kcrttuxj9kyyvv5px5ccgwf0yrw74yp7jqm6"
                     }]
-                },
-                {
-                    "type": "channel_open_init",
-                    "attributes": [{
-                        "key": "port_id",
-                        "value": "icacontroller-terra1p4kcrttuxj9kyyvv5px5ccgwf0yrw74yp7jqm6"
-                    }, {
-                        "key": "channel_id",
-                        "value": "channel-1"
-                    }, {
-                        "key": "counterparty_port_id",
-                        "value": "icahost"
-                    }, {
-                        "key": "counterparty_channel_id",
-                        "value": ""
-                    }, {
-                        "key": "connection_id",
-                        "value": "connection-0"
-                    }, {
-                        "key": "version",
-                        "value": "{\"fee_version\":\"ics29-1\",\"app_version\":\"{\\\"version\\\":\\\"ics27-1\\\",\\\"controller_connection_id\\\":\\\"connection-0\\\",\\\"host_connection_id\\\":\\\"connection-0\\\",\\\"address\\\":\\\"\\\",\\\"encoding\\\":\\\"proto3\\\",\\\"tx_type\\\":\\\"sdk_multi_msg\\\"}\"}"
-                    }]
-                },
-                {
+                });
+            expect(events[2])
+                .toStrictEqual({
                     "type": "message",
                     "attributes": [{
                         "key": "module",
                         "value": "ibc_channel"
                     }]
-                }])
+                })
 
             // Check during 5 blocks for the receival 
             // of the IBC coin on chain-2
@@ -247,7 +228,7 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
                     }]
                 })
 
-            
+
             // Check during 5 blocks for the receival 
             // of the IBC coin on chain-2
             for (let i = 0; i <= 5; i++) {

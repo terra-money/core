@@ -45,6 +45,24 @@ export function getMnemonics() {
     let ibcHooksMnemonic = new MnemonicKey({
         mnemonic: "leave side blue panel curve ancient suspect slide seminar neutral doctor boring only curious spell surround remind obtain slogan hire giant soccer crunch system"
     })
+    let wasmContracts = new MnemonicKey({
+        mnemonic: "degree under tray object thought mercy mushroom captain bus work faint basic twice cube noble man ripple close flush bunker dish spare hungry arm"
+    })
+    let mnemonic2 = new MnemonicKey({
+        mnemonic: "range struggle season mesh antenna delay sell light yard path risk curve brain nut cabin injury dilemma fun comfort crumble today transfer bring draft"
+    })
+    let mnemonic3 = new MnemonicKey({
+        mnemonic: "giraffe trim element wheel cannon nothing enrich shiver upon output iron recall already fix appear produce fix behind scissors artefact excite tennis into side"
+    })
+    let mnemonic4 = new MnemonicKey({
+        mnemonic: "run turn cup combine sad toast roof already melt chimney arctic save avocado theory bracket cherry cotton fee once favorite swarm ignore dream element"
+    })
+    let mnemonic5 = new MnemonicKey({
+        mnemonic: "script key fold coyote cage squirrel prevent pole auction slide vintage shoot mirror erosion equip goose capable critic test space sketch monkey eight candy"
+    })
+    let mnemonic6 = new MnemonicKey({
+        mnemonic: "work clap clarify edit explain exact depth ramp law hard feel beauty stumble occur prevent crush distance purpose scrap current describe skirt panther skirt"
+    })
 
     return {
         val1,
@@ -59,6 +77,12 @@ export function getMnemonics() {
         genesisVesting1,
         icaMnemonic,
         tokenFactoryMnemonic,
-        ibcHooksMnemonic
+        ibcHooksMnemonic,
+        wasmContracts,
+        mnemonic2,
+        mnemonic3,
+        mnemonic4,
+        mnemonic5,
+        mnemonic6,
     }
 }

@@ -8,7 +8,7 @@
 .vscode
 .idea
 *.code-workspace
-data
+
 
 # Build
 bin
@@ -35,9 +35,6 @@ coverage.txt
 profile.out
 sim_log_file
 
-_build
-.testnet
-
 # Vagrant
 .vagrant/
 *.box
@@ -60,3 +57,5 @@ dependency-graph.png
 scripts/tests/ibc-hooks/counter/target
 scripts/tests/vesting-accounts/.vesting-periods.json
 node_modules
+test-data
+chain-upgrade-data

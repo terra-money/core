@@ -4,7 +4,12 @@
   "description": "Integration tests for Core using feather.js",
   "main": "index.ts",
   "scripts": {
-    "test": "jest"
+    "test:init" : "bash src/setup/init-test-framework.sh",
+    "test:relayer": "bash src/setup/relayer/init-relayer.sh",
+    "test:chain:upgrade" : "bash src/setup/chain-upgrade/chain-upgrade.sh",
+    "test:start" : "jest --runInBand --detectOpenHandles",
+    "start": "npm run test:init && npm run test:relayer && npm run test:start",
+    "test:clean": "rm -rf src/test-data chain-upgrade-data && pkill terrad && pkill terrad && pkill rly"
   },
   "repository": {
     "type": "git",
@@ -30,8 +35,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@terra-money/feather.js": "^2.0.0-beta.13",
-    "@terra-money/terra.proto": "^4.0.1",
+    "@terra-money/feather.js": "^2.0.0-beta.14",
     "moment": "^2.29.4"
   }
 }

@@ -32,91 +32,86 @@ describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
     });
 
     test('Must create and order two transactions in block', async () => {
-        try {
-            // Query block height and assert that the value is greater than 1.
-            // This blockHeight will be used later on timeoutHeight
-            const blockHeight = (await LCD.chain1.tendermint.blockInfo("test-1")).block.header.height;
-            expect(parseInt(blockHeight)).toBeGreaterThan(1);
+        // Query block height and assert that the value is greater than 1.
+        // This blockHeight will be used later on timeoutHeight
+        const blockHeight = (await LCD.chain1.tendermint.blockInfo("test-1")).block.header.height;
+        expect(parseInt(blockHeight)).toBeGreaterThan(1);
 
-            // Query account info to sign the transactions offline 
-            // to be included in the MsgAuctionBid
-            const accInfo = await LCD.chain1.auth.accountInfo(wallet.key.accAddress("terra"));
+        // Query account info to sign the transactions offline 
+        // to be included in the MsgAuctionBid
+        const accInfo = await LCD.chain1.auth.accountInfo(wallet.key.accAddress("terra"));
 
-            // **First** message to be signed using **wallet**
-            const firstMsg = MsgSend.fromData({
-                "@type": "/cosmos.bank.v1beta1.MsgSend",
-                "from_address": accounts.pobMnemonic.accAddress("terra"),
-                "to_address": accounts.pobMnemonic1.accAddress("terra"),
-                "amount": [{ "denom": "uluna", "amount": "1" }]
-            });
-            const firstSignedSendTx = await wallet.createAndSignTx({
-                msgs: [firstMsg],
-                memo: "First signed tx",
-                chainID: "test-1",
-                accountNumber: accInfo.getAccountNumber(),
-                sequence: accInfo.getSequenceNumber() + 1,
-                fee: new Fee(100000, new Coins({ uluna: 100000 })),
-                timeoutHeight: parseInt(blockHeight) + 20,
-            });
+        // **First** message to be signed using **wallet**
+        const firstMsg = MsgSend.fromData({
+            "@type": "/cosmos.bank.v1beta1.MsgSend",
+            "from_address": accounts.pobMnemonic.accAddress("terra"),
+            "to_address": accounts.pobMnemonic1.accAddress("terra"),
+            "amount": [{ "denom": "uluna", "amount": "1" }]
+        });
+        const firstSignedSendTx = await wallet.createAndSignTx({
+            msgs: [firstMsg],
+            memo: "First signed tx",
+            chainID: "test-1",
+            accountNumber: accInfo.getAccountNumber(),
+            sequence: accInfo.getSequenceNumber() + 1,
+            fee: new Fee(100000, new Coins({ uluna: 100000 })),
+            timeoutHeight: parseInt(blockHeight) + 20,
+        });
 
-            // **Second** message to be signed using **wallet**
-            const secondMsg = MsgSend.fromData({
-                "@type": "/cosmos.bank.v1beta1.MsgSend",
-                "from_address": accounts.pobMnemonic.accAddress("terra"),
-                "to_address": accounts.pobMnemonic1.accAddress("terra"),
-                "amount": [{ "denom": "uluna", "amount": "2" }]
-            });
-            const secondSignedSendTx = await wallet.createAndSignTx({
-                msgs: [secondMsg],
-                memo: "Second signed tx",
-                chainID: "test-1",
-                accountNumber: accInfo.getAccountNumber(),
-                sequence: accInfo.getSequenceNumber(),
-                fee: new Fee(100000, new Coins({ uluna: 100000 })),
-                timeoutHeight: parseInt(blockHeight) + 20,
-            });
+        // **Second** message to be signed using **wallet**
+        const secondMsg = MsgSend.fromData({
+            "@type": "/cosmos.bank.v1beta1.MsgSend",
+            "from_address": accounts.pobMnemonic.accAddress("terra"),
+            "to_address": accounts.pobMnemonic1.accAddress("terra"),
+            "amount": [{ "denom": "uluna", "amount": "2" }]
+        });
+        const secondSignedSendTx = await wallet.createAndSignTx({
+            msgs: [secondMsg],
+            memo: "Second signed tx",
+            chainID: "test-1",
+            accountNumber: accInfo.getAccountNumber(),
+            sequence: accInfo.getSequenceNumber(),
+            fee: new Fee(100000, new Coins({ uluna: 100000 })),
+            timeoutHeight: parseInt(blockHeight) + 20,
+        });
 
-            // Create the **MsgAuctionBid** with **wallet11**.
-            // 
-            // The two signed transactions included in MsgAuctionBid
-            // ordered as the **secondSingedTransaction** in the first position
-            // and the **firstSignedTransaction** in the second position
-            let buildTx = await wallet11.createAndSignTx({
-                msgs: [MsgAuctionBid.fromData({
-                    "@type": "/pob.builder.v1.MsgAuctionBid",
-                    bid: { amount: "100000", denom: "uluna" },
-                    bidder: accounts.pobMnemonic1.accAddress("terra"),
-                    transactions: [secondSignedSendTx.toBytes(), firstSignedSendTx.toBytes()]
-                })],
-                memo: "Build block",
-                chainID: "test-1",
-                fee: new Fee(100000, new Coins({ uluna: 100000 })),
-                timeoutHeight: parseInt(blockHeight) + 20,
-            });
-            const result = await LCD.chain1.tx.broadcastSync(buildTx, "test-1");
-            await blockInclusion();
-            const txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1");
-            expect(txResult.logs).toBeDefined();
-            // Recover the transactions hashes from the bundled transactions
-            // to query the respective transaction data and check there are two
-            const txHashes = (txResult.logs as any)[0].eventsByType.auction_bid.bundled_txs[0].split(",");
-            expect(txHashes.length).toBe(2);
+        // Create the **MsgAuctionBid** with **wallet11**.
+        // 
+        // The two signed transactions included in MsgAuctionBid
+        // ordered as the **secondSingedTransaction** in the first position
+        // and the **firstSignedTransaction** in the second position
+        let buildTx = await wallet11.createAndSignTx({
+            msgs: [MsgAuctionBid.fromData({
+                "@type": "/pob.builder.v1.MsgAuctionBid",
+                bid: { amount: "100000", denom: "uluna" },
+                bidder: accounts.pobMnemonic1.accAddress("terra"),
+                transactions: [secondSignedSendTx.toBytes(), firstSignedSendTx.toBytes()]
+            })],
+            memo: "Build block",
+            chainID: "test-1",
+            fee: new Fee(100000, new Coins({ uluna: 100000 })),
+            timeoutHeight: parseInt(blockHeight) + 20,
+        });
+        const result = await LCD.chain1.tx.broadcastSync(buildTx, "test-1");
+        await blockInclusion();
+        const txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1");
+        expect(txResult.logs).toBeDefined();
+        // Recover the transactions hashes from the bundled transactions
+        // to query the respective transaction data and check there are two
+        const txHashes = (txResult.logs as any)[0].eventsByType.auction_bid.bundled_txs[0].split(",");
+        expect(txHashes.length).toBe(2);
 
-            // Define index to check the order of the transactions
-            let index = 0;
-            for await (const txHash of txHashes) {
-                const txResult = await LCD.chain1.tx.txInfo(txHash, "test-1");
-                const dataMsg = txResult.tx.body.messages[0].toData();
-                // When the index is 0 the expected message is the secondMsg
-                // because the MsgAuctionBid orders the transactions that way
-                const expectedMsg = index === 0 ? secondMsg : firstMsg;
-                expect(dataMsg).toMatchObject(expectedMsg.toData());
+        // Define index to check the order of the transactions
+        let index = 0;
+        for await (const txHash of txHashes) {
+            const txResult = await LCD.chain1.tx.txInfo(txHash, "test-1");
+            const dataMsg = txResult.tx.body.messages[0].toData();
+            // When the index is 0 the expected message is the secondMsg
+            // because the MsgAuctionBid orders the transactions that way
+            const expectedMsg = index === 0 ? secondMsg : firstMsg;
+            expect(dataMsg).toMatchObject(expectedMsg.toData());
 
-                index++;
-            }
-        }
-        catch (e) {
-            expect(e).toBeUndefined();
+            index++;
         }
     });
 });

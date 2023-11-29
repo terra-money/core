@@ -195,6 +195,7 @@ describe("IbcHooks Module (github.com/cosmos/ibc-apps/modules/ibc-hooks/v7) ", (
             });
             await LCD.chain1.tx.broadcastSync(tx, "test-1")
             await ibcTransfer();
+            await ibcTransfer();
             let res = await LCD.chain1.wasm.contractQuery(
                 contractAddress,
                 { "get_count": { "addr": contractAddress } }
