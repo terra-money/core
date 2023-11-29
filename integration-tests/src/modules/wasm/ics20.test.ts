@@ -239,7 +239,6 @@ describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) "
                 // Assert the assets reach the other chain with the correct amount
                 await ibcTransfer();
                 await ibcTransfer();
-                console.log("randomWalletAddress", randomWalletAddress)
                 const queryRes = await LCD.chain2.bank.balance(randomWalletAddress);
                 let ibcCoin = queryRes[0].find(coin => coin.denom.startsWith("ibc/"));
                 expect(ibcCoin).toBeDefined();
