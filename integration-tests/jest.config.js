@@ -4,6 +4,6 @@ module.exports = {
   testEnvironment: 'node',
   testMatch: ['**/*.test.ts'],
   verbose: true,
-  testTimeout: 30000,
-  maxConcurrency: 4,
+  testTimeout: 60000,
+  runInBand: true,
 };

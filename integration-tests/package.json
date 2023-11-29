@@ -9,7 +9,7 @@
     "test:chain:upgrade" : "bash src/setup/chain-upgrade/chain-upgrade.sh",
     "test:start" : "jest",
     "start": "npm run test:init && npm run test:relayer && npm run test:start",
-    "test:clean": "rm -rf test-data chain-upgrade-data && pkill terrad && pkill terrad && pkill rly"
+    "test:clean": "rm -rf src/test-data chain-upgrade-data && pkill terrad && pkill terrad && pkill rly"
   },
   "repository": {
     "type": "git",
@@ -36,7 +36,6 @@
   },
   "dependencies": {
     "@terra-money/feather.js": "^2.0.0-beta.14",
-    "@terra-money/terra.proto": "^4.0.1",
     "moment": "^2.29.4"
   }
 }

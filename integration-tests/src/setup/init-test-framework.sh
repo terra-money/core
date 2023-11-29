@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BINARY=terrad
-CHAIN_DIR=$(pwd)/test-data
+CHAIN_DIR=$(pwd)/src/test-data
 CHAINID_1=test-1
 CHAINID_2=test-2
 

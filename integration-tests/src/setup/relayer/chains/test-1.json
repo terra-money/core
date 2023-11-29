@@ -12,7 +12,7 @@
     "gas-prices": "0.025uluna",
     "coin-type": 330,
     "debug": true,
-    "timeout": "10s",
+    "timeout": "4s",
     "output-format": "json",
     "sign-mode": "direct",
     "trusting-period": "330h",
