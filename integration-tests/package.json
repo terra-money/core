@@ -1,6 +1,6 @@
 {
   "name": "@terra-money/core-integration-tests",
-  "version": "v2.8.0",
+  "version": "v2.9.0",
   "description": "Integration tests for Core using feather.js",
   "main": "index.ts",
   "scripts": {
