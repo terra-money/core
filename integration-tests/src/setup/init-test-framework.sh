@@ -190,6 +190,7 @@ sed -i -e 's/enable = false/enable = true/g' $CHAIN_DIR/$CHAINID_1/config/app.to
 sed -i -e 's/swagger = false/swagger = true/g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 sed -i -e 's#"tcp://localhost:1317"#"tcp://localhost:'"$RESTPORT_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 sed -i -e 's#":8080"#":'"$ROSETTA_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/app.toml
+sed -i -e 's/streamers = \[\]/streamers = \["fastquery"\]/g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 
 sed -i -e 's#"tcp://0.0.0.0:26656"#"tcp://localhost:'"$P2PPORT_2"'"#g' $CHAIN_DIR/$CHAINID_2/config/config.toml
 sed -i -e 's#"tcp://127.0.0.1:26657"#"tcp://localhost:'"$RPCPORT_2"'"#g' $CHAIN_DIR/$CHAINID_2/config/config.toml
@@ -201,6 +202,7 @@ sed -i -e 's/enable = false/enable = true/g' $CHAIN_DIR/$CHAINID_2/config/app.to
 sed -i -e 's/swagger = false/swagger = true/g' $CHAIN_DIR/$CHAINID_2/config/app.toml
 sed -i -e 's#"tcp://localhost:1317"#"tcp://localhost:'"$RESTPORT_2"'"#g' $CHAIN_DIR/$CHAINID_2/config/app.toml
 sed -i -e 's#":8080"#":'"$ROSETTA_2"'"#g' $CHAIN_DIR/$CHAINID_2/config/app.toml
+sed -i -e 's/streamers = \[\]/streamers = \["fastquery"\]/g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 
 echo "Chaning genesis.json..."
 sed -i -e 's/"voting_period": "172800s"/"voting_period": "2s"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json

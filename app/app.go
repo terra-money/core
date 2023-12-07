@@ -7,12 +7,15 @@ import (
 	"os"
 	"path/filepath"
 	"reflect" // #nosec G702
+	"slices"
 
 	"github.com/prometheus/client_golang/prometheus"
 
+	"github.com/cosmos/cosmos-sdk/store/streaming"
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	fastquery "github.com/terra-money/core/v2/app/fast_query"
 	"github.com/terra-money/core/v2/app/keepers"
 	"github.com/terra-money/core/v2/app/post"
 	"github.com/terra-money/core/v2/app/rpc"
@@ -247,10 +250,23 @@ func NewTerraApp(
 	app.mm.RegisterInvariants(&app.Keepers.CrisisKeeper)
 	app.mm.RegisterServices(app.configurator)
 
+	// load state streaming if enabled
+	if _, _, err := streaming.LoadStreamingServices(app.BaseApp, appOpts, app.appCodec, app.Logger(), app.keys); err != nil {
+		panic(err)
+	}
+
 	// initialize stores
 	app.MountKVStores(app.keys)
 	app.MountTransientStores(app.tkeys)
 	app.MountMemoryStores(app.memKeys)
+
+	// when fastquery streamer is enabled in the config,
+	// setup the fastquery feature and serve the data
+	// from the fastquery.
+	streamers := cast.ToStringSlice(appOpts.Get("store.streamers"))
+	if slices.Contains(streamers, "fastquery") {
+		app.SetupFastQueryDB(appOpts, homePath)
+	}
 
 	// register upgrade
 	app.RegisterUpgradeHandlers()
@@ -617,4 +633,32 @@ func (app *TerraApp) GetWasmOpts(appOpts servertypes.AppOptions) []wasmkeeper.Op
 	)
 
 	return wasmOpts
+}
+
+func (app *TerraApp) SetupFastQueryDB(appOpts servertypes.AppOptions, homePath string) error {
+	// Create the path for fastquerydb
+	dir := filepath.Join(homePath, "data")
+
+	// Create a copy of the store keys to avoid mutating the app.keys
+	storeKeys := make([]storetypes.StoreKey, 0, len(app.keys))
+	for _, storeKey := range app.keys {
+		storeKeys = append(storeKeys, storeKey)
+	}
+
+	// Create fast query serice
+	fastQueryService, err := fastquery.NewFastQueryService(dir, app.Logger())
+	if err != nil {
+		return err
+	}
+
+	// Create  the streaming service
+	streamingservice := fastquery.NewStreamingService(fastQueryService, storeKeys)
+
+	// Assign the streaming service to the app and
+	// the query multi store so the users query the
+	// data in a faster way.
+	app.SetStreamingService(streamingservice)
+	app.SetQueryMultiStore(fastQueryService.Store)
+
+	return nil
 }
