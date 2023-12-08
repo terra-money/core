@@ -107,10 +107,7 @@ ifeq (,$(findstring nostrip,$(COSMOS_BUILD_OPTIONS)))
   BUILD_FLAGS += -trimpath
 endif
 
-# The below include contains the tools and runsim targets.
-include contrib/devtools/Makefile
-
-all: tools install lint test
+all: install lint test
 
 build: go.sum
 ifeq ($(OS),Windows_NT)
