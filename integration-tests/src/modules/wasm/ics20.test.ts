@@ -110,7 +110,7 @@ describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) "
         test("must create the channel for the ICS20 contract", async () => {
             // Stop the relayer to don't create conflicts
             try {
-                execSync("pkill rly")
+                execSync("pkill relayer")
             }
             catch (e) {
                 console.log(e)
@@ -118,12 +118,12 @@ describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) "
 
             // Create the path
             const pathToRelayDir = path.join(__dirname, "/../../test-data/relayer");
-            execSync(`rly tx link "test1-test2" --src-port="wasm.${ics20ContractAddr}" --dst-port="transfer" --version="ics20-1" --home="${pathToRelayDir}"`, { stdio: "ignore" })
+            execSync(`relayer tx link "test1-test2" --src-port="wasm.${ics20ContractAddr}" --dst-port="transfer" --version="ics20-1" --home="${pathToRelayDir}"`, { stdio: "ignore" })
             await blockInclusion();
 
             // Start the relayer again
-            const rlyStart = exec(`rly start "test1-test2" -p="events" -b=100 --flush-interval="1s" --time-threshold="1s" --home="${pathToRelayDir}" > ${pathToRelayDir}/relayer.log 2>&1`)
-            rlyStart.unref();
+            const relayerStart = exec(`relayer start "test1-test2" -p="events" -b=100 --flush-interval="1s" --time-threshold="1s" --home="${pathToRelayDir}" > ${pathToRelayDir}/relayer.log 2>&1`)
+            relayerStart.unref();
 
             const res = await LCD.chain1.ibc.channels("test-1", {
                 "pagination.limit": 1,
