@@ -4,7 +4,7 @@ This project is meant to increase the success ratio of new core releases, improv
 
 ### Development
 
-This set of tests must run out of the box in Linux-based systems installing [GoLang 1.20](https://go.dev/), [jq](https://stedolan.github.io/jq/) and [screen](https://www.geeksforgeeks.org/screen-command-in-linux-with-examples/). The relayer used in the tests is [go relayer](https://github.com/cosmos/relayer). Keep in mind that the data is not wiped out each time a new test is executed.
+This set of tests must run out of the box in Linux-based systems installing [GoLang 1.21.5](https://go.dev/), [jq](https://stedolan.github.io/jq/) and [screen](https://www.geeksforgeeks.org/screen-command-in-linux-with-examples/). The relayer used in the tests is [go relayer](https://github.com/cosmos/relayer). Keep in mind that the data is not wiped out each time a new test is executed.
 
 
 Folders structure:

@@ -1,6 +1,6 @@
 module github.com/terra-money/core/v2
 
-go 1.20
+go 1.21.5
 
 require (
 	cosmossdk.io/errors v1.0.0

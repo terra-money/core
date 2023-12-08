@@ -12,7 +12,7 @@ permissions:
   packages: write
 
 env:
-  GO_VERSION: 1.20.7
+  GO_VERSION: 1.21.5
   TAR_PATH: /tmp/terramoneycore.tar
   IMAGE_NAME: terramoneycore
 

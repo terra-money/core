@@ -1,6 +1,6 @@
 module github.com/terra-money/core/interchaintest
 
-go 1.20
+go 1.21.5
 
 replace (
 	// interchaintest supports ICS features so we need this for now
