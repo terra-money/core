@@ -23,7 +23,13 @@ type StreamingService struct {
 }
 
 // NewStreamingService creates a new StreamingService for the provided writeDir, (optional) filePrefix, and storeKeys
-func NewStreamingService(fastQueryService *FastQueryService, storeKeys []types.StoreKey) *StreamingService {
+func NewStreamingService(fastQueryService *FastQueryService, appKeys map[string]*types.KVStoreKey) *StreamingService {
+	// Create a copy of the store keys to avoid mutating the app.keys
+	storeKeys := make([]types.StoreKey, 0, len(appKeys))
+	for _, storeKey := range appKeys {
+		storeKeys = append(storeKeys, storeKey)
+	}
+
 	// sort by the storeKeys first to avoid indeterministic order
 	sort.SliceStable(storeKeys, func(i, j int) bool {
 		return strings.Compare(storeKeys[i].Name(), storeKeys[j].Name()) < 0

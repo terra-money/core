@@ -15,8 +15,8 @@ type FastQueryService struct {
 	logger            log.Logger
 }
 
-func NewFastQueryService(homedir string, logger log.Logger) (*FastQueryService, error) {
-	// Create a new instance of the Database Driver that uses LevelDB
+func NewFastQueryService(homedir string, logger log.Logger, storeKeys map[string]*types.KVStoreKey) (*FastQueryService, error) {
+	// Create a copy of the store keys
 	fastQueryDbDriver, err := driver.NewDBDriver(homedir)
 	if err != nil {
 		return nil, err
@@ -30,10 +30,12 @@ func NewFastQueryService(homedir string, logger log.Logger) (*FastQueryService, 
 			Debug: true,
 		},
 	)
-
+	// Create the new BatchingDB with it's safe batch closer
 	heightEnabledDB := driver.NewSafeBatchDB(fastQueryDb)
 	safeBatchDBCloser := heightEnabledDB.(driver.SafeBatchDBCloser)
-	store := store.NewStore(heightEnabledDB, fastQueryDb, logger)
+	store := store.NewStore(heightEnabledDB, fastQueryDb, logger, storeKeys)
+
+	// store.LoadLatestVersion()
 
 	return &FastQueryService{
 		Store:             store,
@@ -45,6 +47,7 @@ func NewFastQueryService(homedir string, logger log.Logger) (*FastQueryService, 
 
 func (fqs *FastQueryService) CommitChanges(blockHeight int64, changeSet []types.StoreKVPair) error {
 	fqs.logger.Info("CommitChanges", "blockHeight", blockHeight, "changeSet", changeSet)
+
 	fqs.fastQueryDb.SetWriteHeight(blockHeight)
 	fqs.safeBatchDBCloser.Open()
 
@@ -58,7 +61,6 @@ func (fqs *FastQueryService) CommitChanges(blockHeight int64, changeSet []types.
 		}
 	}
 
-	fqs.fastQueryDb.ClearReadHeight()
 	if _, err := fqs.safeBatchDBCloser.Flush(); err != nil {
 		return err
 	}

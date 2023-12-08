@@ -2,12 +2,13 @@ package app
 
 import (
 	"encoding/json"
-	"golang.org/x/exp/slices"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"reflect" // #nosec G702
+
+	"golang.org/x/exp/slices"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -640,20 +641,14 @@ func (app *TerraApp) SetupFastQueryDB(appOpts servertypes.AppOptions, homePath s
 	// Create the path for fastquerydb
 	dir := filepath.Join(homePath, "data")
 
-	// Create a copy of the store keys to avoid mutating the app.keys
-	storeKeys := make([]storetypes.StoreKey, 0, len(app.keys))
-	for _, storeKey := range app.keys {
-		storeKeys = append(storeKeys, storeKey)
-	}
-
 	// Create fast query serice
-	fastQueryService, err := fastquery.NewFastQueryService(dir, app.Logger())
+	fastQueryService, err := fastquery.NewFastQueryService(dir, app.Logger(), app.keys)
 	if err != nil {
 		return err
 	}
 
 	// Create  the streaming service
-	streamingservice := fastquery.NewStreamingService(fastQueryService, storeKeys)
+	streamingservice := fastquery.NewStreamingService(fastQueryService, app.keys)
 
 	// Assign the streaming service to the app and
 	// the query multi store so the users query the
