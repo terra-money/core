@@ -11,39 +11,56 @@ import (
 type FastQueryService struct {
 	Store             *store.Store
 	safeBatchDBCloser driver.SafeBatchDBCloser
-	fastQueryDriver   height_driver.HeightEnabledDB
+	fastQueryDb       *height_driver.HeightDB
 	logger            log.Logger
 }
 
 func NewFastQueryService(homedir string, logger log.Logger) (*FastQueryService, error) {
 	// Create a new instance of the Database Driver that uses LevelDB
-	fastQueryDriver, err := driver.NewDBDriver(homedir)
+	fastQueryDbDriver, err := driver.NewDBDriver(homedir)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create HeightDB Driver that implements optimization for reading
 	// and writing data in the database in paralell.
-	fastQueryHeightDriver := height_driver.NewHeightDB(
-		fastQueryDriver,
+	fastQueryDb := height_driver.NewHeightDB(
+		fastQueryDbDriver,
 		&height_driver.HeightDBConfig{
 			Debug: true,
 		},
 	)
 
-	heightEnabledDB := driver.NewSafeBatchDB(fastQueryHeightDriver)
+	heightEnabledDB := driver.NewSafeBatchDB(fastQueryDb)
 	safeBatchDBCloser := heightEnabledDB.(driver.SafeBatchDBCloser)
-	store := store.NewStore(heightEnabledDB, fastQueryHeightDriver, logger)
+	store := store.NewStore(heightEnabledDB, fastQueryDb, logger)
 
 	return &FastQueryService{
 		Store:             store,
 		safeBatchDBCloser: safeBatchDBCloser,
-		fastQueryDriver:   fastQueryDriver,
+		fastQueryDb:       fastQueryDb,
 		logger:            logger,
 	}, err
 }
 
 func (fqs *FastQueryService) CommitChanges(blockHeight int64, changeSet []types.StoreKVPair) error {
 	fqs.logger.Info("CommitChanges", "blockHeight", blockHeight, "changeSet", changeSet)
+	fqs.fastQueryDb.SetWriteHeight(blockHeight)
+	fqs.safeBatchDBCloser.Open()
+
+	for _, kv := range changeSet {
+		key := fqs.Store.StoreKeysByName()[kv.StoreKey]
+		ckvs := fqs.Store.GetCommitKVStore(key)
+		if kv.Delete {
+			ckvs.Delete(kv.Key)
+		} else {
+			ckvs.Set(kv.Key, kv.Value)
+		}
+	}
+
+	fqs.fastQueryDb.ClearReadHeight()
+	if _, err := fqs.safeBatchDBCloser.Flush(); err != nil {
+		return err
+	}
 	return nil
 }

@@ -2,12 +2,12 @@ package app
 
 import (
 	"encoding/json"
+	"golang.org/x/exp/slices"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"reflect" // #nosec G702
-	"slices"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -263,6 +263,7 @@ func NewTerraApp(
 	// when fastquery streamer is enabled in the config,
 	// setup the fastquery feature and serve the data
 	// from the fastquery.
+	// TODO: move checking if streaming service is enabled to a helper function
 	streamers := cast.ToStringSlice(appOpts.Get("store.streamers"))
 	if slices.Contains(streamers, "fastquery") {
 		app.SetupFastQueryDB(appOpts, homePath)
