@@ -1,6 +1,6 @@
 {
   "name": "@terra-money/core-integration-tests",
-  "version": "v2.8.0",
+  "version": "v2.9.0",
   "description": "Integration tests for Core using feather.js",
   "main": "index.ts",
   "scripts": {
@@ -9,7 +9,7 @@
     "test:chain:upgrade" : "bash src/setup/chain-upgrade/chain-upgrade.sh",
     "test:start" : "jest --runInBand --detectOpenHandles",
     "start": "npm run test:init && npm run test:relayer && npm run test:start",
-    "test:clean": "rm -rf src/test-data chain-upgrade-data && pkill terrad && pkill terrad && pkill rly"
+    "test:clean": "rm -rf src/test-data chain-upgrade-data && pkill terrad && pkill terrad && pkill relayer"
   },
   "repository": {
     "type": "git",
