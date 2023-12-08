@@ -54,7 +54,7 @@ rm -rf $CHAIN_DIR
 echo "Stopping any processes related with the tests..."
 pkill terrad
 pkill terrad
-pkill rly
+pkill relayer
 
 # Add directories for both chains, exit if an error occurs
 if ! mkdir -p $CHAIN_DIR/$CHAINID_1 2>/dev/null; then

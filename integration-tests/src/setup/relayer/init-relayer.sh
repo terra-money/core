@@ -7,7 +7,7 @@ echo "##################"
 echo ""
 
 # Configure predefined mnemonic pharses
-BINARY=rly
+BINARY=relayer
 CHAIN_DIR=$(pwd)/src/test-data
 CHAINID_1=test-1
 CHAINID_2=test-2
@@ -17,8 +17,8 @@ MNEMONIC_2="record gift you once hip style during joke field prize dust unique l
 # Ensure rly is installed
 if ! [ -x "$(command -v $BINARY)" ]; then
     echo "$BINARY is required to run this script..."
-    echo "You can download at https://github.com/cosmos/relayer"
-    exit 1
+    echo "Installing go relayer https://github.com/cosmos/relayer"
+    go install github.com/cosmos/relayer/v2@v2.4.2
 fi
 
 echo "Initializing $BINARY..."
