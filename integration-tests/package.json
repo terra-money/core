@@ -35,7 +35,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@terra-money/feather.js": "^2.0.0-beta.14",
+    "@terra-money/feather.js": "^2.0.0-beta.15",
     "moment": "^2.29.4"
   }
 }

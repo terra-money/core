@@ -54,7 +54,7 @@ describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
             chainID: "test-1",
             accountNumber: accInfo.getAccountNumber(),
             sequence: accInfo.getSequenceNumber() + 1,
-            fee: new Fee(100000, new Coins({ uluna: 100000 })),
+            fee: new Fee(100000, new Coins({ uluna: 10000 })),
             timeoutHeight: parseInt(blockHeight) + 20,
         });
 
@@ -71,7 +71,7 @@ describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
             chainID: "test-1",
             accountNumber: accInfo.getAccountNumber(),
             sequence: accInfo.getSequenceNumber(),
-            fee: new Fee(100000, new Coins({ uluna: 100000 })),
+            fee: new Fee(100000, new Coins({ uluna: 10000 })),
             timeoutHeight: parseInt(blockHeight) + 20,
         });
 
@@ -89,7 +89,7 @@ describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
             })],
             memo: "Build block",
             chainID: "test-1",
-            fee: new Fee(100000, new Coins({ uluna: 100000 })),
+            fee: new Fee(100000, new Coins({ uluna: 10000 })),
             timeoutHeight: parseInt(blockHeight) + 20,
         });
         const result = await LCD.chain1.tx.broadcastSync(buildTx, "test-1");
@@ -98,6 +98,7 @@ describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
         expect(txResult.logs).toBeDefined();
         // Recover the transactions hashes from the bundled transactions
         // to query the respective transaction data and check there are two
+        console.log(txResult)
         const txHashes = (txResult.logs as any)[0].eventsByType.auction_bid.bundled_txs[0].split(",");
         expect(txHashes.length).toBe(2);
 

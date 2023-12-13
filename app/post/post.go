@@ -2,6 +2,7 @@ package post
 
 import (
 	feesharepost "github.com/terra-money/core/v2/x/feeshare/post"
+	refundpost "github.com/terra-money/core/v2/x/refund/post"
 	customwasmkeeper "github.com/terra-money/core/v2/x/wasm/keeper"
 	wasmpost "github.com/terra-money/core/v2/x/wasm/post"
 
@@ -17,6 +18,7 @@ type HandlerOptions struct {
 func NewPostHandler(options HandlerOptions) sdk.PostHandler {
 
 	postDecorators := []sdk.PostDecorator{
+		refundpost.NewRefundDecorator(options.BankKeeper),
 		feesharepost.NewFeeSharePayoutDecorator(options.FeeShareKeeper, options.BankKeeper, options.WasmKeeper),
 		wasmpost.NewWasmdDecorator(options.WasmKeeper),
 	}
