@@ -93,15 +93,16 @@ import (
 	tokenfactorykeeper "github.com/terra-money/core/v2/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
+	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	pobtype "github.com/skip-mev/pob/x/builder/types"
 	"github.com/terra-money/alliance/x/alliance"
 	alliancekeeper "github.com/terra-money/alliance/x/alliance/keeper"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	custombankkeeper "github.com/terra-money/core/v2/x/bank/keeper"
+	feeburnkeeper "github.com/terra-money/core/v2/x/feeburn/keeper"
+	feeburntypes "github.com/terra-money/core/v2/x/feeburn/types"
 	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
-
-	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
 
 	terraappconfig "github.com/terra-money/core/v2/app/config"
 	// unnamed import of statik for swagger UI support
@@ -112,7 +113,7 @@ var wasmCapabilities = "iterator,staking,stargate,token_factory,cosmwasm_1_1,cos
 
 // module account permissions
 var maccPerms = map[string][]string{
-	authtypes.FeeCollectorName:     nil,
+	authtypes.FeeCollectorName:     {authtypes.Burner},
 	distrtypes.ModuleName:          nil,
 	icatypes.ModuleName:            nil,
 	minttypes.ModuleName:           {authtypes.Minter},
@@ -160,6 +161,7 @@ type TerraAppKeepers struct {
 	TokenFactoryKeeper    tokenfactorykeeper.Keeper
 	AllianceKeeper        alliancekeeper.Keeper
 	FeeShareKeeper        feesharekeeper.Keeper
+	FeeBurnKeeper         feeburnkeeper.Keeper
 	ICQKeeper             icqkeeper.Keeper
 
 	// IBC hooks
@@ -516,6 +518,12 @@ func NewTerraAppKeepers(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
+	keepers.FeeBurnKeeper = feeburnkeeper.NewKeeper(
+		keys[feeburntypes.StoreKey],
+		appCodec,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
 	keepers.FeeShareKeeper = feesharekeeper.NewKeeper(
 		appCodec,
 		keys[feesharetypes.StoreKey],
@@ -588,6 +596,7 @@ func (app *TerraAppKeepers) initParamsKeeper(appCodec codec.BinaryCodec, legacyA
 	paramsKeeper.Subspace(tokenfactorytypes.ModuleName).WithKeyTable(tokenfactorytypes.ParamKeyTable())
 	paramsKeeper.Subspace(feesharetypes.ModuleName).WithKeyTable(feesharetypes.ParamKeyTable())
 	paramsKeeper.Subspace(alliancetypes.ModuleName).WithKeyTable(alliancetypes.ParamKeyTable())
+	paramsKeeper.Subspace(feeburntypes.ModuleName)
 
 	return paramsKeeper
 }

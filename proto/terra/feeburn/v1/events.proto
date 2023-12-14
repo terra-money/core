@@ -1,0 +1,15 @@
+syntax = "proto3";
+package terra.feeburn.v1;
+
+import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/terra-money/core/v2/x/feeburn/types";
+
+// Event fired when fees are burned with the amount of fees burned
+message FeeBurnEvent {
+    // Amount of the payout
+    repeated cosmos.base.v1beta1.Coin fees_burn = 1 [
+    (gogoproto.nullable) = false
+  ];
+}

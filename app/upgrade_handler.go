@@ -15,6 +15,7 @@ import (
 	v2_7 "github.com/terra-money/core/v2/app/upgrades/v2.7"
 	v2_8 "github.com/terra-money/core/v2/app/upgrades/v2.8"
 	v2_9 "github.com/terra-money/core/v2/app/upgrades/v2.9"
+	feeburntypes "github.com/terra-money/core/v2/x/feeburn/types"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
@@ -140,6 +141,13 @@ func (app *TerraApp) RegisterUpgradeStores() {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{
 				icqtypes.StoreKey,
+			},
+		}
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	} else if upgradeInfo.Name == terraappconfig.Upgrade2_9 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Added: []string{
+				feeburntypes.StoreKey,
 			},
 		}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))

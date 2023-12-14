@@ -1,0 +1,11 @@
+syntax = "proto3";
+package terra.feeburn.v1;
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/terra-money/core/v2/x/feeburn/types";
+
+// Params defines the parameters for the feeburn module
+message Params {
+    bool enable_fee_burn = 1;
+}

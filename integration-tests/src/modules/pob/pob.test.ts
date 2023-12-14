@@ -54,7 +54,7 @@ describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
             chainID: "test-1",
             accountNumber: accInfo.getAccountNumber(),
             sequence: accInfo.getSequenceNumber() + 1,
-            fee: new Fee(100000, new Coins({ uluna: 100000 })),
+            fee: new Fee(100000, new Coins({ uluna: 5000 })),
             timeoutHeight: parseInt(blockHeight) + 20,
         });
 
@@ -71,7 +71,7 @@ describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
             chainID: "test-1",
             accountNumber: accInfo.getAccountNumber(),
             sequence: accInfo.getSequenceNumber(),
-            fee: new Fee(100000, new Coins({ uluna: 100000 })),
+            fee: new Fee(100000, new Coins({ uluna: 5000 })),
             timeoutHeight: parseInt(blockHeight) + 20,
         });
 
@@ -83,18 +83,19 @@ describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
         let buildTx = await wallet11.createAndSignTx({
             msgs: [MsgAuctionBid.fromData({
                 "@type": "/pob.builder.v1.MsgAuctionBid",
-                bid: { amount: "100000", denom: "uluna" },
+                bid: { amount: "120000", denom: "uluna" },
                 bidder: accounts.pobMnemonic1.accAddress("terra"),
                 transactions: [secondSignedSendTx.toBytes(), firstSignedSendTx.toBytes()]
             })],
             memo: "Build block",
             chainID: "test-1",
-            fee: new Fee(100000, new Coins({ uluna: 100000 })),
+            fee: new Fee(125000, new Coins({ uluna: 10000 })),
             timeoutHeight: parseInt(blockHeight) + 20,
         });
         const result = await LCD.chain1.tx.broadcastSync(buildTx, "test-1");
         await blockInclusion();
         const txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1");
+        console.log(JSON.stringify(txResult))
         expect(txResult.logs).toBeDefined();
         // Recover the transactions hashes from the bundled transactions
         // to query the respective transaction data and check there are two
