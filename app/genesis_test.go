@@ -104,6 +104,11 @@ func TestGenesis(t *testing.T) {
 		"evidence": {
 			"evidence": []
 		},
+		"feeburn": {
+		  "params": {
+			"enable_fee_burn": true
+		  }
+		},
 		"feegrant": {
 			"allowances": []
 		},

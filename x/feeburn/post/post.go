@@ -1,6 +1,8 @@
 package post
 
 import (
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -18,9 +20,9 @@ func NewFeeBurnDecorator(feeBurnKeeper FeeBurnKeeper, bankkeeper BankKeeper) Fee
 	return FeeBurnDecorator{feeBurnKeeper, bankkeeper}
 }
 
-func (bd FeeBurnDecorator) PostHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, success bool, next sdk.PostHandler) (newCtx sdk.Context, err error) {
+func (fbd FeeBurnDecorator) PostHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, success bool, next sdk.PostHandler) (newCtx sdk.Context, err error) {
 	// if the feeburn is not enabled then just continue with the next decorator
-	if !bd.feeBurnKeeper.GetParams(ctx).EnableFeeBurn {
+	if !fbd.feeBurnKeeper.GetParams(ctx).EnableFeeBurn {
 		return next(ctx, tx, simulate, success)
 	}
 
@@ -49,21 +51,26 @@ func (bd FeeBurnDecorator) PostHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 	}
 	gasLimit := math.LegacyNewDecFromInt(sdk.NewInt(int64(gasMeter.Limit())))
 	remainingGas := math.LegacyNewDecFromInt(sdk.NewInt(int64(gasMeter.GasRemaining())))
+	// Percentage of unused gas for this specific denom
+	burnRate := remainingGas.Quo(gasLimit)
+	fmt.Printf("remainingGas: %s\n", remainingGas)
+	fmt.Printf("gasLimit: %s\n", gasLimit)
+	fmt.Printf("burnRate: %s\n", burnRate)
 
 	var toBurn sdk.Coins
 	// Iterate over the transaction fees and calculate the proportional part
 	// of the unused fees denominated in the tokens used to pay fo the fees
 	// and add it to the toBurn variable that will be sent to the user.
 	for _, txFee := range txFees {
-		// Percentage of unused gas for this specific denom
-		remainingGasProportion := remainingGas.Quo(gasLimit)
 
 		// Given the percentage of unused gas, calculate the
 		// proportional part of the fees that will be refunded
 		// to the user in this specific denom.
 		unusedFees := math.LegacyNewDecFromInt(txFee.Amount).
-			Mul(remainingGasProportion).
+			Mul(burnRate).
 			TruncateInt()
+
+		fmt.Printf("math.LegacyNewDecFromInt(txFee.Amount) %s\n", math.LegacyNewDecFromInt(txFee.Amount))
 
 		// When the unused fees are positive it means that the user
 		// will receive a refund in this specific denom to its wallet.
@@ -77,17 +84,23 @@ func (bd FeeBurnDecorator) PostHandle(ctx sdk.Context, tx sdk.Tx, simulate bool,
 
 	// Execute the refund to the user, if there is an error
 	// return the error otherwise continue with the execution
-	err = bd.bankkeeper.BurnCoins(ctx, authtypes.FeeCollectorName, toBurn)
+	err = fbd.bankkeeper.BurnCoins(ctx, authtypes.FeeCollectorName, toBurn)
 	if err != nil {
 		return ctx, err
 	}
 
+	// Emit an event to be able to track the fees burned
+	// because there can be a little bit of discrepancy
+	// between fees used and burned, because the proportional
+	// part of the fees is truncated to an integer.
 	err = ctx.EventManager().EmitTypedEvent(
-		&types.FeeBurnEvent{FeesBurn: toBurn},
+		&types.FeeBurnEvent{
+			FeesBurn: toBurn,
+			BurnRate: burnRate,
+		},
 	)
 	if err != nil {
 		return ctx, err
 	}
-
 	return next(ctx, tx, simulate, success)
 }

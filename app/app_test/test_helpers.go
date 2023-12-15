@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	terra_app "github.com/terra-money/core/v2/app"
 	appparams "github.com/terra-money/core/v2/app/params"
+	feeburntypes "github.com/terra-money/core/v2/x/feeburn/types"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
@@ -78,6 +79,9 @@ func (s *AppTestSuite) Setup() {
 	s.Require().NoError(err)
 
 	err = s.App.Keepers.TokenFactoryKeeper.SetParams(s.Ctx, tokenfactorytypes.DefaultParams())
+	s.Require().NoError(err)
+
+	err = s.App.Keepers.FeeBurnKeeper.SetParams(s.Ctx, feeburntypes.DefaultParams())
 	s.Require().NoError(err)
 
 	err = s.FundModule(authtypes.FeeCollectorName, sdk.NewCoins(sdk.NewCoin("uluna", sdk.NewInt(1000)), sdk.NewCoin("utoken", sdk.NewInt(500))))

@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	"github.com/terra-money/alliance/x/alliance"
+	"github.com/terra-money/core/v2/x/feeburn"
 	"github.com/terra-money/core/v2/x/feeshare"
 	"github.com/terra-money/core/v2/x/tokenfactory"
 
@@ -153,6 +154,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 			"crisis":                 crisis.AppModule{}.ConsensusVersion(),
 			"distribution":           distribution.AppModule{}.ConsensusVersion(),
 			"evidence":               evidence.AppModule{}.ConsensusVersion(),
+			"feeburn":                feeburn.AppModule{}.ConsensusVersion(),
 			"feegrant":               feegrantmodule.AppModule{}.ConsensusVersion(),
 			"feeshare":               feeshare.AppModule{}.ConsensusVersion(),
 			"feeibc":                 ibcfee.AppModule{}.ConsensusVersion(),
@@ -186,6 +188,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 		"crisis":                 2,
 		"distribution":           3,
 		"evidence":               1,
+		"feeburn":                1,
 		"feegrant":               2,
 		"feeshare":               2,
 		"feeibc":                 1,

@@ -8,8 +8,12 @@ option go_package = "github.com/terra-money/core/v2/x/feeburn/types";
 
 // Event fired when fees are burned with the amount of fees burned
 message FeeBurnEvent {
-    // Amount of the payout
-    repeated cosmos.base.v1beta1.Coin fees_burn = 1 [
+  // Amount of the payout
+  repeated cosmos.base.v1beta1.Coin fees_burn = 1 [(gogoproto.nullable) = false];
+  
+  // Calculated % of the fees burned before truncating the decimal
+  string burn_rate = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
 }
