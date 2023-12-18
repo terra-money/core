@@ -33,7 +33,10 @@ func NewFastQueryService(homedir string, logger log.Logger, storeKeys map[string
 	// Create the new BatchingDB with it's safe batch closer
 	heightEnabledDB := driver.NewSafeBatchDB(fastQueryDb)
 	safeBatchDBCloser := heightEnabledDB.(driver.SafeBatchDBCloser)
-	store := store.NewStore(heightEnabledDB, fastQueryDb, logger, storeKeys)
+	store, err := store.NewStore(heightEnabledDB, fastQueryDb, logger, storeKeys)
+	if err != nil {
+		return nil, err
+	}
 
 	// store.LoadLatestVersion()
 

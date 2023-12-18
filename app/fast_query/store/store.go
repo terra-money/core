@@ -76,7 +76,7 @@ var (
 // store will be created with a PruneNothing pruning strategy by default. After
 // a store is created, KVStores must be mounted and finally LoadLatestVersion or
 // LoadVersion must be called.
-func NewStore(db dbm.DB, hldb *height_driver.HeightDB, logger log.Logger, storeKeys map[string]*types.KVStoreKey) *Store {
+func NewStore(db dbm.DB, hldb *height_driver.HeightDB, logger log.Logger, storeKeys map[string]*types.KVStoreKey) (*Store, error) {
 	store := &Store{
 		db:                  db,
 		hldb:                hldb,
@@ -96,7 +96,11 @@ func NewStore(db dbm.DB, hldb *height_driver.HeightDB, logger log.Logger, storeK
 		store.MountStoreWithDB(storeKeyValue, types.StoreTypeIAVL, db)
 	}
 
-	return store
+	if err := store.LoadLatestVersion(); err != nil {
+		return nil, err
+	}
+
+	return store, nil
 }
 
 // GetPruning fetches the pruning strategy from the root store.

@@ -166,15 +166,6 @@ func (hd *HeightDB) Close() error {
 
 // NewBatch creates a batch for atomic updates. The caller must call Batch.Close.
 func (hd *HeightDB) NewBatch() tmdb.Batch {
-	// if hld.writeBatch != nil {
-	// 	// TODO: fix me
-	// 	return hld.writeBatch
-	// } else {
-	// 	fmt.Println("!!! opening hld.batch", hld.GetCurrentWriteHeight())
-	// 	hld.writeBatch = hld.odb.NewBatch(hld.GetCurrentWriteHeight())
-	// 	return hld.writeBatch
-	// }
-	//
 	return hd.odb.NewBatch(hd.GetCurrentWriteHeight())
 }
 

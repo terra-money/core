@@ -35,8 +35,6 @@ RPCPORT_1=16657
 RPCPORT_2=26657
 RESTPORT_1=1316
 RESTPORT_2=1317
-ROSETTA_1=8080
-ROSETTA_2=8081
 GRPCPORT_1=8090
 GRPCPORT_2=9090
 GRPCWEB_1=8091
@@ -189,7 +187,6 @@ sed -i -e 's/index_all_keys = false/index_all_keys = true/g' $CHAIN_DIR/$CHAINID
 sed -i -e 's/enable = false/enable = true/g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 sed -i -e 's/swagger = false/swagger = true/g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 sed -i -e 's#"tcp://localhost:1317"#"tcp://localhost:'"$RESTPORT_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/app.toml
-sed -i -e 's#":8080"#":'"$ROSETTA_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 sed -i -e 's/streamers = \[\]/streamers = \["fastquery"\]/g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 
 sed -i -e 's#"tcp://0.0.0.0:26656"#"tcp://localhost:'"$P2PPORT_2"'"#g' $CHAIN_DIR/$CHAINID_2/config/config.toml
@@ -201,7 +198,6 @@ sed -i -e 's/index_all_keys = false/index_all_keys = true/g' $CHAIN_DIR/$CHAINID
 sed -i -e 's/enable = false/enable = true/g' $CHAIN_DIR/$CHAINID_2/config/app.toml
 sed -i -e 's/swagger = false/swagger = true/g' $CHAIN_DIR/$CHAINID_2/config/app.toml
 sed -i -e 's#"tcp://localhost:1317"#"tcp://localhost:'"$RESTPORT_2"'"#g' $CHAIN_DIR/$CHAINID_2/config/app.toml
-sed -i -e 's#":8080"#":'"$ROSETTA_2"'"#g' $CHAIN_DIR/$CHAINID_2/config/app.toml
 sed -i -e 's/streamers = \[\]/streamers = \["fastquery"\]/g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 
 echo "Chaning genesis.json..."
@@ -209,6 +205,8 @@ sed -i -e 's/"voting_period": "172800s"/"voting_period": "2s"/g' $CHAIN_DIR/$CHA
 sed -i -e 's/"voting_period": "172800s"/"voting_period": "2s"/g' $CHAIN_DIR/$CHAINID_2/config/genesis.json
 sed -i -e 's/"reward_delay_time": "604800s"/"reward_delay_time": "0s"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
 sed -i -e 's/"reward_delay_time": "604800s"/"reward_delay_time": "0s"/g' $CHAIN_DIR/$CHAINID_2/config/genesis.json
+
+exit
 
 echo "Starting $CHAINID_1 in $CHAIN_DIR..."
 echo "Creating log file at $CHAIN_DIR/$CHAINID_1.log"
