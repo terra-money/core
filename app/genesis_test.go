@@ -55,22 +55,6 @@ func TestGenesis(t *testing.T) {
 			"denom_metadata": [],
 			"send_enabled": []
 		},
-		"builder": {
-			"params": {
-				"max_bundle_size": 2,
-				"escrow_account_address": "32sHF2qbF8xMmvwle9QEcy59Cbc=",
-				"reserve_fee": {
-					"denom": "uluna",
-					"amount": "1"
-				},
-				"min_bid_increment": {
-					"denom": "uluna",
-					"amount": "1"
-				},
-				"front_running_protection": true,
-				"proposer_fee": "0.000000000000000000"
-			}
-		},
 		"capability": {
 			"index": "1",
 			"owners": []
@@ -396,7 +380,6 @@ func TestGenesis(t *testing.T) {
 					"/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata",
 					"/osmosis.tokenfactory.v1beta1.Query/DenomsFromCreator",
 					"/osmosis.tokenfactory.v1beta1.Query/Params",
-					"/pob.builder.v1.Query/Params",
 					"/router.v1.Query/Params"
 				]
 			}

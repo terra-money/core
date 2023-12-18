@@ -4,7 +4,6 @@ import (
 	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
 	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
-	pobtype "github.com/skip-mev/pob/x/builder/types"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	terraappconfig "github.com/terra-money/core/v2/app/config"
 	v2_2_0 "github.com/terra-money/core/v2/app/upgrades/v2.2.0"
@@ -54,7 +53,6 @@ func (app *TerraApp) RegisterUpgradeHandlers() {
 			app.Keepers.ParamsKeeper,
 			app.Keepers.ConsensusParamsKeeper,
 			app.Keepers.ICAControllerKeeper,
-			app.Keepers.BuilderKeeper,
 			app.Keepers.AccountKeeper,
 		),
 	)
@@ -118,7 +116,7 @@ func (app *TerraApp) RegisterUpgradeStores() {
 			Added: []string{
 				consensusparamtypes.StoreKey,
 				crisistypes.StoreKey,
-				pobtype.StoreKey,
+				"builder",
 			},
 			Deleted: []string{
 				// Module intertx removed in v2.5 because it was never used
@@ -131,16 +129,17 @@ func (app *TerraApp) RegisterUpgradeStores() {
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	} else if upgradeInfo.Name == terraappconfig.Upgrade2_6 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{
-				feesharetypes.StoreKey,
-			},
+			Added: []string{feesharetypes.StoreKey},
 		}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	} else if upgradeInfo.Name == terraappconfig.Upgrade2_7 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{
-				icqtypes.StoreKey,
-			},
+			Added: []string{icqtypes.StoreKey},
+		}
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	} else if upgradeInfo.Name == terraappconfig.Upgrade2_9 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{
+			Deleted: []string{"builder"},
 		}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}

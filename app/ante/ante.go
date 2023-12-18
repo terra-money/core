@@ -3,9 +3,6 @@ package ante
 import (
 	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
-	"github.com/skip-mev/pob/mempool"
-	pobante "github.com/skip-mev/pob/x/builder/ante"
-	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -29,9 +26,7 @@ type HandlerOptions struct {
 	BankKeeper        bankKeeper.Keeper
 	TxCounterStoreKey storetypes.StoreKey
 	WasmConfig        wasmTypes.WasmConfig
-	PobBuilderKeeper  pobkeeper.Keeper
 	TxConfig          client.TxConfig
-	PobMempool        mempool.Mempool
 }
 
 // NewAnteHandler returns an AnteHandler that checks and increments sequence
@@ -55,14 +50,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
 
-	auctionDecorator := pobante.NewBuilderDecorator(
-		options.PobBuilderKeeper,
-		options.TxConfig.TxEncoder(),
-		options.PobMempool,
-	)
-
 	anteDecorators := []sdk.AnteDecorator{
-		auctionDecorator,
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit),
 		wasmkeeper.NewCountTXDecorator(options.TxCounterStoreKey),

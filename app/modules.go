@@ -77,9 +77,6 @@ import (
 	"github.com/terra-money/alliance/x/alliance"
 	feeshare "github.com/terra-money/core/v2/x/feeshare"
 
-	pob "github.com/skip-mev/pob/x/builder"
-	pobtype "github.com/skip-mev/pob/x/builder/types"
-
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	terrappsparams "github.com/terra-money/core/v2/app/params"
 
@@ -119,7 +116,6 @@ var ModuleBasics = module.NewBasicManager(
 	consensus.AppModuleBasic{},
 	alliance.AppModuleBasic{},
 	feeshare.AppModuleBasic{},
-	pob.AppModuleBasic{},
 	icq.AppModuleBasic{},
 )
 
@@ -157,7 +153,6 @@ func appModules(app *TerraApp, encodingConfig terrappsparams.EncodingConfig, ski
 		tokenfactory.NewAppModule(app.Keepers.TokenFactoryKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.GetSubspace(tokenfactorytypes.ModuleName)),
 		alliance.NewAppModule(app.appCodec, app.Keepers.AllianceKeeper, app.Keepers.StakingKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.interfaceRegistry, app.GetSubspace(alliancetypes.ModuleName)),
 		feeshare.NewAppModule(app.Keepers.FeeShareKeeper, app.Keepers.AccountKeeper, app.GetSubspace(feesharetypes.ModuleName)),
-		pob.NewAppModule(app.appCodec, app.Keepers.BuilderKeeper),
 		icq.NewAppModule(app.Keepers.ICQKeeper),
 	}
 }
@@ -196,7 +191,6 @@ var initGenesisOrder = []string{
 	feesharetypes.ModuleName,
 	consensusparamtypes.ModuleName,
 	icqtypes.ModuleName,
-	pobtype.ModuleName,
 }
 
 var beginBlockersOrder = []string{
@@ -229,7 +223,6 @@ var beginBlockersOrder = []string{
 	feesharetypes.ModuleName,
 	consensusparamtypes.ModuleName,
 	icqtypes.ModuleName,
-	pobtype.ModuleName,
 }
 
 var endBlockerOrder = []string{
@@ -262,5 +255,4 @@ var endBlockerOrder = []string{
 	feesharetypes.ModuleName,
 	consensusparamtypes.ModuleName,
 	icqtypes.ModuleName,
-	pobtype.ModuleName,
 }

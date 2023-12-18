@@ -93,15 +93,12 @@ import (
 	tokenfactorykeeper "github.com/terra-money/core/v2/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
-	pobtype "github.com/skip-mev/pob/x/builder/types"
 	"github.com/terra-money/alliance/x/alliance"
 	alliancekeeper "github.com/terra-money/alliance/x/alliance/keeper"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	custombankkeeper "github.com/terra-money/core/v2/x/bank/keeper"
 	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
-
-	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
 
 	terraappconfig "github.com/terra-money/core/v2/app/config"
 	// unnamed import of statik for swagger UI support
@@ -126,7 +123,6 @@ var maccPerms = map[string][]string{
 	tokenfactorytypes.ModuleName:   {authtypes.Burner, authtypes.Minter},
 	alliancetypes.ModuleName:       {authtypes.Burner, authtypes.Minter},
 	alliancetypes.RewardsPoolName:  nil,
-	pobtype.ModuleName:             nil,
 }
 
 type TerraAppKeepers struct {
@@ -177,9 +173,6 @@ type TerraAppKeepers struct {
 
 	WasmKeeper       customwasmkeeper.Keeper
 	scopedWasmKeeper capabilitykeeper.ScopedKeeper
-
-	// BuilderKeeper is the keeper that handles processing auction transactions
-	BuilderKeeper pobkeeper.Keeper
 }
 
 func NewTerraAppKeepers(
@@ -532,16 +525,6 @@ func NewTerraAppKeepers(
 		govtypes.NewMultiGovHooks(
 		// register the governance hooks
 		),
-	)
-
-	keepers.BuilderKeeper = pobkeeper.NewKeeper(
-		appCodec,
-		keys[pobtype.StoreKey],
-		keepers.AccountKeeper,
-		keepers.BankKeeper,
-		keepers.DistrKeeper,
-		keepers.StakingKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	return keepers

@@ -180,7 +180,6 @@ func TestInitGenesisOnMigration(t *testing.T) {
 		"auth":                   4,
 		"authz":                  2,
 		"bank":                   4,
-		"builder":                1,
 		"capability":             1,
 		"consensus":              1,
 		"crisis":                 2,
