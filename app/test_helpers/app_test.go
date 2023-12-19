@@ -1,9 +1,10 @@
-package app
+package test_helpers
 
 import (
 	"encoding/json"
 	"os"
 	"testing"
+	"time"
 
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -16,8 +17,11 @@ import (
 	"github.com/terra-money/core/v2/x/feeshare"
 	"github.com/terra-money/core/v2/x/tokenfactory"
 
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	mocktestutils "github.com/cosmos/cosmos-sdk/testutil/mock"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
@@ -55,6 +59,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	terra_app "github.com/terra-money/core/v2/app"
+	appparams "github.com/terra-money/core/v2/app/params"
 )
 
 var (
@@ -72,7 +77,7 @@ var (
 	addr4 = sdk.AccAddress(pk4.Address())
 )
 
-func TestSimAppExportAndBlockedAddrs(t *testing.T) {
+func (ats *AppTestSuite) TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	encCfg := terra_app.MakeEncodingConfig()
 	db := dbm.NewMemDB()
 	app := terra_app.NewTerraApp(
@@ -208,50 +213,18 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	})
 }
 
-func TestLegacyAmino(t *testing.T) {
+func (ats *AppTestSuite) TestCodecs(t *testing.T) {
+	ats.Setup()
+
 	encCfg := terra_app.MakeEncodingConfig()
-	db := dbm.NewMemDB()
-	app := terra_app.NewTerraApp(
-		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
-		db, nil, true, map[int64]bool{}, terra_app.DefaultNodeHome, 0,
-		encCfg, simtestutil.EmptyAppOptions{}, wasmtypes.DefaultWasmConfig())
 
-	require.Equal(t, encCfg.Amino, app.LegacyAmino())
-}
-
-func TestAppCodec(t *testing.T) {
-	encCfg := terra_app.MakeEncodingConfig()
-	db := dbm.NewMemDB()
-	app := terra_app.NewTerraApp(
-		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
-		db, nil, true, map[int64]bool{}, terra_app.DefaultNodeHome, 0,
-		encCfg, simtestutil.EmptyAppOptions{}, wasmtypes.DefaultWasmConfig())
-
-	require.Equal(t, encCfg.Marshaler, app.AppCodec())
-}
-
-func TestInterfaceRegistry(t *testing.T) {
-	encCfg := terra_app.MakeEncodingConfig()
-	db := dbm.NewMemDB()
-	app := terra_app.NewTerraApp(
-		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
-		db, nil, true, map[int64]bool{}, terra_app.DefaultNodeHome, 0,
-		encCfg, simtestutil.EmptyAppOptions{}, wasmtypes.DefaultWasmConfig())
-
-	require.Equal(t, encCfg.InterfaceRegistry, app.InterfaceRegistry())
-}
-
-func TestGetKey(t *testing.T) {
-	encCfg := terra_app.MakeEncodingConfig()
-	db := dbm.NewMemDB()
-	app := terra_app.NewTerraApp(
-		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
-		db, nil, true, map[int64]bool{}, terra_app.DefaultNodeHome, 0,
-		encCfg, simtestutil.EmptyAppOptions{}, wasmtypes.DefaultWasmConfig())
-
-	require.NotEmpty(t, app.GetKey(banktypes.StoreKey))
-	require.NotEmpty(t, app.GetTKey(paramstypes.TStoreKey))
-	require.NotEmpty(t, app.GetMemKey(capabilitytypes.MemStoreKey))
+	// Vlidate that the tests contain the correct encoding configuration
+	require.Equal(t, encCfg.Amino, ats.App.LegacyAmino())
+	require.Equal(t, encCfg.Marshaler, ats.App.AppCodec())
+	require.Equal(t, encCfg.InterfaceRegistry, ats.App.InterfaceRegistry())
+	require.NotEmpty(t, ats.App.GetKey(banktypes.StoreKey))
+	require.NotEmpty(t, ats.App.GetTKey(paramstypes.TStoreKey))
+	require.NotEmpty(t, ats.App.GetMemKey(capabilitytypes.MemStoreKey))
 }
 
 func TestSimAppEnforceStakingForVestingTokens(t *testing.T) {
@@ -323,4 +296,72 @@ func TestSimAppEnforceStakingForVestingTokens(t *testing.T) {
 	for _, share := range sharePerValidators {
 		require.Equal(t, sdk.NewDec(3_500_001_000_000), share)
 	}
+}
+
+func SetupGenesisValSet(
+	valSet *tmtypes.ValidatorSet,
+	genAccs []authtypes.GenesisAccount,
+	opts []wasm.Option,
+	app *terra_app.TerraApp,
+	encCfg appparams.EncodingConfig,
+	balances ...banktypes.Balance,
+) terra_app.GenesisState {
+	genesisState := terra_app.NewDefaultGenesisState(encCfg.Marshaler)
+	// set genesis accounts
+	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
+	genesisState[authtypes.ModuleName] = app.AppCodec().MustMarshalJSON(authGenesis)
+
+	validators := make([]stakingtypes.Validator, 0, len(valSet.Validators))
+	delegations := make([]stakingtypes.Delegation, 0, len(valSet.Validators))
+
+	bondAmt := sdk.NewInt(1000000)
+	totalSupply := sdk.NewCoins()
+
+	for _, val := range valSet.Validators {
+		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
+		if err != nil {
+			panic(err)
+		}
+
+		pkAny, err := codectypes.NewAnyWithValue(pk)
+		if err != nil {
+			panic(err)
+		}
+		validator := stakingtypes.Validator{
+			OperatorAddress:   sdk.ValAddress(val.Address).String(),
+			ConsensusPubkey:   pkAny,
+			Jailed:            false,
+			Status:            stakingtypes.Bonded,
+			Tokens:            bondAmt,
+			DelegatorShares:   sdk.OneDec(),
+			Description:       stakingtypes.Description{},
+			UnbondingHeight:   int64(0),
+			UnbondingTime:     time.Unix(0, 0).UTC(),
+			Commission:        stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			MinSelfDelegation: sdk.ZeroInt(),
+		}
+		validators = append(validators, validator)
+		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.OneDec()))
+
+	}
+
+	// set validators and delegations
+	stakingGenesis := stakingtypes.NewGenesisState(stakingtypes.DefaultParams(), validators, delegations)
+	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(stakingGenesis)
+
+	// add bonded amount to bonded pool module account
+	balances = append(balances, banktypes.Balance{
+		Address: authtypes.NewModuleAddress(stakingtypes.BondedPoolName).String(),
+		Coins:   sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, bondAmt)},
+	})
+
+	for _, b := range balances {
+		// add genesis acc tokens and delegated tokens to total supply
+		totalSupply = totalSupply.Add(b.Coins...)
+	}
+	// update total supply
+	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, totalSupply, []banktypes.Metadata{}, []banktypes.SendEnabled{})
+	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
+
+	return genesisState
 }
