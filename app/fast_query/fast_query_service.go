@@ -1,6 +1,8 @@
 package fast_query
 
 import (
+	"fmt"
+
 	log "github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/terra-money/core/v2/app/fast_query/db/driver"
@@ -38,8 +40,6 @@ func NewFastQueryService(homedir string, logger log.Logger, storeKeys map[string
 		return nil, err
 	}
 
-	// store.LoadLatestVersion()
-
 	return &FastQueryService{
 		Store:             store,
 		safeBatchDBCloser: safeBatchDBCloser,
@@ -54,18 +54,12 @@ func (fqs *FastQueryService) CommitChanges(blockHeight int64, changeSet []types.
 	fqs.fastQueryDb.SetWriteHeight(blockHeight)
 	fqs.safeBatchDBCloser.Open()
 
-	for _, kv := range changeSet {
-		key := fqs.Store.StoreKeysByName()[kv.StoreKey]
-		ckvs := fqs.Store.GetCommitKVStore(key)
-		if kv.Delete {
-			ckvs.Delete(kv.Key)
-		} else {
-			ckvs.Set(kv.Key, kv.Value)
-		}
-	}
-
-	if _, err := fqs.safeBatchDBCloser.Flush(); err != nil {
-		return err
-	}
+	lastCommitId := fqs.Store.Commit()
+	fmt.Print("FQS last_block_height ", lastCommitId.Version)
+	// if rollback, err := fqs.safeBatchDBCloser.Flush(); err != nil {
+	// 	return err
+	// } else if rollback != nil {
+	// 	rollback.Close()
+	// }
 	return nil
 }
