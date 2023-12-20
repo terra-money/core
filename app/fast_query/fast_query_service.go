@@ -54,8 +54,20 @@ func (fqs *FastQueryService) CommitChanges(blockHeight int64, changeSet []types.
 	fqs.fastQueryDb.SetWriteHeight(blockHeight)
 	fqs.safeBatchDBCloser.Open()
 
-	lastCommitId := fqs.Store.Commit()
-	fmt.Print("FQS last_block_height ", lastCommitId.Version)
+	for _, kv := range changeSet {
+		if kv.Delete {
+			fqs.safeBatchDBCloser.Delete(kv.Key)
+		} else {
+			fqs.safeBatchDBCloser.Set(kv.Key, kv.Value)
+		}
+	}
+
+	commitId := fqs.Store.Commit()
+	fmt.Printf("[commitId]: %v\n", commitId)
+
+	fqs.safeBatchDBCloser.Flush()
+	fqs.fastQueryDb.ClearWriteHeight()
+	//fmt.Print("FQS last_block_height ", lastCommitId.Version)
 	// if rollback, err := fqs.safeBatchDBCloser.Flush(); err != nil {
 	// 	return err
 	// } else if rollback != nil {

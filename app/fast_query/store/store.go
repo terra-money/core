@@ -93,7 +93,7 @@ func NewStore(db dbm.DB, hldb *height_driver.HeightDB, logger log.Logger, storeK
 	}
 
 	for _, storeKeyValue := range storeKeys {
-		store.MountStoreWithDB(storeKeyValue, types.StoreTypeIAVL, db)
+		store.MountStoreWithDB(storeKeyValue, types.StoreTypeDB, db)
 	}
 
 	if err := store.LoadLatestVersion(); err != nil {
