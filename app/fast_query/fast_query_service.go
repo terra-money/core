@@ -5,6 +5,7 @@ import (
 
 	log "github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/store/types"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/terra-money/core/v2/app/fast_query/db/driver"
 	"github.com/terra-money/core/v2/app/fast_query/db/height_driver"
 	"github.com/terra-money/core/v2/app/fast_query/store"
@@ -54,24 +55,21 @@ func (fqs *FastQueryService) CommitChanges(blockHeight int64, changeSet []types.
 	fqs.fastQueryDb.SetWriteHeight(blockHeight)
 	fqs.safeBatchDBCloser.Open()
 
-	for _, kv := range changeSet {
-		if kv.Delete {
-			fqs.safeBatchDBCloser.Delete(kv.Key)
+	for _, change := range changeSet {
+		storeKey := storetypes.NewKVStoreKey(change.StoreKey)
+		commitKVStore := fqs.Store.GetStoreByName(storeKey.Name()).(types.CommitKVStore)
+		fmt.Print(commitKVStore)
+		if change.Delete {
+			commitKVStore.Delete(change.Key)
 		} else {
-			fqs.safeBatchDBCloser.Set(kv.Key, kv.Value)
+			commitKVStore.Set(change.Key, change.Value)
 		}
 	}
 
-	commitId := fqs.Store.Commit()
-	fmt.Printf("[commitId]: %v\n", commitId)
-
-	fqs.safeBatchDBCloser.Flush()
+	fqs.Store.Commit()
+	if _, err := fqs.safeBatchDBCloser.Flush(); err != nil {
+		return err
+	}
 	fqs.fastQueryDb.ClearWriteHeight()
-	//fmt.Print("FQS last_block_height ", lastCommitId.Version)
-	// if rollback, err := fqs.safeBatchDBCloser.Flush(); err != nil {
-	// 	return err
-	// } else if rollback != nil {
-	// 	rollback.Close()
-	// }
 	return nil
 }
