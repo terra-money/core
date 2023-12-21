@@ -1,11 +1,11 @@
 import { Coin, Coins, Fee, MnemonicKey, MsgBurn, MsgChangeAdmin, MsgCreateDenom, MsgInstantiateContract, MsgMint, MsgStoreCode, MsgSetBeforeSendHook, MsgSend } from "@terra-money/feather.js";
-import { getMnemonics, getLCDClient, blockInclusion } from "../../helpers";
+import { getMnemonics, LCDClients } from "../../helpers";
 import fs from "fs";
 import path from 'path';
 
 describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/v2.7/x/tokenfactory) ", () => {
     // Prepare environment clients, accounts and wallets
-    const LCD = getLCDClient();
+    const LCD = LCDClients.create();
     const accounts = getMnemonics();
     const wallet = LCD.chain1.wallet(accounts.tokenFactoryMnemonic);
     const tokenFactoryWalletAddr = accounts.tokenFactoryMnemonic.accAddress("terra");
@@ -27,7 +27,8 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
         });
 
         let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
+
         let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
         let codeId = Number(txResult.logs[0].events[1].attributes[1].value);
         expect(codeId).toBeDefined();
@@ -46,7 +47,8 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
             chainID: "test-1",
         });
         result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
+
         txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
         contractAddress = txResult.logs[0].events[4].attributes[0].value;
         expect(contractAddress).toBeDefined();
@@ -83,7 +85,8 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
             chainID: "test-1",
         });
         let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
+
         let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
         factoryDenom = txResult.logs[0].eventsByType.create_denom.new_token_denom[0] as string
         expect(txResult.logs[0].events).toStrictEqual([{
@@ -160,7 +163,8 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                 chainID: "test-1",
             });
             let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            await blockInclusion();
+            await LCD.blockInclusionChain1();
+
             let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             expect(txResult.logs[0].events).toStrictEqual([{
                 "type": "message",
@@ -263,7 +267,8 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                 fee: new Fee(100_000, new Coins({ uluna: 100_000 })),
             });
             let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            await blockInclusion();
+            await LCD.blockInclusionChain1();
+
             let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             expect(txResult.logs[0].events).toStrictEqual([{
                 "type": "message",
@@ -360,7 +365,8 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                 chainID: "test-1",
             });
             let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            await blockInclusion();
+            await LCD.blockInclusionChain1();
+
             let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             expect(txResult.logs[0].events).toStrictEqual([{
                 "type": "message",
@@ -404,7 +410,8 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                     chainID: "test-1",
                 });
                 let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-                await blockInclusion();
+                await LCD.blockInclusionChain1();
+                
                 let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
                 expect(txResult.logs[0].events)
                     .toStrictEqual([{
@@ -471,7 +478,8 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                     fee: new Fee(100_000, new Coins({ uluna: 100_000 })),
                 });
                 let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-                await blockInclusion();
+                await LCD.blockInclusionChain1();
+
                 let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
                 expect(txResult.raw_log)
                     .toStrictEqual("failed to execute message; message index: 0: {Loading CosmWasm module: sudo}: gas meter hit maximum limit");
@@ -497,7 +505,8 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                 chainID: "test-1",
             });
             let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            await blockInclusion();
+            await LCD.blockInclusionChain1();
+            
             let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             expect(txResult.logs[0].events).toStrictEqual([{
                 "type": "message",

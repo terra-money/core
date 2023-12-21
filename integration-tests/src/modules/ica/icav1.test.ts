@@ -1,5 +1,5 @@
 import { AccAddress, Coin, MsgTransfer, MsgSend, Coins } from "@terra-money/feather.js";
-import { blockInclusion, getLCDClient, getMnemonics } from "../../helpers";
+import { LCDClients, getMnemonics } from "../../helpers";
 import { MsgRegisterInterchainAccount, MsgSendTx } from "@terra-money/feather.js/dist/core/ica/controller/v1/msgs";
 import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
 import Long from "long";
@@ -8,7 +8,7 @@ import { CosmosTx } from "@terra-money/feather.js/dist/core/ica/controller/v1/Co
 
 describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modules/apps/27-interchain-accounts)", () => {
     // Prepare environment clients, accounts and wallets
-    const LCD = getLCDClient();
+    const LCD = LCDClients.create();
     const { icaMnemonic } = getMnemonics();
     const chain1Wallet = LCD.chain1.wallet(icaMnemonic);
     const externalAccAddr = icaMnemonic.accAddress("terra");
@@ -75,7 +75,7 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
             // Check during 5 blocks for the receival 
             // of the IBC coin on chain-2
             for (let i = 0; i <= 5; i++) {
-                await blockInclusion();
+                await LCD.blockInclusionChain2();
                 let _ibcCoin = (await LCD.chain2.bank.balance(intechainAccountAddr))[0].find(c => c.denom.startsWith("ibc/"));
                 if (_ibcCoin) {
                     expect(_ibcCoin.denom.startsWith("ibc/")).toBeTruthy();
@@ -102,7 +102,7 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
 
         if (tx !== undefined) {
             let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            await blockInclusion();
+            await LCD.blockInclusionChain1();
             let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             let events = txResult.logs[0].events;
 
@@ -127,9 +127,9 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
                 })
 
             // Check during 5 blocks for the receival 
-            // of the IBC coin on chain-2
+            // of the IBC coin on chain-1
             for (let i = 0; i <= 5; i++) {
-                await blockInclusion();
+                await LCD.blockInclusionChain1();
                 let res = await LCD.chain1.icaV1.controllerAccountAddress(externalAccAddr, "connection-0")
                     .catch((e) => {
                         const expectMsg = "failed to retrieve account address for icacontroller-";
@@ -163,13 +163,13 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
                 });
 
                 let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-                await blockInclusion();
+                await LCD.blockInclusionChain1();
                 let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
                 expect(txResult).toBeDefined();
                 // Check during 5 blocks for the receival 
                 // of the IBC coin on chain-2
                 for (let i = 0; i <= 5; i++) {
-                    await blockInclusion();
+                    await LCD.blockInclusionChain2();
                     let _ibcCoin = (await LCD.chain2.bank.balance(intechainAccountAddr))[0].find(c => c.denom.startsWith("ibc/"));
                     if (_ibcCoin) {
                         expect(_ibcCoin.denom.startsWith("ibc/")).toBeTruthy();
@@ -205,7 +205,8 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
             });
 
             let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            await blockInclusion();
+            await LCD.blockInclusionChain1();
+
             let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             const events = txResult.logs[0].events;
             expect(events[0])
@@ -232,7 +233,7 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
             // Check during 5 blocks for the receival 
             // of the IBC coin on chain-2
             for (let i = 0; i <= 5; i++) {
-                await blockInclusion();
+        await LCD.blockInclusionChain2();
                 const bankRes = await LCD.chain2.bank.balance(burnAddress);
                 const coins = bankRes[0].find(c => c.denom === ibcCoinDenom);
                 if (coins) {

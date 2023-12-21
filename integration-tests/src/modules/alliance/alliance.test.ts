@@ -1,11 +1,11 @@
-import { getLCDClient, getMnemonics, blockInclusion, votingPeriod } from "../../helpers";
+import { LCDClients, getMnemonics, votingPeriod } from "../../helpers";
 import { Coin, MsgTransfer, MsgCreateAlliance, Coins, MsgVote, Fee, MsgAllianceDelegate, MsgClaimDelegationRewards, MsgAllianceUndelegate, MsgDeleteAlliance, MsgSubmitProposal } from "@terra-money/feather.js";
 import { VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
 import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
 
 describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/v0.3.x) ", () => {
     // Prepare environment clients, accounts and wallets
-    const LCD = getLCDClient();
+    const LCD = LCDClients.create();
     const accounts = getMnemonics();
     const chain1Wallet = LCD.chain1.wallet(accounts.allianceMnemonic);
     const val2Wallet = LCD.chain2.wallet(accounts.val2);
@@ -35,14 +35,14 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
         });
 
         let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
         let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
         expect(txResult).toBeDefined();
 
         // Check during 5 blocks for the receival 
         // of the IBC coin on chain-2
         for (let i = 0; i <= 5; i++) {
-            await blockInclusion();
+            await LCD.blockInclusionChain2();
             let _ibcCoin = (await LCD.chain2.bank.balance(allianceAccountAddress))[0].find(c => c.denom.startsWith("ibc/"));
             if (_ibcCoin) {
                 expect(_ibcCoin.denom.startsWith("ibc/")).toBeTruthy();
@@ -66,7 +66,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
         // Query the IBC coin and check if there is any
         // which menas that the IBC transfer was successful
         for (let i = 0; i <= 5; i++) {
-            await blockInclusion();
+            await LCD.blockInclusionChain2();
             let _ibcCoin = (await LCD.chain2.bank.balance(allianceAccountAddress))[0].find(c => c.denom.startsWith("ibc/"));
             if (_ibcCoin) {
                 ibcCoin = _ibcCoin;
@@ -100,7 +100,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                 chainID: "test-2",
             });
             let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
-            await blockInclusion();
+            await LCD.blockInclusionChain2();
 
             // Check that the proposal was created successfully
             let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;
@@ -155,7 +155,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                 chainID: "test-2",
             });
             let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
-            await blockInclusion();
+            await LCD.blockInclusionChain2();
 
             // Check that the proposal was created successfully
             let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;
@@ -235,7 +235,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                     chainID: "test-2",
                 });
                 let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
-                await blockInclusion();
+                await LCD.blockInclusionChain2();
 
                 // Check that the proposal was created successfully
                 let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;
@@ -250,7 +250,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
             })
 
             test("Must undelegate from the alliance", async () => {
-                await blockInclusion();
+                await LCD.blockInclusionChain2();
                 const allianceWallet2 = LCD.chain2.wallet(accounts.allianceMnemonic);
                 let ibcCoin = (await LCD.chain2.bank.balance(allianceAccountAddress))[0].find(c => c.denom.startsWith("ibc/")) as Coin;
                 let tx = await allianceWallet2.createAndSignTx({
@@ -265,7 +265,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                     chainID: "test-2",
                 });
                 let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
-                await blockInclusion();
+                await LCD.blockInclusionChain2();
 
                 // Check that the proposal was created successfully
                 let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;
@@ -304,7 +304,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                 chainID: "test-2",
             });
             let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
-            await blockInclusion();
+            await LCD.blockInclusionChain2();
 
             // Check that the proposal was created successfully
             let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;

@@ -1,12 +1,10 @@
-import { getMnemonics } from "../../helpers/mnemonics";
-import { getLCDClient } from "../../helpers/lcd.connection";
+import { getMnemonics, LCDClients } from "../../helpers";
 import { StakeAuthorization, MsgGrantAuthorization, AuthorizationGrant, Coin, MsgExecAuthorized, MsgDelegate } from "@terra-money/feather.js";
 import { AuthorizationType } from "@terra-money/terra.proto/cosmos/staking/v1beta1/authz";
 import moment from "moment";
-import { blockInclusion } from "../../helpers/const";
 
 describe("Authz Module (https://github.com/terra-money/cosmos-sdk/tree/release/v0.47.x/x/authz)", () => {
-    const LCD = getLCDClient();
+    const LCD = LCDClients.create();
     const accounts = getMnemonics();
     // Accounts used in chain2, which means that 
     // will not cause conflicts with txs nonces
@@ -32,7 +30,7 @@ describe("Authz Module (https://github.com/terra-money/cosmos-sdk/tree/release/v
             chainID: "test-2",
         });
         let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
-        await blockInclusion();
+        await LCD.blockInclusionChain2();
 
         // Check the MsgGrantAuthorization executed as expected 
         let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;
@@ -78,7 +76,7 @@ describe("Authz Module (https://github.com/terra-money/cosmos-sdk/tree/release/v
                 chainID: "test-2",
             });
             let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
-            await blockInclusion();
+            await LCD.blockInclusionChain2();
 
             let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;
             let eventsList = txResult.logs[0].events;

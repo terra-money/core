@@ -1,11 +1,11 @@
-import { getMnemonics, blockInclusion, getLCDClient } from "../../helpers";
+import { getMnemonics, LCDClients } from "../../helpers";
 import { Coins, Fee, MnemonicKey, MsgExecuteContract, MsgInstantiateContract, MsgRegisterFeeShare, MsgStoreCode } from "@terra-money/feather.js";
 import fs from "fs";
 import path from 'path';
 
 describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6/x/feeshare) ", () => {
     // Prepare environment clients, accounts and wallets
-    const LCD = getLCDClient();
+    const LCD = LCDClients.create();
     const accounts = getMnemonics();
     const wallet = LCD.chain1.wallet(accounts.feeshareMnemonic);
     const feeshareAccountAddress = accounts.feeshareMnemonic.accAddress("terra");
@@ -25,7 +25,7 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
         });
 
         let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
         let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
         let codeId = Number(txResult.logs[0].events[1].attributes[1].value);
         expect(codeId).toBeDefined();
@@ -44,7 +44,7 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
             chainID: "test-1",
         });
         result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
         txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
         contractAddress = txResult.logs[0].events[4].attributes[0].value;
         expect(contractAddress).toBeDefined();
@@ -76,7 +76,7 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
         });
 
         let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
 
         // Check the tx logs
         let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
@@ -118,7 +118,7 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
         // Check that querying all feeshares returns at least one feeshares
         let feesharesByWallet = await LCD.chain1.feeshare.feeshares("test-1");
         expect(feesharesByWallet.feeshare.length).toBeGreaterThan(0);
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
 
         // Send an execute message to the reflect contract
         let msgExecute = new MsgExecuteContract(
@@ -136,7 +136,7 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
             fee: new Fee(200_000, "400000uluna"),
         });
         result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
 
         // Check the tx logs have the expected events
         txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
@@ -175,7 +175,7 @@ describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6
                 }]
             }
             ])
-        await blockInclusion()
+            await LCD.blockInclusionChain1();
 
         // Query the random account (new owner of the contract)
         // and validate that the account has received 50% of the fees

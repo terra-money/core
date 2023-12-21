@@ -1,10 +1,10 @@
-import { getLCDClient, blockInclusion, votingPeriod, getMnemonics } from "../../helpers";
+import { LCDClients, votingPeriod, getMnemonics } from "../../helpers";
 import { Coins, MsgVote, Fee, MsgSubmitProposal, Proposal, Int } from "@terra-money/feather.js";
 import { ProposalStatus, VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
 
 describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/release/v0.47.x/x/gov) ", () => {
     // Prepare environment clients, accounts and wallets
-    const LCD = getLCDClient();
+    const LCD = LCDClients.create();
     const accounts = getMnemonics();
     const val2Wallet = LCD.chain2.wallet(accounts.val2);
     const val2WalletAddress = val2Wallet.key.accAddress("terra");
@@ -157,7 +157,7 @@ describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/rele
                 chainID: "test-2",
             });
             let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
-            await blockInclusion();
+            await LCD.blockInclusionChain2();
 
             // Check that the proposal was created successfully
             let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;

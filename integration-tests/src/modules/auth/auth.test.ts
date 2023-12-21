@@ -1,10 +1,10 @@
-import { getMnemonics, getLCDClient, blockInclusion } from "../../helpers";
+import { getMnemonics, LCDClients } from "../../helpers";
 import { ContinuousVestingAccount, Coins, MnemonicKey, MsgCreateVestingAccount, Coin } from "@terra-money/feather.js";
 import moment from "moment";
 
 describe("Auth Module (https://github.com/terra-money/cosmos-sdk/tree/release/v0.47.x/x/auth)", () => {
     // Prepare environment clients, accounts and wallets
-    const LCD = getLCDClient();
+    const LCD = LCDClients.create();
     const accounts = getMnemonics();
     const wallet = LCD.chain1.wallet(accounts.genesisVesting1);
     const vestAccAddr1 = accounts.genesisVesting1.accAddress("terra");
@@ -76,7 +76,7 @@ describe("Auth Module (https://github.com/terra-money/cosmos-sdk/tree/release/v0
         });
 
         let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
         let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
         expect(txResult.logs[0].events)
             .toEqual([{

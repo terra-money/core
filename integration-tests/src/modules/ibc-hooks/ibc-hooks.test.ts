@@ -1,6 +1,6 @@
 import { Coin, Coins, MsgInstantiateContract, MsgStoreCode, MsgTransfer } from "@terra-money/feather.js";
 import { deriveIbcHooksSender } from "@terra-money/feather.js/dist/core/ibc-hooks";
-import { ibcTransfer, getMnemonics, getLCDClient, blockInclusion } from "../../helpers";
+import { ibcTransfer, getMnemonics, LCDClients } from "../../helpers";
 import fs from "fs";
 import path from 'path';
 import moment from "moment";
@@ -10,7 +10,7 @@ describe("IbcHooks Module (github.com/cosmos/ibc-apps/modules/ibc-hooks/v7) ", (
     // Prepare the LCD and wallets. chain1Wallet is the one that will
     // deploy the contract on chain 1 and chain2Wallet will be used 
     // to send IBC messages from chain 2 to interact with the contract.
-    const LCD = getLCDClient();
+    const LCD = LCDClients.create();
     const accounts = getMnemonics();
     const chain1Wallet = LCD.chain1.wallet(accounts.ibcHooksMnemonic);
     const chain2Wallet = LCD.chain2.wallet(accounts.ibcHooksMnemonic);
@@ -31,7 +31,7 @@ describe("IbcHooks Module (github.com/cosmos/ibc-apps/modules/ibc-hooks/v7) ", (
         });
 
         let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
         let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
         let codeId = Number(txResult.logs[0].events[1].attributes[1].value);
         expect(codeId).toBeDefined();
@@ -50,7 +50,7 @@ describe("IbcHooks Module (github.com/cosmos/ibc-apps/modules/ibc-hooks/v7) ", (
             chainID: "test-1",
         });
         result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
         txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
         contractAddress = txResult.logs[0].events[4].attributes[0].value;
         expect(contractAddress).toBeDefined();
@@ -149,7 +149,7 @@ describe("IbcHooks Module (github.com/cosmos/ibc-apps/modules/ibc-hooks/v7) ", (
                 });
                 await LCD.chain1.tx.broadcastSync(tx, "test-1")
                 await ibcTransfer();
-                await blockInclusion();
+                await LCD.blockInclusionChain1();
                 let res = await LCD.chain1.wasm.contractQuery(
                     contractAddress,
                     { "get_count": { "addr": contractAddress } }

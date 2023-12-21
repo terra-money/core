@@ -1,10 +1,10 @@
 import { Coins, Fee, MsgSend } from "@terra-money/feather.js";
-import { getMnemonics, getLCDClient, blockInclusion } from "../../helpers";
+import { getMnemonics, LCDClients } from "../../helpers";
 import { MsgAuctionBid } from "@terra-money/feather.js/dist/core/pob/MsgAuctionBid";
 
 describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
     // Prepare environment clients, accounts and wallets
-    const LCD = getLCDClient();
+    const LCD = LCDClients.create();
     const accounts = getMnemonics();
     const wallet = LCD.chain1.wallet(accounts.pobMnemonic);
     const wallet11 = LCD.chain1.wallet(accounts.pobMnemonic1);
@@ -93,7 +93,8 @@ describe("Proposer Builder Module (https://github.com/skip-mev/pob) ", () => {
             timeoutHeight: parseInt(blockHeight) + 20,
         });
         const result = await LCD.chain1.tx.broadcastSync(buildTx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
+        
         const txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1");
         expect(txResult.logs).toBeDefined();
         // Recover the transactions hashes from the bundled transactions

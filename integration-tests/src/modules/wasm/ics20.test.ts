@@ -1,13 +1,13 @@
 
 import { MnemonicKey, MsgExecuteContract, MsgInstantiateContract, MsgStoreCode } from "@terra-money/feather.js";
-import { getMnemonics, getLCDClient, blockInclusion, ibcTransfer } from "../../helpers";
+import { getMnemonics, LCDClients, ibcTransfer } from "../../helpers";
 import fs from "fs";
 import path from 'path';
 import { execSync, exec } from 'child_process';
 
 describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) ", () => {
     // Prepare environment clients, accounts and wallets
-    const LCD = getLCDClient();
+    const LCD = LCDClients.create();
     const accounts = getMnemonics();
     const wallet = LCD.chain1.wallet(accounts.wasmContracts);
     const walletAddress = accounts.wasmContracts.accAddress("terra");
@@ -45,7 +45,7 @@ describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) "
         });
 
         let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-        await blockInclusion();
+        await LCD.blockInclusionChain1();
 
         let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
         cw20BaseCodeId = Number(txResult.logs[0].events[1].attributes[1].value);
@@ -76,7 +76,8 @@ describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) "
                 chainID: "test-1",
             });
             let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            await blockInclusion();
+            await LCD.blockInclusionChain1();
+            
             let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             cw20ContractAddr = txResult.logs[0].events[1].attributes[0].value;
             expect(cw20ContractAddr).toBeDefined();
@@ -101,7 +102,8 @@ describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) "
                 chainID: "test-1",
             });
             result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            await blockInclusion();
+            await LCD.blockInclusionChain1();
+
             txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             ics20ContractAddr = txResult.logs[0].events[1].attributes[0].value;
             expect(ics20ContractAddr).toBeDefined();
@@ -119,7 +121,7 @@ describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) "
             // Create the path
             const pathToRelayDir = path.join(__dirname, "/../../test-data/relayer");
             execSync(`relayer tx link "test1-test2" --src-port="wasm.${ics20ContractAddr}" --dst-port="transfer" --version="ics20-1" --home="${pathToRelayDir}"`, { stdio: "ignore" })
-            await blockInclusion();
+            await LCD.blockInclusionChain1();
 
             // Start the relayer again
             const relayerStart = exec(`relayer start "test1-test2" -p="events" -b=100 --flush-interval="1s" --time-threshold="1s" --home="${pathToRelayDir}" > ${pathToRelayDir}/relayer.log 2>&1`)
@@ -162,7 +164,8 @@ describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) "
                     chainID: "test-1",
                 });
                 let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-                await blockInclusion();
+                await LCD.blockInclusionChain1();
+                
                 let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
                 let events = txResult.logs[0].events;
 
