@@ -28,6 +28,7 @@ type AppTestSuite struct {
 	suite.Suite
 
 	App            *terra_app.TerraApp
+	DB             dbm.DB
 	Ctx            sdk.Context
 	QueryHelper    *baseapp.QueryServiceTestHelper
 	TestAccs       []sdk.AccAddress
@@ -42,6 +43,7 @@ func (s *AppTestSuite) Setup() {
 	genesisState.SetDefaultTerraConfig(encCfg.Marshaler)
 
 	db := dbm.NewMemDB()
+	s.DB = db
 	s.App = terra_app.NewTerraApp(
 		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 		db,

@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -47,7 +48,7 @@ import (
 	cosmosante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	vestingexported "github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/capability"
@@ -470,8 +471,10 @@ func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisStat
 			panic(err)
 		}
 
-		if vestingAcc, ok := account.(vestingexported.VestingAccount); ok {
-			amt := vestingAcc.GetOriginalVesting().AmountOf(app.Keepers.StakingKeeper.BondDenom(ctx))
+		bondDenom := app.Keepers.StakingKeeper.BondDenom(ctx)
+
+		if vestingAcc, ok := account.(*vestingtypes.BaseVestingAccount); ok {
+			amt := vestingAcc.GetOriginalVesting().AmountOf(bondDenom)
 
 			// to prevent staking multiple times over the same validator
 			// adjust split amount for the whale account
@@ -488,6 +491,8 @@ func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisStat
 			// stake 200_000_000_000 to val3
 			for ; amt.GTE(powerReduction); amt = amt.Sub(splitAmt) {
 				validator := validators[i%validatorLen]
+				address := vestingAcc.GetAddress().String()
+				fmt.Print(address)
 				if _, err := app.Keepers.StakingKeeper.Delegate(
 					ctx,
 					vestingAcc.GetAddress(),
