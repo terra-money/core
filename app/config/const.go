@@ -207,7 +207,6 @@ const (
 	QueryDenomAuthorityMetadata                = "/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata"
 	QueryDenomsFromCreator                     = "/osmosis.tokenfactory.v1beta1.Query/DenomsFromCreator"
 	QueryTokeFactoryParams                     = "/osmosis.tokenfactory.v1beta1.Query/Params"
-	QueryPobParams                             = "/pob.builder.v1.Query/Params"
 	QueryPFMParams                             = "/router.v1.Query/Params"
 
 	// UpgradeName gov proposal name

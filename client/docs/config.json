@@ -238,14 +238,6 @@
       }
     },
     {
-      "url": "./tmp-swagger-gen/pob/builder/v1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "PobParams"
-        }
-      }
-    },
-    {
       "url": "./tmp-swagger-gen/juno/feeshare/v1/query.swagger.json",
       "operationIds": {
         "rename": {
