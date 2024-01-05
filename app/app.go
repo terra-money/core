@@ -48,7 +48,7 @@ import (
 	cosmosante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+	vestingexported "github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/capability"
@@ -473,7 +473,7 @@ func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisStat
 
 		bondDenom := app.Keepers.StakingKeeper.BondDenom(ctx)
 
-		if vestingAcc, ok := account.(*vestingtypes.BaseVestingAccount); ok {
+		if vestingAcc, ok := account.(vestingexported.VestingAccount); ok {
 			amt := vestingAcc.GetOriginalVesting().AmountOf(bondDenom)
 
 			// to prevent staking multiple times over the same validator
