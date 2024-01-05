@@ -219,4 +219,5 @@ const (
 	Upgrade2_7    = "v2.7"
 	Upgrade2_8    = "v2.8"
 	Upgrade2_9    = "v2.9"
+	Upgrade2_10   = "v2.10"
 )
