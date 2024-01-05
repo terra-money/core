@@ -12,15 +12,15 @@ import (
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	abci "github.com/cometbft/cometbft/abci/types"
-	app "github.com/terra-money/core/v2/app/app_test"
 	"github.com/terra-money/core/v2/app/post/mocks"
+	"github.com/terra-money/core/v2/app/test_helpers"
 	post "github.com/terra-money/core/v2/x/feeshare/post"
 	"github.com/terra-money/core/v2/x/feeshare/types"
 	customwasmtypes "github.com/terra-money/core/v2/x/wasm/types"
 )
 
 type AnteTestSuite struct {
-	app.AppTestSuite
+	test_helpers.AppTestSuite
 }
 
 func TestAnteSuite(t *testing.T) {

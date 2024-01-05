@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	app_test "github.com/terra-money/core/v2/app/app_test"
+	"github.com/terra-money/core/v2/app/test_helpers"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -14,7 +14,7 @@ import (
 )
 
 type GenesisTestSuite struct {
-	app_test.AppTestSuite
+	test_helpers.AppTestSuite
 }
 
 func TestGenesisTestSuite(t *testing.T) {

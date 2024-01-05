@@ -4,7 +4,6 @@ import (
 	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
 	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
-	pobtype "github.com/skip-mev/pob/x/builder/types"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	terraappconfig "github.com/terra-money/core/v2/app/config"
 	v2_2_0 "github.com/terra-money/core/v2/app/upgrades/v2.2.0"
@@ -55,7 +54,6 @@ func (app *TerraApp) RegisterUpgradeHandlers() {
 			app.Keepers.ParamsKeeper,
 			app.Keepers.ConsensusParamsKeeper,
 			app.Keepers.ICAControllerKeeper,
-			app.Keepers.BuilderKeeper,
 			app.Keepers.AccountKeeper,
 		),
 	)
@@ -105,44 +103,26 @@ func (app *TerraApp) RegisterUpgradeStores() {
 	// Add stores for new modules
 	if upgradeInfo.Name == terraappconfig.Upgrade2_3_0 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{
-				icacontrollertypes.StoreKey,
-				tokenfactorytypes.StoreKey,
-				ibcfeetypes.StoreKey,
-				ibchookstypes.StoreKey,
-				alliancetypes.StoreKey,
-			},
+			Added: []string{icacontrollertypes.StoreKey, tokenfactorytypes.StoreKey, ibcfeetypes.StoreKey, ibchookstypes.StoreKey, alliancetypes.StoreKey},
 		}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	} else if upgradeInfo.Name == terraappconfig.Upgrade2_5 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{
-				consensusparamtypes.StoreKey,
-				crisistypes.StoreKey,
-				pobtype.StoreKey,
-			},
-			Deleted: []string{
-				// Module intertx removed in v2.5 because it was never used
-				// (https://github.com/cosmos/interchain-accounts-demo)
-				// The same functionalities are availablein the interchain-accounts
-				// module commands available in scripts/tests/ica/delegate.sh
-				"intertx",
-			},
+			Added: []string{consensusparamtypes.StoreKey, crisistypes.StoreKey, "builder"},
+			// Module intertx removed in v2.5 because it was never used (https://github.com/cosmos/interchain-accounts-demo)
+			// The same functionalities are availablein the interchain-accounts under the path
+			// integration-tests/src/modules/ica/icav1.test.ts
+			Deleted: []string{"intertx"},
 		}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	} else if upgradeInfo.Name == terraappconfig.Upgrade2_6 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{
-				feesharetypes.StoreKey,
-			},
-		}
+		storeUpgrades := storetypes.StoreUpgrades{Added: []string{feesharetypes.StoreKey}}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	} else if upgradeInfo.Name == terraappconfig.Upgrade2_7 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{
-				icqtypes.StoreKey,
-			},
-		}
+		storeUpgrades := storetypes.StoreUpgrades{Added: []string{icqtypes.StoreKey}}
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	} else if upgradeInfo.Name == terraappconfig.Upgrade2_9 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{Deleted: []string{"builder"}}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	} else if upgradeInfo.Name == terraappconfig.Upgrade2_9 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{

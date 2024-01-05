@@ -43,7 +43,6 @@ import (
 
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
-	pobtype "github.com/skip-mev/pob/x/builder/types"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	feeburntypes "github.com/terra-money/core/v2/x/feeburn/types"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
@@ -62,7 +61,7 @@ func (keepers *TerraAppKeepers) GenerateKeys() {
 		icahosttypes.StoreKey, icacontrollertypes.StoreKey, routertypes.StoreKey,
 		consensusparamtypes.StoreKey, tokenfactorytypes.StoreKey, wasmtypes.StoreKey,
 		ibcfeetypes.StoreKey, ibchookstypes.StoreKey, crisistypes.StoreKey,
-		alliancetypes.StoreKey, feesharetypes.StoreKey, feeburntypes.StoreKey, pobtype.StoreKey, icqtypes.StoreKey,
+		alliancetypes.StoreKey, feesharetypes.StoreKey, icqtypes.StoreKey, feeburntypes.StoreKey,
 	)
 
 	keepers.tkeys = sdk.NewTransientStoreKeys(paramstypes.TStoreKey)

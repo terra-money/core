@@ -2,19 +2,274 @@ package app_test
 
 import (
 	"encoding/json"
+	"os"
 	"testing"
+	"time"
 
-	"github.com/stretchr/testify/require"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+
+	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cometbft/cometbft/libs/log"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	"github.com/terra-money/core/v2/app/test_helpers"
+
+	ibcfee "github.com/cosmos/ibc-go/v7/modules/apps/29-fee"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/suite"
+	"github.com/terra-money/alliance/x/alliance"
 	"github.com/terra-money/core/v2/app"
+	"github.com/terra-money/core/v2/x/feeburn"
+	"github.com/terra-money/core/v2/x/feeshare"
+	"github.com/terra-money/core/v2/x/tokenfactory"
+
+	mocktestutils "github.com/cosmos/cosmos-sdk/testutil/mock"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
+	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
+	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
+	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
+	ibc "github.com/cosmos/ibc-go/v7/modules/core"
+
+	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/capability"
+	"github.com/cosmos/cosmos-sdk/x/crisis"
+	"github.com/cosmos/cosmos-sdk/x/distribution"
+	"github.com/cosmos/cosmos-sdk/x/evidence"
+	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	"github.com/cosmos/cosmos-sdk/x/mint"
+	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
+	"github.com/cosmos/cosmos-sdk/x/staking"
+	"github.com/cosmos/cosmos-sdk/x/upgrade"
+
+	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	tmtypes "github.com/cometbft/cometbft/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-func TestGenesis(t *testing.T) {
+type AppGenesisTestSuite struct {
+	test_helpers.AppTestSuite
+}
+
+func TestAnteSuite(t *testing.T) {
+	suite.Run(t, new(AppGenesisTestSuite))
+}
+
+func (s *AppGenesisTestSuite) TestExportImportStateWithGenesisVestingAccs() {
+	// Setup the test suite
+	s.Setup()
+	bondAmt := sdk.NewInt(100_000_000_000_000_000)
+	coin := sdk.NewCoin("stake", bondAmt)
+
+	// Generate a random validators private/public key
+	privVal := mocktestutils.NewPV()
+	pubKey, err := privVal.GetPubKey()
+	s.Require().NoError(err)
+	privVal1 := mocktestutils.NewPV()
+	pubKey1, err := privVal1.GetPubKey()
+	s.Require().NoError(err)
+
+	// create validator set with single validator
+	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{
+		tmtypes.NewValidator(pubKey, 1),
+		tmtypes.NewValidator(pubKey1, 1),
+	})
+	senderPrivKey := secp256k1.GenPrivKey()
+	senderPrivKey1 := secp256k1.GenPrivKey()
+	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
+	acc1 := authtypes.NewBaseAccount(senderPrivKey1.PubKey().Address().Bytes(), senderPrivKey1.PubKey(), 0, 0)
+	vestingAcc := vestingtypes.NewBaseVestingAccount(acc, sdk.NewCoins(coin), time.Now().Unix())
+	vestingAcc1 := vestingtypes.NewBaseVestingAccount(acc1, sdk.NewCoins(coin), time.Now().Unix())
+
+	// Get genesis state and setup the chain
+	genesisState := app.NewDefaultGenesisState(s.EncodingConfig.Marshaler)
+	genesisState.SetDefaultTerraConfig(s.EncodingConfig.Marshaler)
+	genesisAccs := authtypes.NewGenesisState(authtypes.DefaultParams(), []authtypes.GenesisAccount{vestingAcc, vestingAcc1})
+	genesisState[authtypes.ModuleName] = s.EncodingConfig.Marshaler.MustMarshalJSON(genesisAccs)
+
+	validators := make([]stakingtypes.Validator, 0, len(valSet.Validators))
+	delegations := make([]stakingtypes.Delegation, 0, len(valSet.Validators))
+
+	for _, val := range valSet.Validators {
+		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
+		s.Require().NoError(err)
+		pkAny, err := codectypes.NewAnyWithValue(pk)
+		s.Require().NoError(err)
+
+		validator := stakingtypes.Validator{
+			OperatorAddress:   sdk.ValAddress(val.Address).String(),
+			ConsensusPubkey:   pkAny,
+			Jailed:            false,
+			Status:            stakingtypes.Bonded,
+			Tokens:            bondAmt,
+			DelegatorShares:   sdk.OneDec(),
+			Description:       stakingtypes.Description{},
+			UnbondingHeight:   int64(0),
+			UnbondingTime:     time.Unix(0, 0).UTC(),
+			Commission:        stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			MinSelfDelegation: sdk.ZeroInt(),
+		}
+		validators = append(validators, validator)
+	}
+	delegations = append(delegations, stakingtypes.NewDelegation(vestingAcc.GetAddress(), valSet.Validators[0].Address.Bytes(), sdk.OneDec()))
+	delegations = append(delegations, stakingtypes.NewDelegation(vestingAcc1.GetAddress(), valSet.Validators[1].Address.Bytes(), sdk.OneDec()))
+
+	// set validators and delegations
+	stakingGenesis := stakingtypes.NewGenesisState(stakingtypes.DefaultParams(), validators, delegations)
+	genesisState[stakingtypes.ModuleName] = s.App.AppCodec().MustMarshalJSON(stakingGenesis)
+
+	// add bonded amount to bonded pool module account
+	balances := []banktypes.Balance{
+		{Address: vestingAcc.GetAddress().String(), Coins: sdk.NewCoins(coin)},
+		{Address: vestingAcc1.GetAddress().String(), Coins: sdk.NewCoins(coin)},
+		{
+			Address: authtypes.NewModuleAddress(stakingtypes.BondedPoolName).String(),
+			Coins:   sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(200_000_000_000_000_000))},
+		}}
+
+	// update total supply
+	bankGenesis := banktypes.NewGenesisState(
+		banktypes.DefaultGenesisState().Params,
+		balances,
+		sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(400000000000000000))),
+		[]banktypes.Metadata{},
+		[]banktypes.SendEnabled{},
+	)
+	genesisState[banktypes.ModuleName] = s.App.AppCodec().MustMarshalJSON(bankGenesis)
+
+	stateBytes, err := json.MarshalIndent(genesisState, "", "  ")
+	s.Require().NoError(err)
+
+	// Initialize the chain
+	s.App.InitChain(
+		abci.RequestInitChain{
+			Validators:    []abci.ValidatorUpdate{},
+			AppStateBytes: stateBytes,
+		},
+	)
+	s.App.Commit()
+
+	// Making a new app object with the db, so that initchain hasn't been called
+	app2 := app.NewTerraApp(
+		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		s.DB,
+		nil,
+		true,
+		map[int64]bool{},
+		app.DefaultNodeHome,
+		0,
+		app.MakeEncodingConfig(),
+		simtestutil.EmptyAppOptions{},
+		wasmtypes.DefaultWasmConfig())
+	_, err = app2.ExportAppStateAndValidators(false, []string{}, []string{})
+	s.Require().NoError(err, "ExportAppStateAndValidators should not have an error")
+}
+
+func (s *AppGenesisTestSuite) TestMigration() {
+	s.Setup()
+
+	// Create a mock module. This module will serve as the new module we're
+	// adding during a migration.
+	mockCtrl := gomock.NewController(s.T())
+	s.T().Cleanup(mockCtrl.Finish)
+	mockModule := mocktestutils.NewMockAppModuleWithAllExtensions(mockCtrl)
+	mockDefaultGenesis := json.RawMessage(`{"key": "value"}`)
+	mockModule.EXPECT().DefaultGenesis(gomock.Eq(s.App.AppCodec())).Times(1).Return(mockDefaultGenesis)
+	mockModule.EXPECT().InitGenesis(gomock.Eq(s.Ctx), gomock.Eq(s.App.AppCodec()), gomock.Eq(mockDefaultGenesis)).Times(1).Return(nil)
+	mockModule.EXPECT().ConsensusVersion().Times(1).Return(uint64(0))
+
+	s.App.GetModuleManager().Modules["mock"] = mockModule
+
+	// Run migrations only for "mock" module. We exclude it from
+	// the VersionMap to simulate upgrading with a new module.
+	res, err := s.App.GetModuleManager().RunMigrations(s.Ctx, s.App.GetConfigurator(),
+		module.VersionMap{
+			"alliance":               alliance.AppModule{}.ConsensusVersion(),
+			"auth":                   auth.AppModule{}.ConsensusVersion(),
+			"authz":                  authzmodule.AppModule{}.ConsensusVersion(),
+			"bank":                   bank.AppModule{}.ConsensusVersion(),
+			"capability":             capability.AppModule{}.ConsensusVersion(),
+			"crisis":                 crisis.AppModule{}.ConsensusVersion(),
+			"distribution":           distribution.AppModule{}.ConsensusVersion(),
+			"evidence":               evidence.AppModule{}.ConsensusVersion(),
+			"feeburn":                feeburn.AppModule{}.ConsensusVersion(),
+			"feegrant":               feegrantmodule.AppModule{}.ConsensusVersion(),
+			"feeshare":               feeshare.AppModule{}.ConsensusVersion(),
+			"feeibc":                 ibcfee.AppModule{}.ConsensusVersion(),
+			"genutil":                genutil.AppModule{}.ConsensusVersion(),
+			"gov":                    gov.AppModule{}.ConsensusVersion(),
+			"ibc":                    ibc.AppModule{}.ConsensusVersion(),
+			"interchainquery":        icq.AppModule{}.ConsensusVersion(),
+			"ibchooks":               ibchooks.AppModule{}.ConsensusVersion(),
+			"interchainaccounts":     ica.AppModule{}.ConsensusVersion(),
+			"mint":                   mint.AppModule{}.ConsensusVersion(),
+			"packetfowardmiddleware": router.AppModule{}.ConsensusVersion(),
+			"params":                 params.AppModule{}.ConsensusVersion(),
+			"slashing":               slashing.AppModule{}.ConsensusVersion(),
+			"staking":                staking.AppModule{}.ConsensusVersion(),
+			"tokenfactory":           tokenfactory.AppModule{}.ConsensusVersion(),
+			"transfer":               transfer.AppModule{}.ConsensusVersion(),
+			"upgrade":                upgrade.AppModule{}.ConsensusVersion(),
+			"vesting":                vesting.AppModule{}.ConsensusVersion(),
+			"wasm":                   wasm.AppModule{}.ConsensusVersion(),
+		},
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(res, module.VersionMap{
+		"alliance":               5,
+		"auth":                   4,
+		"authz":                  2,
+		"bank":                   4,
+		"capability":             1,
+		"consensus":              1,
+		"crisis":                 2,
+		"distribution":           3,
+		"evidence":               1,
+		"feeburn":                1,
+		"feegrant":               2,
+		"feeshare":               2,
+		"feeibc":                 1,
+		"genutil":                1,
+		"gov":                    4,
+		"ibc":                    4,
+		"ibchooks":               1,
+		"interchainaccounts":     2,
+		"interchainquery":        1,
+		"mint":                   2,
+		"mock":                   0,
+		"packetfowardmiddleware": 1,
+		"params":                 1,
+		"slashing":               3,
+		"staking":                4,
+		"tokenfactory":           3,
+		"transfer":               3,
+		"upgrade":                2,
+		"vesting":                1,
+		"wasm":                   4,
+	})
+}
+
+func (s *AppGenesisTestSuite) TestGenesis() {
 	encCfg := app.MakeEncodingConfig()
 	genesisState := app.NewDefaultGenesisState(encCfg.Marshaler)
 	genesisState.SetDefaultTerraConfig(encCfg.Marshaler)
 
 	jsonGenState, err := json.Marshal(genesisState)
-	require.Nil(t, err)
+	s.Require().NoError(err)
 
 	expectedState := `{
 		"06-solomachine": null,
@@ -54,22 +309,6 @@ func TestGenesis(t *testing.T) {
 			"supply": [],
 			"denom_metadata": [],
 			"send_enabled": []
-		},
-		"builder": {
-			"params": {
-				"max_bundle_size": 2,
-				"escrow_account_address": "32sHF2qbF8xMmvwle9QEcy59Cbc=",
-				"reserve_fee": {
-					"denom": "uluna",
-					"amount": "1"
-				},
-				"min_bid_increment": {
-					"denom": "uluna",
-					"amount": "1"
-				},
-				"front_running_protection": true,
-				"proposer_fee": "0.000000000000000000"
-			}
 		},
 		"capability": {
 			"index": "1",
@@ -401,7 +640,6 @@ func TestGenesis(t *testing.T) {
 					"/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata",
 					"/osmosis.tokenfactory.v1beta1.Query/DenomsFromCreator",
 					"/osmosis.tokenfactory.v1beta1.Query/Params",
-					"/pob.builder.v1.Query/Params",
 					"/router.v1.Query/Params"
 				]
 			}
@@ -491,5 +729,5 @@ func TestGenesis(t *testing.T) {
 			"sequences": []
 		}
 	}`
-	require.JSONEq(t, string(jsonGenState), expectedState)
+	s.Require().JSONEq(string(jsonGenState), expectedState)
 }

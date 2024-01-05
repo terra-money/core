@@ -3,9 +3,6 @@ package v2_5
 import (
 	"time"
 
-	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
-	pobtypes "github.com/skip-mev/pob/x/builder/types"
-
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
 	sdkerrors "cosmossdk.io/errors"
@@ -34,7 +31,6 @@ func CreateUpgradeHandler(
 	paramsKeeper paramskeeper.Keeper,
 	consensusParamsKeeper consensuskeeper.Keeper,
 	icacontrollerKeeper icacontrollerkeeper.Keeper,
-	pobKeeper pobkeeper.Keeper,
 	authKeeper authkeeper.AccountKeeper,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
@@ -65,21 +61,6 @@ func CreateUpgradeHandler(
 			return nil, err
 		}
 
-		// Create POB module account
-		_ = authKeeper.GetModuleAccount(ctx, pobtypes.ModuleName)
-
-		// Setting pob params to disable by default until a proposal is passed to enable it
-		err = pobKeeper.SetParams(ctx, pobtypes.Params{
-			MaxBundleSize:          0,
-			EscrowAccountAddress:   pobtypes.DefaultEscrowAccountAddress,
-			ReserveFee:             sdk.NewCoin("uluna", sdk.NewInt(1)),
-			MinBidIncrement:        sdk.NewCoin("uluna", sdk.NewInt(1)),
-			FrontRunningProtection: pobtypes.DefaultFrontRunningProtection,
-			ProposerFee:            pobtypes.DefaultProposerFee,
-		})
-		if err != nil {
-			return nil, err
-		}
 		return vm, nil
 	}
 }

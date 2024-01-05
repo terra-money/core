@@ -269,13 +269,11 @@ benchmark:
 simulate:
 	@go test  -bench BenchmarkSimulation ./app -NumBlocks=200 -BlockSize 50 -Commit=true -Verbose=true -Enabled=true -Seed 1
 
-test-e2e-pob:
-	cd interchaintest && go test -race -v -run TestPOB .
 
 test-e2e-pmf:
 	cd interchaintest && go test -race -v -run TestPMF .
 
-.PHONY: test test-all test-cover test-unit test-race simulate test-e2e-pob test-e2e-pmf
+.PHONY: test test-all test-cover test-unit test-race simulate test-e2e-pmf
 
 ###############################################################################
 ###                                Linting                                  ###

@@ -10,8 +10,8 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	app "github.com/terra-money/core/v2/app/app_test"
 	"github.com/terra-money/core/v2/app/post/mocks"
+	app "github.com/terra-money/core/v2/app/test_helpers"
 	post "github.com/terra-money/core/v2/x/feeburn/post"
 	"github.com/terra-money/core/v2/x/feeburn/types"
 )
