@@ -171,7 +171,6 @@ describe("ICQ Module (https://github.com/cosmos/ibc-apps/tree/main/modules/async
                     "/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata",
                     "/osmosis.tokenfactory.v1beta1.Query/DenomsFromCreator",
                     "/osmosis.tokenfactory.v1beta1.Query/Params",
-                    "/pob.builder.v1.Query/Params",
                     "/router.v1.Query/Params"
                 ]
             });

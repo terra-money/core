@@ -2,14 +2,15 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
-	"reflect" // #nosec G702
 
 	"golang.org/x/exp/slices"
 
+	// #nosec G702
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/cosmos/cosmos-sdk/store/streaming"
@@ -51,7 +52,7 @@ import (
 	cosmosante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	vestingexported "github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/capability"
@@ -92,9 +93,6 @@ import (
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	feeshare "github.com/terra-money/core/v2/x/feeshare"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
-
-	pobabci "github.com/skip-mev/pob/abci"
-	pobmempool "github.com/skip-mev/pob/mempool"
 
 	tmjson "github.com/cometbft/cometbft/libs/json"
 
@@ -159,9 +157,6 @@ type TerraApp struct {
 	Keepers keepers.TerraAppKeepers
 
 	invCheckPeriod uint
-
-	// Custom checkTx handler
-	checkTxHandler pobabci.CheckTx
 
 	// the module manager
 	mm           *module.Manager
@@ -274,10 +269,6 @@ func NewTerraApp(
 	app.RegisterUpgradeHandlers()
 	app.RegisterUpgradeStores()
 
-	config := pobmempool.NewDefaultAuctionFactory(encodingConfig.TxConfig.TxDecoder())
-	// when maxTx is set as 0, there won't be a limit on the number of txs in this mempool
-	pobMempool := pobmempool.NewAuctionMempool(encodingConfig.TxConfig.TxDecoder(), encodingConfig.TxConfig.TxEncoder(), 0, config)
-
 	anteHandler, err := ante.NewAnteHandler(
 		ante.HandlerOptions{
 			HandlerOptions: cosmosante.HandlerOptions{
@@ -292,9 +283,6 @@ func NewTerraApp(
 			IBCkeeper:         app.Keepers.IBCKeeper,
 			TxCounterStoreKey: app.keys[wasmtypes.StoreKey],
 			WasmConfig:        wasmConfig,
-			PobBuilderKeeper:  app.Keepers.BuilderKeeper,
-			TxConfig:          encodingConfig.TxConfig,
-			PobMempool:        pobMempool,
 		},
 	)
 	if err != nil {
@@ -308,34 +296,12 @@ func NewTerraApp(
 		},
 	)
 
-	// Create the proposal handler that will be used to build and validate blocks.
-	handler := pobabci.NewProposalHandler(
-		pobMempool,
-		bApp.Logger(),
-		anteHandler,
-		encodingConfig.TxConfig.TxEncoder(),
-		encodingConfig.TxConfig.TxDecoder(),
-	)
-	app.SetPrepareProposal(handler.PrepareProposalHandler())
-	app.SetProcessProposal(handler.ProcessProposalHandler())
-
-	// Set the custom CheckTx handler on BaseApp.
-	checkTxHandler := pobabci.NewCheckTxHandler(
-		app.BaseApp,
-		encodingConfig.TxConfig.TxDecoder(),
-		pobMempool,
-		anteHandler,
-		app.ChainID(),
-	)
-
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetAnteHandler(anteHandler)
 	app.SetPostHandler(postHandler)
 	app.SetEndBlocker(app.EndBlocker)
-	app.SetMempool(pobMempool)
-	app.SetCheckTx(checkTxHandler.CheckTx())
 
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
@@ -523,8 +489,10 @@ func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisStat
 			panic(err)
 		}
 
-		if vestingAcc, ok := account.(vestingexported.VestingAccount); ok {
-			amt := vestingAcc.GetOriginalVesting().AmountOf(app.Keepers.StakingKeeper.BondDenom(ctx))
+		bondDenom := app.Keepers.StakingKeeper.BondDenom(ctx)
+
+		if vestingAcc, ok := account.(*vestingtypes.BaseVestingAccount); ok {
+			amt := vestingAcc.GetOriginalVesting().AmountOf(bondDenom)
 
 			// to prevent staking multiple times over the same validator
 			// adjust split amount for the whale account
@@ -541,6 +509,8 @@ func (app *TerraApp) enforceStakingForVestingTokens(ctx sdk.Context, genesisStat
 			// stake 200_000_000_000 to val3
 			for ; amt.GTE(powerReduction); amt = amt.Sub(splitAmt) {
 				validator := validators[i%validatorLen]
+				address := vestingAcc.GetAddress().String()
+				fmt.Print(address)
 				if _, err := app.Keepers.StakingKeeper.Delegate(
 					ctx,
 					vestingAcc.GetAddress(),
@@ -601,26 +571,6 @@ func (a *TerraApp) DefaultGenesis() map[string]json.RawMessage {
 
 func (app *TerraApp) RegisterNodeService(clientCtx client.Context) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
-}
-
-// ChainID gets chainID from private fields of BaseApp
-// Should be removed once SDK 0.50.x will be adopted
-func (app *TerraApp) ChainID() string {
-	field := reflect.ValueOf(app.BaseApp).Elem().FieldByName("chainID")
-	return field.String()
-}
-
-// CheckTx will check the transaction with the provided checkTxHandler. We override the default
-// handler so that we can verify bid transactions before they are inserted into the mempool.
-// With the POB CheckTx, we can verify the bid transaction and all of the bundled transactions
-// before inserting the bid transaction into the mempool.
-func (app *TerraApp) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
-	return app.checkTxHandler(req)
-}
-
-// SetCheckTx sets the checkTxHandler for the app.
-func (app *TerraApp) SetCheckTx(handler pobabci.CheckTx) {
-	app.checkTxHandler = handler
 }
 
 func (app *TerraApp) GetWasmOpts(appOpts servertypes.AppOptions) []wasmkeeper.Option {
