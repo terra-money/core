@@ -100,6 +100,9 @@ import (
 	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 
+	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
+	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
+
 	terraappconfig "github.com/terra-money/core/v2/app/config"
 	// unnamed import of statik for swagger UI support
 	_ "github.com/terra-money/core/v2/client/docs/statik"
@@ -163,6 +166,9 @@ type TerraAppKeepers struct {
 	TransferStack    porttypes.Middleware
 	Ics20WasmHooks   *ibchooks.WasmHooks
 	HooksICS4Wrapper ibchooks.ICS4Middleware
+
+	// Fee market
+	FeeMarketKeeper *feemarketkeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
@@ -517,6 +523,13 @@ func NewTerraAppKeepers(
 		keepers.AccountKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
+	keepers.FeeMarketKeeper = feemarketkeeper.NewKeeper(
+		appCodec,
+		keys[feemarkettypes.StoreKey],
+		keepers.AccountKeeper,
+		govModuleAddress,
 	)
 
 	// Set legacy router for backwards compatibility with gov v1beta1

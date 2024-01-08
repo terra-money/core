@@ -259,22 +259,28 @@ func NewTerraApp(
 				SigGasConsumer:  cosmosante.DefaultSigVerificationGasConsumer,
 			},
 			BankKeeper:        app.Keepers.BankKeeper,
-			FeeShareKeeper:    app.Keepers.FeeShareKeeper,
 			IBCkeeper:         app.Keepers.IBCKeeper,
 			TxCounterStoreKey: app.keys[wasmtypes.StoreKey],
 			WasmConfig:        wasmConfig,
+			FeeMarketKeeper:   app.Keepers.FeeMarketKeeper,
 		},
 	)
 	if err != nil {
 		panic(err)
 	}
-	postHandler := post.NewPostHandler(
+	postHandler, err := post.NewPostHandler(
 		post.HandlerOptions{
-			FeeShareKeeper: app.Keepers.FeeShareKeeper,
-			BankKeeper:     app.Keepers.BankKeeper,
-			WasmKeeper:     app.Keepers.WasmKeeper,
+			FeeShareKeeper:  app.Keepers.FeeShareKeeper,
+			BankKeeper:      app.Keepers.BankKeeper,
+			WasmKeeper:      app.Keepers.WasmKeeper,
+			AccountKeeper:   app.Keepers.AccountKeeper,
+			FeeMarketKeeper: app.Keepers.FeeMarketKeeper,
+			FeeGrantKeeper:  app.Keepers.FeeGrantKeeper,
 		},
 	)
+	if err != nil {
+		panic(err)
+	}
 
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)

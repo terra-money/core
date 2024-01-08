@@ -80,6 +80,8 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	terrappsparams "github.com/terra-money/core/v2/app/params"
 
+	feemarket "github.com/skip-mev/feemarket/x/feemarket"
+
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 )
 
@@ -117,6 +119,7 @@ var ModuleBasics = module.NewBasicManager(
 	alliance.AppModuleBasic{},
 	feeshare.AppModuleBasic{},
 	icq.AppModuleBasic{},
+	feemarket.AppModuleBasic{},
 )
 
 // NOTE: Any module instantiated in the module manager that is later modified
@@ -154,6 +157,7 @@ func appModules(app *TerraApp, encodingConfig terrappsparams.EncodingConfig, ski
 		alliance.NewAppModule(app.appCodec, app.Keepers.AllianceKeeper, app.Keepers.StakingKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.interfaceRegistry, app.GetSubspace(alliancetypes.ModuleName)),
 		feeshare.NewAppModule(app.Keepers.FeeShareKeeper, app.Keepers.AccountKeeper, app.GetSubspace(feesharetypes.ModuleName)),
 		icq.NewAppModule(app.Keepers.ICQKeeper),
+		feemarket.NewAppModule(app.appCodec, *app.Keepers.FeeMarketKeeper),
 	}
 }
 
