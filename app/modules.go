@@ -80,7 +80,8 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	terrappsparams "github.com/terra-money/core/v2/app/params"
 
-	feemarket "github.com/skip-mev/feemarket/x/feemarket"
+	"github.com/skip-mev/feemarket/x/feemarket"
+	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 )
@@ -195,6 +196,7 @@ var initGenesisOrder = []string{
 	feesharetypes.ModuleName,
 	consensusparamtypes.ModuleName,
 	icqtypes.ModuleName,
+	feemarkettypes.ModuleName,
 }
 
 var beginBlockersOrder = []string{
@@ -227,6 +229,7 @@ var beginBlockersOrder = []string{
 	feesharetypes.ModuleName,
 	consensusparamtypes.ModuleName,
 	icqtypes.ModuleName,
+	feemarkettypes.ModuleName,
 }
 
 var endBlockerOrder = []string{
@@ -259,4 +262,5 @@ var endBlockerOrder = []string{
 	feesharetypes.ModuleName,
 	consensusparamtypes.ModuleName,
 	icqtypes.ModuleName,
+	feemarkettypes.ModuleName,
 }
