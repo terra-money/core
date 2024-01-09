@@ -262,7 +262,10 @@ func NewTerraApp(
 	// TODO: move checking if streaming service is enabled to a helper function
 	streamers := cast.ToStringSlice(appOpts.Get("store.streamers"))
 	if slices.Contains(streamers, "fastquery") {
-		app.SetupFastQueryDB(appOpts, homePath)
+		err := app.SetupFastQueryDB(appOpts, homePath)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	// register upgrade

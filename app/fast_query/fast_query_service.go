@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	log "github.com/cometbft/cometbft/libs/log"
-	"github.com/cosmos/cosmos-sdk/store/types"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/terra-money/core/v2/app/fast_query/db/driver"
 	"github.com/terra-money/core/v2/app/fast_query/db/height_driver"
 	"github.com/terra-money/core/v2/app/fast_query/store"
+
+	"github.com/cosmos/cosmos-sdk/store/types"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 )
 
 type FastQueryService struct {
@@ -26,7 +27,7 @@ func NewFastQueryService(homedir string, logger log.Logger, storeKeys map[string
 	}
 
 	// Create HeightDB Driver that implements optimization for reading
-	// and writing data in the database in paralell.
+	// and writing data in the database in parallel.
 	fastQueryDb := height_driver.NewHeightDB(
 		fastQueryDbDriver,
 		&height_driver.HeightDBConfig{

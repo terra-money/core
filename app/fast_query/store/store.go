@@ -93,7 +93,8 @@ func NewStore(db dbm.DB, hldb *height_driver.HeightDB, logger log.Logger, storeK
 	}
 
 	for _, storeKeyValue := range storeKeys {
-		store.MountStoreWithDB(storeKeyValue, types.StoreTypeDB, db)
+		// nil is set for DB so that when we loadCommitStoreFromParams, we load the db as a prefix db
+		store.MountStoreWithDB(storeKeyValue, types.StoreTypeDB, nil)
 	}
 
 	if err := store.LoadLatestVersion(); err != nil {
@@ -1122,8 +1123,9 @@ func flushCommitInfo(batch dbm.Batch, version int64, cInfo *types.CommitInfo) {
 		panic(err)
 	}
 
-	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, version)
-	batch.Set([]byte(cInfoKey), bz)
+	if err = batch.Set([]byte(cInfoKey), bz); err != nil {
+		panic(err)
+	}
 }
 
 func flushLatestVersion(batch dbm.Batch, version int64) {
@@ -1132,5 +1134,7 @@ func flushLatestVersion(batch dbm.Batch, version int64) {
 		panic(err)
 	}
 
-	batch.Set([]byte(latestVersionKey), bz)
+	if err = batch.Set([]byte(latestVersionKey), bz); err != nil {
+		panic(err)
+	}
 }

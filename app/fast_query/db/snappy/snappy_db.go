@@ -2,10 +2,11 @@ package snappy
 
 import (
 	"encoding/json"
+	"sync"
+
 	tmdb "github.com/cometbft/cometbft-db"
 	"github.com/golang/snappy"
 	"github.com/pkg/errors"
-	"sync"
 )
 
 const (

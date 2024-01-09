@@ -2,6 +2,7 @@ package store
 
 import (
 	dbm "github.com/cometbft/cometbft-db"
+
 	"github.com/cosmos/cosmos-sdk/store/dbadapter"
 	pruningtypes "github.com/cosmos/cosmos-sdk/store/pruning/types"
 	"github.com/cosmos/cosmos-sdk/store/types"
