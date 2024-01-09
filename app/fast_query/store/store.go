@@ -1123,7 +1123,8 @@ func flushCommitInfo(batch dbm.Batch, version int64, cInfo *types.CommitInfo) {
 		panic(err)
 	}
 
-	if err = batch.Set([]byte(cInfoKey), bz); err != nil {
+	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, version)
+	if err != batch.Set([]byte(cInfoKey), bz) {
 		panic(err)
 	}
 }
