@@ -91,6 +91,14 @@ func (app *TerraApp) RegisterUpgradeHandlers() {
 			app.GetAppCodec(),
 		),
 	)
+	app.Keepers.UpgradeKeeper.SetUpgradeHandler(
+		terraappconfig.Upgrade2_10,
+		v2_9.CreateUpgradeHandler(
+			app.GetModuleManager(),
+			app.GetConfigurator(),
+			app.GetAppCodec(),
+		),
+	)
 }
 
 func (app *TerraApp) RegisterUpgradeStores() {

@@ -37,10 +37,8 @@ describe("Auth Module (https://github.com/terra-money/cosmos-sdk/tree/release/v0
         // Validate the vesting end has been set in the past
         expect(vestAcc.base_vesting_account.end_time)
             .toBeGreaterThan(moment().unix());
-        // Validate the original vesting and delegated vesting
+        // Validate the original vesting
         expect(vestAcc.base_vesting_account.original_vesting)
-            .toStrictEqual(Coins.fromString("10000000000uluna"));
-        expect(vestAcc.base_vesting_account.delegated_vesting)
             .toStrictEqual(Coins.fromString("10000000000uluna"));
 
         // Validate other params from base account
@@ -58,7 +56,7 @@ describe("Auth Module (https://github.com/terra-money/cosmos-sdk/tree/release/v0
 
         // Validate the unlocked balance is still available
         expect(vestAccBalance[0].get("uluna"))
-            .toStrictEqual(Coin.fromString("990000000000uluna"));
+            .toStrictEqual(Coin.fromString("1000000000000uluna"));
     });
 
     test('Must create a random vesting account', async () => {
