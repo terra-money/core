@@ -53,7 +53,7 @@ func NewFastQueryService(homedir string, logger log.Logger, storeKeys map[string
 func (fqs *FastQueryService) CommitChanges(blockHeight int64, changeSet []types.StoreKVPair) error {
 	fqs.logger.Debug("CommitChanges", "blockHeight", blockHeight, "changeSet", changeSet)
 	if blockHeight-fqs.Store.LatestVersion() != 1 {
-		fmt.Println(fmt.Sprintf("invalid block height: %s vs %s", blockHeight, fqs.Store.LatestVersion()))
+		fmt.Println(fmt.Sprintf("invalid block height: %d vs %d", blockHeight, fqs.Store.LatestVersion()))
 		panic("")
 	}
 	fqs.fastQueryDb.SetWriteHeight(blockHeight)
