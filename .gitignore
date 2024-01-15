@@ -9,7 +9,6 @@
 .idea
 *.code-workspace
 
-
 # Build
 bin
 build
@@ -29,6 +28,7 @@ client/lcd/keys/*
 client/docs/statik/statik.go
 remote/ansible/testnets
 mytestnet
+data/*
 
 # Testing
 coverage.txt
