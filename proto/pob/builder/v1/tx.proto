@@ -1,0 +1,67 @@
+syntax = "proto3";
+package pob.builder.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "pob/builder/v1/genesis.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/msg/v1/msg.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/skip-mev/pob/x/builder/types";
+
+// Msg defines the x/builder Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  // AuctionBid defines a method for sending bids to the x/builder module.
+  rpc AuctionBid(MsgAuctionBid) returns (MsgAuctionBidResponse) {
+    option (google.api.http).post = "/pob/builder/v1/bid";
+  };
+
+  // UpdateParams defines a governance operation for updating the x/builder
+  // module parameters. The authority is hard-coded to the x/gov module account.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+}
+
+// MsgAuctionBid defines a request type for sending bids to the x/builder
+// module.
+message MsgAuctionBid {
+    option (cosmos.msg.v1.signer) = "bidder";
+    option (amino.name) = "pob/x/builder/MsgAuctionBid";
+  
+    option (gogoproto.equal) = false;
+  
+    // bidder is the address of the account that is submitting a bid to the
+    // auction.
+    string bidder = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+    // bid is the amount of coins that the bidder is bidding to participate in the
+    // auction.
+    cosmos.base.v1beta1.Coin bid = 2
+        [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
+    // transactions are the bytes of the transactions that the bidder wants to
+    // bundle together.
+    repeated bytes transactions = 3;
+  }
+  
+  // MsgAuctionBidResponse defines the Msg/AuctionBid response type.
+  message MsgAuctionBidResponse {}
+  
+  // MsgUpdateParams defines a request type for updating the x/builder module
+  // parameters.
+  message MsgUpdateParams {
+    option (cosmos.msg.v1.signer) = "authority";
+    option (amino.name) = "pob/x/builder/MsgUpdateParams";
+  
+    option (gogoproto.equal) = false;
+  
+    // authority is the address of the account that is authorized to update the
+    // x/builder module parameters.
+    string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+    // params is the new parameters for the x/builder module.
+    Params params = 2 [ (gogoproto.nullable) = false ];
+  }
+  
+  // MsgUpdateParamsResponse defines the Msg/UpdateParams response type.
+  message MsgUpdateParamsResponse {}

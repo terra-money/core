@@ -1,0 +1,44 @@
+syntax = "proto3";
+package pob.builder.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/skip-mev/pob/x/builder/types";
+
+// GenesisState defines the genesis state of the x/builder module.
+message GenesisState { Params params = 1 [ (gogoproto.nullable) = false ]; }
+
+// Params defines the parameters of the x/builder module.
+message Params {
+  option (amino.name) = "cosmos-sdk/x/builder/Params";
+
+  // max_bundle_size is the maximum number of transactions that can be bundled
+  // in a single bundle.
+  uint32 max_bundle_size = 1;
+
+  // escrow_account_address is the address of the account that will receive a
+  // portion of the bid proceeds.
+  bytes escrow_account_address = 2;
+
+  // reserve_fee specifies the bid floor for the auction.
+  cosmos.base.v1beta1.Coin reserve_fee = 3
+      [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
+
+  // min_bid_increment specifies the minimum amount that the next bid must be
+  // greater than the previous bid.
+  cosmos.base.v1beta1.Coin min_bid_increment = 4
+      [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
+
+  // front_running_protection specifies whether front running and sandwich
+  // attack protection is enabled.
+  bool front_running_protection = 5;
+
+  // proposer_fee defines the portion of the winning bid that goes to the block
+  // proposer that proposed the block.
+  string proposer_fee = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec"
+  ];
+}
