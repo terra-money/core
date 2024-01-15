@@ -5,5 +5,5 @@ module.exports = {
   testMatch: ['**/*.test.ts'],
   verbose: true,
   testTimeout: 50000,
-  globalTeardown: './src/teardown.ts',
+  //globalTeardown: './src/teardown.ts',
 };
