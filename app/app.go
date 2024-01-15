@@ -609,5 +609,10 @@ func (app *TerraApp) SetupFastQueryDB(appOpts servertypes.AppOptions, homePath s
 	app.SetStreamingService(streamingservice)
 	app.SetQueryMultiStore(fastQueryService.Store)
 
+	realBlockHeight := app.LastBlockHeight()
+	if fastQueryService.Store.LatestVersion() != realBlockHeight {
+		panic(fmt.Sprintf("fastquerydb version is not equal to the real block height. fastquerydb version: %d, real block height: %d", fastQueryService.Store.LatestVersion(), realBlockHeight))
+	}
+
 	return nil
 }

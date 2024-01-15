@@ -51,15 +51,17 @@ func NewFastQueryService(homedir string, logger log.Logger, storeKeys map[string
 }
 
 func (fqs *FastQueryService) CommitChanges(blockHeight int64, changeSet []types.StoreKVPair) error {
-	fqs.logger.Info("CommitChanges", "blockHeight", blockHeight, "changeSet", changeSet)
-
+	fqs.logger.Debug("CommitChanges", "blockHeight", blockHeight, "changeSet", changeSet)
+	if blockHeight-fqs.Store.LatestVersion() != 1 {
+		fmt.Println(fmt.Sprintf("invalid block height: %s vs %s", blockHeight, fqs.Store.LatestVersion()))
+		panic("")
+	}
 	fqs.fastQueryDb.SetWriteHeight(blockHeight)
 	fqs.safeBatchDBCloser.Open()
 
 	for _, change := range changeSet {
 		storeKey := storetypes.NewKVStoreKey(change.StoreKey)
 		commitKVStore := fqs.Store.GetStoreByName(storeKey.Name()).(types.CommitKVStore)
-		fmt.Print(commitKVStore)
 		if change.Delete {
 			commitKVStore.Delete(change.Key)
 		} else {

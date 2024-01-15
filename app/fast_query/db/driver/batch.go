@@ -72,7 +72,6 @@ func (b *DriverBatch) Close() error {
 }
 
 func (b *DriverBatch) RollbackBatch() tmdb.Batch {
-	b.Metric()
 	return b.batch.RollbackBatch
 }
 
