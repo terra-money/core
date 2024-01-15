@@ -32,7 +32,7 @@ func (s *IntegrationTestSuite) StoreCode() {
 	expHash := sha256.Sum256(wasmContract)
 	s.Require().Equal(expHash[:], result.Checksum)
 	// and
-	info := s.App.WasmKeeper.GetCodeInfo(s.Ctx, 1)
+	info := s.App.Keepers.WasmKeeper.GetCodeInfo(s.Ctx, 1)
 	s.Require().NotNil(info)
 	s.Require().Equal(expHash[:], info.CodeHash)
 	s.Require().Equal(sender.String(), info.Creator)
@@ -57,7 +57,7 @@ func (s *IntegrationTestSuite) InstantiateContract(sender string, admin string) 
 	s.Require().NoError(err)
 	var result wasmtypes.MsgInstantiateContractResponse
 	s.Require().NoError(s.App.AppCodec().Unmarshal(resp.Data, &result))
-	contractInfo := s.App.WasmKeeper.GetContractInfo(s.Ctx, sdk.MustAccAddressFromBech32(result.Address))
+	contractInfo := s.App.Keepers.WasmKeeper.GetContractInfo(s.Ctx, sdk.MustAccAddressFromBech32(result.Address))
 	s.Require().Equal(contractInfo.CodeID, uint64(1))
 	s.Require().Equal(contractInfo.Admin, admin)
 	s.Require().Equal(contractInfo.Creator, sender)
@@ -101,10 +101,10 @@ func (s *IntegrationTestSuite) TestGetContractAdminOrCreatorAddress() {
 		tc := tc
 		s.Run(tc.desc, func() {
 			if !tc.shouldErr {
-				_, err := s.App.FeeShareKeeper.GetContractAdminOrCreatorAddress(s.Ctx, sdk.MustAccAddressFromBech32(tc.contractAddress), tc.deployerAddress)
+				_, err := s.App.Keepers.FeeShareKeeper.GetContractAdminOrCreatorAddress(s.Ctx, sdk.MustAccAddressFromBech32(tc.contractAddress), tc.deployerAddress)
 				s.Require().NoError(err)
 			} else {
-				_, err := s.App.FeeShareKeeper.GetContractAdminOrCreatorAddress(s.Ctx, sdk.MustAccAddressFromBech32(tc.contractAddress), tc.deployerAddress)
+				_, err := s.App.Keepers.FeeShareKeeper.GetContractAdminOrCreatorAddress(s.Ctx, sdk.MustAccAddressFromBech32(tc.contractAddress), tc.deployerAddress)
 				s.Require().Error(err)
 			}
 		})
@@ -115,7 +115,7 @@ func (s *IntegrationTestSuite) TestRegisterFeeShare() {
 	s.Setup()
 	sender := s.TestAccs[0]
 
-	gov := s.App.AccountKeeper.GetModuleAddress(govtypes.ModuleName).String()
+	gov := s.App.Keepers.AccountKeeper.GetModuleAddress(govtypes.ModuleName).String()
 	govContract := s.InstantiateContract(sender.String(), gov)
 
 	contractAddress := s.InstantiateContract(sender.String(), "")
@@ -225,11 +225,11 @@ func (s *IntegrationTestSuite) TestRegisterFeeShare() {
 	} {
 		s.Run(tc.desc, func() {
 			if !tc.shouldErr {
-				resp, err := s.App.FeeShareKeeper.RegisterFeeShare(s.Ctx, tc.msg)
+				resp, err := s.App.Keepers.FeeShareKeeper.RegisterFeeShare(s.Ctx, tc.msg)
 				s.Require().NoError(err)
 				s.Require().Equal(resp, tc.resp)
 			} else {
-				resp, err := s.App.FeeShareKeeper.RegisterFeeShare(s.Ctx, tc.msg)
+				resp, err := s.App.Keepers.FeeShareKeeper.RegisterFeeShare(s.Ctx, tc.msg)
 				s.Require().Error(err)
 				s.Require().Nil(resp)
 			}
@@ -254,7 +254,7 @@ func (s *IntegrationTestSuite) TestUpdateFeeShare() {
 		DeployerAddress:   sender.String(),
 		WithdrawerAddress: withdrawer.String(),
 	}
-	_, err := s.App.FeeShareKeeper.RegisterFeeShare(goCtx, msg)
+	_, err := s.App.Keepers.FeeShareKeeper.RegisterFeeShare(goCtx, msg)
 	s.Require().NoError(err)
 	_, _, newWithdrawer := testdata.KeyTestPubAddr()
 	s.Require().NotEqual(withdrawer, newWithdrawer)
@@ -320,10 +320,10 @@ func (s *IntegrationTestSuite) TestUpdateFeeShare() {
 		s.Run(tc.desc, func() {
 			goCtx := sdk.WrapSDKContext(s.Ctx)
 			if !tc.shouldErr {
-				_, err := s.App.FeeShareKeeper.UpdateFeeShare(goCtx, tc.msg)
+				_, err := s.App.Keepers.FeeShareKeeper.UpdateFeeShare(goCtx, tc.msg)
 				s.Require().NoError(err)
 			} else {
-				resp, err := s.App.FeeShareKeeper.UpdateFeeShare(goCtx, tc.msg)
+				resp, err := s.App.Keepers.FeeShareKeeper.UpdateFeeShare(goCtx, tc.msg)
 				s.Require().Error(err)
 				s.Require().Nil(resp)
 			}
@@ -345,7 +345,7 @@ func (s *IntegrationTestSuite) TestCancelFeeShare() {
 		DeployerAddress:   sender.String(),
 		WithdrawerAddress: withdrawer.String(),
 	}
-	_, err := s.App.FeeShareKeeper.RegisterFeeShare(goCtx, msg)
+	_, err := s.App.Keepers.FeeShareKeeper.RegisterFeeShare(goCtx, msg)
 	s.Require().NoError(err)
 
 	for _, tc := range []struct {
@@ -386,11 +386,11 @@ func (s *IntegrationTestSuite) TestCancelFeeShare() {
 		s.Run(tc.desc, func() {
 			goCtx := sdk.WrapSDKContext(s.Ctx)
 			if !tc.shouldErr {
-				resp, err := s.App.FeeShareKeeper.CancelFeeShare(goCtx, tc.msg)
+				resp, err := s.App.Keepers.FeeShareKeeper.CancelFeeShare(goCtx, tc.msg)
 				s.Require().NoError(err)
 				s.Require().Equal(resp, tc.resp)
 			} else {
-				resp, err := s.App.FeeShareKeeper.CancelFeeShare(goCtx, tc.msg)
+				resp, err := s.App.Keepers.FeeShareKeeper.CancelFeeShare(goCtx, tc.msg)
 				s.Require().Error(err)
 				s.Require().Equal(resp, tc.resp)
 			}

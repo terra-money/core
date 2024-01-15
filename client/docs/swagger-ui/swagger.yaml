@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   description: >-
     Source code for <a target='_blank'
-    href='https://github.com/terra-money/core'>Terra Core v2.6</a><br/>UI to
+    href='https://github.com/terra-money/core'>Terra Core v2.10</a><br/>UI to
     interact with the blockchain <a target='_blank'
     href='https://station.terra.money/'>Station</a><br/>Create a DAO on Terra
     using <a target='_blank'
@@ -14,7 +14,7 @@ info:
     href='https://alliance.terra.money/'>Alliance Docs</a><br/>More info about
     the protocol on <a target='_blank' href='https://docs.terra.money/'>Terra
     Docs</a>
-  version: '2.6'
+  version: 'v2.10'
 paths:
   /terra/alliances:
     get:
@@ -53833,6 +53833,57 @@ paths:
                       format: byte
       tags:
         - Query
+  /async-icq/v1/params:
+    get:
+      summary: Params queries all parameters of the ICQ module.
+      operationId: ICQParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: params defines the parameters of the module.
+                type: object
+                properties:
+                  host_enabled:
+                    type: boolean
+                    description: host_enabled enables or disables the host submodule.
+                  allow_queries:
+                    type: array
+                    items:
+                      type: string
+                    description: >-
+                      allow_queries defines a list of query paths allowed to be
+                      queried on a host chain.
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
 definitions:
   alliance.alliance.AllianceAsset:
     type: object
@@ -85779,3 +85830,35 @@ definitions:
     description: |-
       QueryWithdrawerFeeSharesResponse is the response type for the
       Query/WithdrawerFeeShares RPC method.
+  icq.v1.Params:
+    type: object
+    properties:
+      host_enabled:
+        type: boolean
+        description: host_enabled enables or disables the host submodule.
+      allow_queries:
+        type: array
+        items:
+          type: string
+        description: >-
+          allow_queries defines a list of query paths allowed to be queried on a
+          host chain.
+    description: Params defines the set of on-chain interchain query parameters.
+  icq.v1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params defines the parameters of the module.
+        type: object
+        properties:
+          host_enabled:
+            type: boolean
+            description: host_enabled enables or disables the host submodule.
+          allow_queries:
+            type: array
+            items:
+              type: string
+            description: >-
+              allow_queries defines a list of query paths allowed to be queried
+              on a host chain.
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.

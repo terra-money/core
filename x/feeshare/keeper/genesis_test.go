@@ -6,14 +6,15 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/terra-money/core/v2/app/test_helpers"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	app_test "github.com/terra-money/core/v2/app/app_test"
 
 	"github.com/terra-money/core/v2/x/feeshare/types"
 )
 
 type GenesisTestSuite struct {
-	app_test.AppTestSuite
+	test_helpers.AppTestSuite
 }
 
 func TestGenesisTestSuite(t *testing.T) {
@@ -85,14 +86,14 @@ func (suite *GenesisTestSuite) TestFeeShareInitGenesis() {
 
 			if tc.expPanic {
 				suite.Require().Panics(func() {
-					suite.App.FeeShareKeeper.InitGenesis(suite.Ctx, tc.genesis)
+					suite.App.Keepers.FeeShareKeeper.InitGenesis(suite.Ctx, tc.genesis)
 				})
 			} else {
 				suite.Require().NotPanics(func() {
-					suite.App.FeeShareKeeper.InitGenesis(suite.Ctx, tc.genesis)
+					suite.App.Keepers.FeeShareKeeper.InitGenesis(suite.Ctx, tc.genesis)
 				})
 
-				params := suite.App.FeeShareKeeper.GetParams(suite.Ctx)
+				params := suite.App.Keepers.FeeShareKeeper.GetParams(suite.Ctx)
 				suite.Require().Equal(tc.genesis.Params, params)
 			}
 		})

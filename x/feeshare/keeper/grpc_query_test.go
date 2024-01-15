@@ -1,9 +1,10 @@
 package keeper_test
 
 import (
+	"github.com/terra-money/core/v2/x/feeshare/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/terra-money/core/v2/x/feeshare/types"
 )
 
 func (s *IntegrationTestSuite) TestFeeShares() {
@@ -36,7 +37,7 @@ func (s *IntegrationTestSuite) TestFeeShares() {
 
 		feeShares = append(feeShares, feeShare)
 
-		_, err := s.App.FeeShareKeeper.RegisterFeeShare(s.Ctx, msg)
+		_, err := s.App.Keepers.FeeShareKeeper.RegisterFeeShare(s.Ctx, msg)
 		s.Require().NoError(err)
 	}
 
@@ -98,7 +99,7 @@ func (s *IntegrationTestSuite) TestFeeShare() {
 		DeployerAddress:   sender.String(),
 		WithdrawerAddress: withdrawer.String(),
 	}
-	_, err := s.App.FeeShareKeeper.RegisterFeeShare(s.Ctx, msg)
+	_, err := s.App.Keepers.FeeShareKeeper.RegisterFeeShare(s.Ctx, msg)
 	s.Require().NoError(err)
 
 	req := &types.QueryFeeShareRequest{
@@ -130,7 +131,7 @@ func (s *IntegrationTestSuite) TestDeployerFeeShares() {
 			WithdrawerAddress: withdrawer.String(),
 		}
 
-		_, err := s.App.FeeShareKeeper.RegisterFeeShare(s.Ctx, msg)
+		_, err := s.App.Keepers.FeeShareKeeper.RegisterFeeShare(s.Ctx, msg)
 		s.Require().NoError(err)
 	}
 
@@ -194,7 +195,7 @@ func (s *IntegrationTestSuite) TestWithdrawerFeeShares() {
 			WithdrawerAddress: withdrawer.String(),
 		}
 
-		_, err := s.App.FeeShareKeeper.RegisterFeeShare(s.Ctx, msg)
+		_, err := s.App.Keepers.FeeShareKeeper.RegisterFeeShare(s.Ctx, msg)
 		s.Require().NoError(err)
 	}
 

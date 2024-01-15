@@ -1,12 +1,13 @@
 package v2_3_0
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/terra-money/core/v2/app/config"
 	tokenfactorykeeper "github.com/terra-money/core/v2/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
 func CreateUpgradeHandler(

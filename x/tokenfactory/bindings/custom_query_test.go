@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/terra-money/core/v2/app"
@@ -54,7 +55,7 @@ func TestQuery(t *testing.T) {
 		},
 	}, paramsRes)
 
-	// Query full denom name throught wasm binding
+	// Query full denom name thought wasm binding
 	query = bindings.TokenQuery{
 		FullDenom: &bindings.FullDenom{
 			CreatorAddr: reflect.String(),
@@ -158,7 +159,7 @@ func queryCustom(t *testing.T, ctx sdk.Context, app *app.TerraApp, contract sdk.
 		return err
 	}
 
-	resBz, err := app.WasmKeeper.QuerySmart(ctx, contract, queryBz)
+	resBz, err := app.Keepers.WasmKeeper.QuerySmart(ctx, contract, queryBz)
 	if err != nil {
 		return err
 	}

@@ -1,12 +1,18 @@
 package v2_5
 
 import (
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
-	pobtypes "github.com/skip-mev/pob/x/builder/types"
 	"time"
 
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+
 	sdkerrors "cosmossdk.io/errors"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/keeper"
+	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
+	clientkeeper "github.com/cosmos/ibc-go/v7/modules/core/02-client/keeper"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -15,12 +21,6 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/keeper"
-	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
-	clientkeeper "github.com/cosmos/ibc-go/v7/modules/core/02-client/keeper"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
-	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 )
 
 func CreateUpgradeHandler(
@@ -31,7 +31,6 @@ func CreateUpgradeHandler(
 	paramsKeeper paramskeeper.Keeper,
 	consensusParamsKeeper consensuskeeper.Keeper,
 	icacontrollerKeeper icacontrollerkeeper.Keeper,
-	pobKeeper pobkeeper.Keeper,
 	authKeeper authkeeper.AccountKeeper,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
@@ -62,21 +61,6 @@ func CreateUpgradeHandler(
 			return nil, err
 		}
 
-		// Create POB module account
-		_ = authKeeper.GetModuleAccount(ctx, pobtypes.ModuleName)
-
-		// Setting pob params to disable by default until a proposal is passed to enable it
-		err = pobKeeper.SetParams(ctx, pobtypes.Params{
-			MaxBundleSize:          0,
-			EscrowAccountAddress:   pobtypes.DefaultEscrowAccountAddress,
-			ReserveFee:             sdk.NewCoin("uluna", sdk.NewInt(1)),
-			MinBidIncrement:        sdk.NewCoin("uluna", sdk.NewInt(1)),
-			FrontRunningProtection: pobtypes.DefaultFrontRunningProtection,
-			ProposerFee:            pobtypes.DefaultProposerFee,
-		})
-		if err != nil {
-			return nil, err
-		}
 		return vm, nil
 	}
 }

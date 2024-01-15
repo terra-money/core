@@ -7,16 +7,12 @@ import (
 	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/libs/log"
 
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/stretchr/testify/require"
 	"github.com/terra-money/core/v2/app"
-	"github.com/terra-money/core/v2/app/wasmconfig"
+	"github.com/terra-money/core/v2/app/keepers"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/codec"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
@@ -24,19 +20,6 @@ import (
 
 func init() {
 	simcli.GetSimulatorFlags()
-}
-
-type terraApp interface {
-	app.TerraApp
-	GetBaseApp() *baseapp.BaseApp
-	AppCodec() codec.Codec
-	SimulationManager() *module.SimulationManager
-	ModuleAccountAddrs() map[string]bool
-	Name() string
-	LegacyAmino() *codec.LegacyAmino
-	BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock
-	EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock
-	InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain
 }
 
 // BenchmarkSimulation run the chain simulation
@@ -71,7 +54,7 @@ func BenchmarkSimulation(b *testing.B) {
 		0,
 		encoding,
 		simtestutil.EmptyAppOptions{},
-		wasmconfig.DefaultConfig(),
+		wasmtypes.DefaultWasmConfig(),
 	)
 
 	// Run randomized simulations
@@ -82,7 +65,7 @@ func BenchmarkSimulation(b *testing.B) {
 		simtestutil.AppStateFn(terraApp.AppCodec(), terraApp.SimulationManager(), terraApp.DefaultGenesis()),
 		simulationtypes.RandomAccounts,
 		simtestutil.SimulationOperations(terraApp, terraApp.AppCodec(), config),
-		terraApp.ModuleAccountAddrs(),
+		keepers.ModuleAccountAddrs(),
 		config,
 		terraApp.AppCodec(),
 	)
@@ -111,7 +94,7 @@ func TestSimulationManager(t *testing.T) {
 		0,
 		encoding,
 		simtestutil.EmptyAppOptions{},
-		wasmconfig.DefaultConfig(),
+		wasmtypes.DefaultWasmConfig(),
 	)
 	sm := terraApp.SimulationManager()
 	require.NotNil(t, sm)

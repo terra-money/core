@@ -107,10 +107,7 @@ ifeq (,$(findstring nostrip,$(COSMOS_BUILD_OPTIONS)))
   BUILD_FLAGS += -trimpath
 endif
 
-# The below include contains the tools and runsim targets.
-include contrib/devtools/Makefile
-
-all: tools install lint test
+all: install lint test
 
 build: go.sum
 ifeq ($(OS),Windows_NT)
@@ -196,53 +193,6 @@ install: go.sum
 
 .PHONY: build build-linux install
 
-
-###############################################################################
-###                        Integration Tests                                ###
-###############################################################################
-
-integration-test-all: init-test-framework \
-	test-relayer \
-	test-ica \
-	test-ibc-hooks \
-	test-tokenfactory 
-
-init-test-framework: clean-testing-data install
-	@echo "Initializing both blockchains..."
-	./scripts/tests/init-test-framework.sh
-
-test-relayer:
-	@echo "Testing relayer..."
-	./scripts/tests/relayer/interchain-acc-config/rly-init.sh
-
-test-ica: 
-	@echo "Testing ica..."
-	./scripts/tests/ica/delegate.sh
-
-test-ibc-hooks: 
-	@echo "Testing ibc hooks..."
-	./scripts/tests/ibc-hooks/increment.sh
-
-test-tokenfactory: 
-	@echo "Testing tokenfactory..."
-	./scripts/tests/tokenfactory/tokenfactory.sh
-
-test-chain-upgrade:
-	@echo "Testing software upgrade..."
-	bash ./scripts/tests/chain-upgrade/chain-upgrade.sh
-
-clean-testing-data:
-	@echo "Killing terrad and removing previous data"
-	-@pkill terrad 2>/dev/null
-	-@pkill rly 2>/dev/null
-	-@pkill terrad_new 2>/dev/null
-	-@pkill terrad_old 2>/dev/null
-	-@rm -rf ./data
-	-@rm -rf ./_build
-	
-
-.PHONY: integration-test-all init-test-framework test-relayer test-ica test-ibc-hooks test-tokenfactory clean-testing-data
-
 ###############################################################################
 ###                                Protobuf                                 ###
 ###############################################################################
@@ -254,7 +204,7 @@ proto-gen:
 	@echo "Generating Protobuf files"
 	@$(protoImage) sh ./scripts/protocgen.sh
 
-gen-swagger:
+proto-swagger:
 	bash scripts/protoc-swagger-gen.sh
 
 update-swagger-docs: statik
@@ -266,11 +216,9 @@ update-swagger-docs: statik
         echo "Swagger docs are in sync!";\
     fi
 
-apply-swagger: gen-swagger update-swagger-docs
+proto-all: proto-gen proto-swagger update-swagger-docs
 
-proto-all: proto-gen gen-swagger update-swagger-docs apply-swagger
-
-.PHONY: proto-gen gen-swagger update-swagger-docs apply-swagger proto-all
+.PHONY: proto-gen gen-swagger update-swagger-docs proto-all
 
 ########################################
 ### Tools & dependencies
@@ -321,13 +269,11 @@ benchmark:
 simulate:
 	@go test  -bench BenchmarkSimulation ./app -NumBlocks=200 -BlockSize 50 -Commit=true -Verbose=true -Enabled=true -Seed 1
 
-test-e2e-pob:
-	cd interchaintest && go test -race -v -run TestPOB .
 
 test-e2e-pmf:
 	cd interchaintest && go test -race -v -run TestPMF .
 
-.PHONY: test test-all test-cover test-unit test-race simulate test-e2e-pob test-e2e-pmf
+.PHONY: test test-all test-cover test-unit test-race simulate test-e2e-pmf
 
 ###############################################################################
 ###                                Linting                                  ###
@@ -338,11 +284,19 @@ lint:
 
 lint-fix:
 	golangci-lint run --fix --out-format=tab --issues-exit-code=0
-	
-.PHONY: lint lint-fix
 
-format:
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' -not -path "./_build/*" | xargs gofmt -w -s
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' -not -path "./_build/*" | xargs misspell -w
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' -not -path "./_build/*" | xargs goimports -w -local github.com/cosmos/cosmos-sdk
-.PHONY: format
+lint-docker:
+	docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:latest golangci-lint run --timeout 10m
+
+format-tools:
+	go install mvdan.cc/gofumpt@latest
+	go install github.com/client9/misspell/cmd/misspell@latest
+	go install golang.org/x/tools/cmd/goimports@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+format: format-tools
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*statik*" -not -name '*.pb.go' | xargs gofmt -w -s
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*statik*" -not -name '*.pb.go' | xargs misspell -w
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*statik*" -not -name '*.pb.go' | xargs goimports -w -local github.com/cosmos/cosmos-sdk
+
+.PHONY: lint  lint-fix lint-docker format-tools format

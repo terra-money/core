@@ -56,7 +56,6 @@ jobs:
       matrix:
         # names of `make` commands to run tests
         test:
-          - "test-e2e-pob"
           - "test-e2e-pmf"
       fail-fast: false
 

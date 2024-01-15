@@ -36,12 +36,33 @@ export function getMnemonics() {
     let genesisVesting1 = new MnemonicKey({
         mnemonic: "open attitude harsh casino rent attitude midnight debris describe spare cancel crisp olive ride elite gallery leaf buffalo sheriff filter rotate path begin soldier"
     })
-    // let mnemonic = new MnemonicKey({
-    //     mnemonic: "unit question bulk desk slush answer share bird earth brave book wing special gorilla ozone release permit mercy luxury version advice impact unfair drama"
-    // })
-    // let mnemonic = new MnemonicKey({
-    //     mnemonic: "year aim panel oyster sunny faint dress skin describe chair guilt possible venue pottery inflict mass debate poverty multiply pulse ability purse situate inmate"
-    // })
+    let icaMnemonic = new MnemonicKey({
+        mnemonic: "unit question bulk desk slush answer share bird earth brave book wing special gorilla ozone release permit mercy luxury version advice impact unfair drama"
+    })
+    let tokenFactoryMnemonic = new MnemonicKey({
+        mnemonic: "year aim panel oyster sunny faint dress skin describe chair guilt possible venue pottery inflict mass debate poverty multiply pulse ability purse situate inmate"
+    })
+    let ibcHooksMnemonic = new MnemonicKey({
+        mnemonic: "leave side blue panel curve ancient suspect slide seminar neutral doctor boring only curious spell surround remind obtain slogan hire giant soccer crunch system"
+    })
+    let wasmContracts = new MnemonicKey({
+        mnemonic: "degree under tray object thought mercy mushroom captain bus work faint basic twice cube noble man ripple close flush bunker dish spare hungry arm"
+    })
+    let mnemonic2 = new MnemonicKey({
+        mnemonic: "range struggle season mesh antenna delay sell light yard path risk curve brain nut cabin injury dilemma fun comfort crumble today transfer bring draft"
+    })
+    let mnemonic3 = new MnemonicKey({
+        mnemonic: "giraffe trim element wheel cannon nothing enrich shiver upon output iron recall already fix appear produce fix behind scissors artefact excite tennis into side"
+    })
+    let mnemonic4 = new MnemonicKey({
+        mnemonic: "run turn cup combine sad toast roof already melt chimney arctic save avocado theory bracket cherry cotton fee once favorite swarm ignore dream element"
+    })
+    let mnemonic5 = new MnemonicKey({
+        mnemonic: "script key fold coyote cage squirrel prevent pole auction slide vintage shoot mirror erosion equip goose capable critic test space sketch monkey eight candy"
+    })
+    let mnemonic6 = new MnemonicKey({
+        mnemonic: "work clap clarify edit explain exact depth ramp law hard feel beauty stumble occur prevent crush distance purpose scrap current describe skirt panther skirt"
+    })
 
     return {
         val1,
@@ -53,6 +74,15 @@ export function getMnemonics() {
         pobMnemonic,
         pobMnemonic1,
         genesisVesting,
-        genesisVesting1
+        genesisVesting1,
+        icaMnemonic,
+        tokenFactoryMnemonic,
+        ibcHooksMnemonic,
+        wasmContracts,
+        mnemonic2,
+        mnemonic3,
+        mnemonic4,
+        mnemonic5,
+        mnemonic6,
     }
 }

@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "description": "Explore the <a target='_blank' href='https://github.com/terra-money/core'>Terra Core v2.6 source code</a><br/>Interact with the chain using <a target='_blank' href='https://station.money/'>Station</a><br/>Create a DAO using <a target='_blank' href='https://enterprise.money/'>Enterprise</a><br/>Run on-chain automated jobs with <a target='_blank' href='https://warp.money/'>Warp</a><br/>Explore the network using <a target='_blank' href='https://terrasco.pe/'>TerraScope</a><br/>Learn about cross-chain staking with <a target='_blank' href='https://alliance.money/'>Alliance</a><br/>For more information on Terra, visit the <a target='_blank' href='https://docs.terra.money/'>Terra Docs</a>",
+    "description": "Explore the <a target='_blank' href='https://github.com/terra-money/core'>Terra Core v2.10 source code</a><br/>Interact with the chain using <a target='_blank' href='https://station.money/'>Station</a><br/>Create a DAO using <a target='_blank' href='https://enterprise.money/'>Enterprise</a><br/>Run on-chain automated jobs with <a target='_blank' href='https://warp.money/'>Warp</a><br/>Explore the network using <a target='_blank' href='https://terrasco.pe/'>TerraScope</a><br/>Learn about cross-chain staking with <a target='_blank' href='https://alliance.money/'>Alliance</a><br/>For more information on Terra, visit the <a target='_blank' href='https://docs.terra.money/'>Terra Docs</a>",
     "version": "2.6"
   },
   "apis": [
@@ -238,18 +238,18 @@
       }
     },
     {
-      "url": "./tmp-swagger-gen/pob/builder/v1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "PobParams"
-        }
-      }
-    },
-    {
       "url": "./tmp-swagger-gen/juno/feeshare/v1/query.swagger.json",
       "operationIds": {
         "rename": {
           "Params": "FeeshareParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/icq/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "ICQParams"
         }
       }
     }

@@ -1,19 +1,16 @@
 package ante
 
 import (
+	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
+	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
+	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	bankKeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
-	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
-	"github.com/skip-mev/pob/mempool"
-	pobante "github.com/skip-mev/pob/x/builder/ante"
-	pobkeeper "github.com/skip-mev/pob/x/builder/keeper"
-	feeshareante "github.com/terra-money/core/v2/x/feeshare/ante"
-	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -29,9 +26,7 @@ type HandlerOptions struct {
 	BankKeeper        bankKeeper.Keeper
 	TxCounterStoreKey storetypes.StoreKey
 	WasmConfig        wasmTypes.WasmConfig
-	PobBuilderKeeper  pobkeeper.Keeper
 	TxConfig          client.TxConfig
-	PobMempool        mempool.Mempool
 }
 
 // NewAnteHandler returns an AnteHandler that checks and increments sequence
@@ -55,14 +50,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
 
-	auctionDecorator := pobante.NewBuilderDecorator(
-		options.PobBuilderKeeper,
-		options.TxConfig.TxEncoder(),
-		options.PobMempool,
-	)
-
 	anteDecorators := []sdk.AnteDecorator{
-		auctionDecorator,
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit),
 		wasmkeeper.NewCountTXDecorator(options.TxCounterStoreKey),
@@ -72,7 +60,6 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
-		feeshareante.NewFeeSharePayoutDecorator(options.BankKeeper, options.FeeShareKeeper),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),

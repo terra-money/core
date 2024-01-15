@@ -13,13 +13,13 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	app "github.com/terra-money/core/v2/app/app_test"
+	"github.com/terra-money/core/v2/app/test_helpers"
 	"github.com/terra-money/core/v2/x/tokenfactory/keeper"
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
 )
 
 type KeeperTestSuite struct {
-	app.AppTestSuite
+	test_helpers.AppTestSuite
 
 	queryClient    types.QueryClient
 	msgServer      types.MsgServer
@@ -33,26 +33,26 @@ func TestKeeperTestSuite(t *testing.T) {
 
 func (s *KeeperTestSuite) SetupTest() {
 	s.Setup()
-	s.contractKeeper = wasmkeeper.NewGovPermissionKeeper(s.App.WasmKeeper)
+	s.contractKeeper = wasmkeeper.NewGovPermissionKeeper(s.App.Keepers.WasmKeeper)
 	s.queryClient = types.NewQueryClient(s.QueryHelper)
-	s.msgServer = keeper.NewMsgServerImpl(s.App.TokenFactoryKeeper)
-	s.bankMsgServer = bankkeeper.NewMsgServerImpl(s.App.BankKeeper)
+	s.msgServer = keeper.NewMsgServerImpl(s.App.Keepers.TokenFactoryKeeper)
+	s.bankMsgServer = bankkeeper.NewMsgServerImpl(s.App.Keepers.BankKeeper)
 }
 
 func (s *KeeperTestSuite) TestCreateModuleAccount() {
 	// setup new next account number
-	nextAccountNumber := s.App.AccountKeeper.NextAccountNumber(s.Ctx)
+	nextAccountNumber := s.App.Keepers.AccountKeeper.NextAccountNumber(s.Ctx)
 
 	// ensure module account was removed
 	s.Ctx = s.App.NewContext(true, tmproto.Header{Time: time.Now()})
-	tokenfactoryModuleAccount := s.App.AccountKeeper.GetAccount(s.Ctx, s.App.AccountKeeper.GetModuleAddress(types.ModuleName))
+	tokenfactoryModuleAccount := s.App.Keepers.AccountKeeper.GetAccount(s.Ctx, s.App.Keepers.AccountKeeper.GetModuleAddress(types.ModuleName))
 	s.Require().Nil(tokenfactoryModuleAccount)
 
 	// create module account
-	s.App.TokenFactoryKeeper.CreateModuleAccount(s.Ctx)
+	s.App.Keepers.TokenFactoryKeeper.CreateModuleAccount(s.Ctx)
 
 	// check that the module account is now initialized
-	tokenfactoryModuleAccount = s.App.AccountKeeper.GetAccount(s.Ctx, s.App.AccountKeeper.GetModuleAddress(types.ModuleName))
+	tokenfactoryModuleAccount = s.App.Keepers.AccountKeeper.GetAccount(s.Ctx, s.App.Keepers.AccountKeeper.GetModuleAddress(types.ModuleName))
 	s.Require().NotNil(tokenfactoryModuleAccount)
 
 	// check that the account number of the module account is now initialized correctly

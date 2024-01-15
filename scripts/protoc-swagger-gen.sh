@@ -16,17 +16,17 @@ cosmos_sdk_dir=$(go list -f '{{ .Dir }}' -m github.com/cosmos/cosmos-sdk)
 alliance_dir=$(go list -f '{{ .Dir }}' -m github.com/terra-money/alliance)
 ibc_dir=$(go list -f '{{ .Dir }}' -m github.com/cosmos/ibc-go/v7)
 ibc_pfm=$(go list -f '{{ .Dir }}' -m github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7)
+icq_proto_dir=$(go list -f '{{ .Dir }}' -m github.com/cosmos/ibc-apps/modules/async-icq/v7)
 wasm_dir=$(go list -f '{{ .Dir }}' -m github.com/CosmWasm/wasmd)
 google_api_dir=$(go list -f '{{ .Dir }}' -m github.com/grpc-ecosystem/grpc-gateway)
 cosmos_proto_dir=$(go list -f '{{ .Dir }}' -m github.com/cosmos/cosmos-proto)
-pob_proto_dir=$(go list -f '{{ .Dir }}' -m github.com/skip-mev/pob)
 
 # move the vendor folder back to ./vendor
 if [ -d $temp_dir ]; then
   mv ./$temp_dir ./vendor
 fi
 
-proto_dirs=$(find $cosmos_sdk_dir/proto $alliance_dir/proto $ibc_dir/proto $ibc_pfm/proto $wasm_dir/proto $cosmos_proto_dir/proto $pob_proto_dir/proto ./proto -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
+proto_dirs=$(find $icq_proto_dir/proto $cosmos_sdk_dir/proto $alliance_dir/proto $ibc_dir/proto $ibc_pfm/proto $wasm_dir/proto $cosmos_proto_dir/proto ./proto -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 for dir in $proto_dirs; do
   # generate swagger files (filter query files)
   query_file=$(find "${dir}" -maxdepth 1 \( -name 'query.proto' -o -name 'service.proto' \))
@@ -44,7 +44,7 @@ for dir in $proto_dirs; do
     -I "$google_api_dir/third_party" \
     -I "$google_api_dir/third_party/googleapis" \
     -I "$cosmos_proto_dir/proto" \
-    -I "$pob_proto_dir/proto" \
+    -I "$icq_proto_dir/proto" \
     -I "proto" \
       "$query_file" \
     --swagger_out ./tmp-swagger-gen \

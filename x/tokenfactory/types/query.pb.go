@@ -461,8 +461,10 @@ type QueryClient interface {
 	// Params defines a gRPC query method that returns the tokenfactory module's
 	// parameters.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// DenomAuthorityMetadata defines a gRPC query method for fetching
-	// DenomAuthorityMetadata for a particular denom.
+	// Given the denom, returns the authority metadata for the denom.
+	// This method can receive both the denom encoded to URL (for the LCD requests)
+	// and the denom not encoded:
+	// e.g. factory%2Fterra1v0eee20gjl68fuk0chyrkch2z7suw2mhg3wkxf%2Futoken931
 	DenomAuthorityMetadata(ctx context.Context, in *QueryDenomAuthorityMetadataRequest, opts ...grpc.CallOption) (*QueryDenomAuthorityMetadataResponse, error)
 	// DenomsFromCreator defines a gRPC query method for fetching all
 	// denominations created by a specific admin/creator.
@@ -521,8 +523,10 @@ type QueryServer interface {
 	// Params defines a gRPC query method that returns the tokenfactory module's
 	// parameters.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// DenomAuthorityMetadata defines a gRPC query method for fetching
-	// DenomAuthorityMetadata for a particular denom.
+	// Given the denom, returns the authority metadata for the denom.
+	// This method can receive both the denom encoded to URL (for the LCD requests)
+	// and the denom not encoded:
+	// e.g. factory%2Fterra1v0eee20gjl68fuk0chyrkch2z7suw2mhg3wkxf%2Futoken931
 	DenomAuthorityMetadata(context.Context, *QueryDenomAuthorityMetadataRequest) (*QueryDenomAuthorityMetadataResponse, error)
 	// DenomsFromCreator defines a gRPC query method for fetching all
 	// denominations created by a specific admin/creator.

@@ -7,14 +7,15 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/suite"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	app "github.com/terra-money/core/v2/app/app_test"
 	"github.com/terra-money/core/v2/app/config"
+	"github.com/terra-money/core/v2/app/test_helpers"
 	"github.com/terra-money/core/v2/x/tokenfactory/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type QueryTestSuite struct {
-	app.AppTestSuite
+	test_helpers.AppTestSuite
 }
 
 func (s *QueryTestSuite) TestQueriesNeverAlterState() {
@@ -24,7 +25,7 @@ func (s *QueryTestSuite) TestQueriesNeverAlterState() {
 	fundAccsAmount := sdk.NewCoins(sdk.NewCoin(config.BondDenom, math.NewInt(1_000_000_000)))
 	s.FundAcc(s.TestAccs[0], fundAccsAmount)
 	// create new token
-	_, err := s.App.TokenFactoryKeeper.CreateDenom(s.Ctx, s.TestAccs[0].String(), "tokenfactory")
+	_, err := s.App.Keepers.TokenFactoryKeeper.CreateDenom(s.Ctx, s.TestAccs[0].String(), "tokenfactory")
 	s.Require().NoError(err)
 
 	testCases := []struct {
