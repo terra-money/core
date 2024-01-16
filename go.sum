@@ -1138,8 +1138,8 @@ github.com/terra-money/alliance v0.3.2 h1:MuL3RBw+jXFv4io5PhaBn7jRUBvlJLUzgpD6gx
 github.com/terra-money/alliance v0.3.2/go.mod h1:HDiUexeXRUkLkLRw5jLQcHuVt1Sx43HfyVl0kfwW3JM=
 github.com/terra-money/cosmos-sdk v0.47.6-terra.0 h1:BrK2cq8W5HsMT5siVdJCFDx1vcEMm+BGN5713FEm84g=
 github.com/terra-money/cosmos-sdk v0.47.6-terra.0/go.mod h1:xTc1chW8HyUWCfrgGbjS5jNu9RzlPVrBNfbL9RmZUio=
-github.com/terra-money/feemarket v0.0.0-20240116014039-06926f340bcd h1:NX0OdBU99F11mcw32JOQyDTnsq2xxxAsCSJT9GhMpFk=
-github.com/terra-money/feemarket v0.0.0-20240116014039-06926f340bcd/go.mod h1:Gl4UMT4EKGUj/qq9fn4JtH8tsDDjVzzN/2VMK55SXdo=
+github.com/terra-money/feemarket v0.0.0-20240116095201-ba254374d82a h1:6BHmI3bN31B7CpYwvkPId6lEoos+3sZDgdvjjNT9/l8=
+github.com/terra-money/feemarket v0.0.0-20240116095201-ba254374d82a/go.mod h1:Gl4UMT4EKGUj/qq9fn4JtH8tsDDjVzzN/2VMK55SXdo=
 github.com/terra-money/ledger-terra-go v0.11.2 h1:BVXZl+OhJOri6vFNjjVaTabRLApw9MuG7mxWL4V718c=
 github.com/terra-money/ledger-terra-go v0.11.2/go.mod h1:ClJ2XMj1ptcnONzKH+GhVPi7Y8pXIT+UzJ0TNt0tfZE=
 github.com/tidwall/btree v1.7.0 h1:L1fkJH/AuEh5zBnnBbmTwQ5Lt+bRJ5A8EWecslvo9iI=

@@ -1,8 +1,9 @@
 package app
 
 import (
-	"cosmossdk.io/math"
 	"encoding/json"
+
+	"cosmossdk.io/math"
 	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
@@ -88,11 +89,24 @@ func (genState GenesisState) SetDefaultTerraConfig(cdc codec.JSONCodec) GenesisS
 			FeeDenom:     config.BondDenom,
 			MinBaseFee:   math.LegacyMustNewDecFromStr("0.0015"),
 			BaseFee:      math.LegacyMustNewDecFromStr("0.0015"),
-			LearningRate: math.LegacyMustNewDecFromStr("0.125000000000000000"),
+			LearningRate: math.LegacyMustNewDecFromStr("0.125"),
 			Window:       []uint64{0},
 			Index:        0,
 		},
 	}
+	feemarketGenState.Params = feemarkettypes.NewParams(
+		feemarkettypes.DefaultWindow,
+		feemarkettypes.DefaultAlpha,
+		feemarkettypes.DefaultBeta,
+		feemarkettypes.DefaultTheta,
+		feemarkettypes.DefaultDelta,
+		feemarkettypes.DefaultTargetBlockUtilization,
+		feemarkettypes.DefaultMaxBlockUtilization,
+		feemarkettypes.DefaultMinLearningRate,
+		feemarkettypes.DefaultMaxLearningRate,
+		true,
+		config.BondDenom,
+	)
 	genState[feemarkettypes.ModuleName] = cdc.MustMarshalJSON(&feemarketGenState)
 
 	return genState
