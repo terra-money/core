@@ -1,7 +1,9 @@
 package app
 
 import (
+	"cosmossdk.io/math"
 	"encoding/json"
+	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
 
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
@@ -78,6 +80,20 @@ func (genState GenesisState) SetDefaultTerraConfig(cdc codec.JSONCodec) GenesisS
 		AllowMessages: icaAllowedMsgs(),
 	}
 	genState[icatypes.ModuleName] = cdc.MustMarshalJSON(&icaGenState)
+
+	var feemarketGenState feemarkettypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[feemarkettypes.ModuleName], &feemarketGenState)
+	feemarketGenState.States = []feemarkettypes.State{
+		{
+			FeeDenom:     config.BondDenom,
+			MinBaseFee:   math.LegacyMustNewDecFromStr("0.0015"),
+			BaseFee:      math.LegacyMustNewDecFromStr("0.0015"),
+			LearningRate: math.LegacyMustNewDecFromStr("0.125000000000000000"),
+			Window:       []uint64{0},
+			Index:        0,
+		},
+	}
+	genState[feemarkettypes.ModuleName] = cdc.MustMarshalJSON(&feemarketGenState)
 
 	return genState
 }
