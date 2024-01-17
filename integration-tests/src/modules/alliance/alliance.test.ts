@@ -1,5 +1,5 @@
 import { getLCDClient, getMnemonics, blockInclusion, votingPeriod } from "../../helpers";
-import { Coin, MsgTransfer, MsgCreateAlliance, Coins, MsgVote, Fee, MsgAllianceDelegate, MsgClaimDelegationRewards, MsgAllianceUndelegate, MsgDeleteAlliance, MsgSubmitProposal } from "@terra-money/feather.js";
+import { Coin, MsgTransfer, MsgCreateAlliance, Coins, MsgVote, MsgAllianceDelegate, MsgClaimDelegationRewards, MsgAllianceUndelegate, MsgDeleteAlliance, MsgSubmitProposal } from "@terra-money/feather.js";
 import { VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
 import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
 
@@ -115,7 +115,6 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                     val2WalletAddress,
                     VoteOption.VOTE_OPTION_YES
                 )],
-                fee: new Fee(100_000, "0uluna"),
                 chainID: "test-2",
             });
             result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
@@ -229,7 +228,6 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                             ibcCoin.denom,
                         ),
                     ],
-                    fee: new Fee(300_000, "0uluna"),
                     chainID: "test-2",
                 });
                 let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
@@ -259,7 +257,6 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                             new Coin(ibcCoin.denom, 1000),
                         ),
                     ],
-                    fee: new Fee(300_000, "0uluna"),
                     chainID: "test-2",
                 });
                 let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
@@ -319,7 +316,6 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                     val2WalletAddress,
                     VoteOption.VOTE_OPTION_YES
                 )],
-                fee: new Fee(100_000, "0uluna"),
                 chainID: "test-2",
             });
             result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
