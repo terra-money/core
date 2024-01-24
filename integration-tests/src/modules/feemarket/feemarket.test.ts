@@ -9,8 +9,8 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
     // Prepare environment clients, accounts and wallets
     const LCD = getLCDClient();
     const accounts = getMnemonics();
-    const val2Wallet = LCD.chain2.wallet(accounts.val2);
-    const val2WalletAddress = val2Wallet.key.accAddress("terra");
+    const val1Wallet = LCD.chain1.wallet(accounts.val1);
+    const val1WalletAddress = val1Wallet.key.accAddress("terra");
 
     test('Must create a new global eip1559 fees param', async () => {
         try {
@@ -32,24 +32,24 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
                     'gov', // TODO: change to module address of 'gov'
                     )],
                 Coins.fromString("1000000000uluna"),
-                val2WalletAddress,
+                val1WalletAddress,
                 "metadata",
                 "title",
                 "summary"
             );
             // Create an alliance proposal sign and submit on chain-1
-            let tx = await val2Wallet.createAndSignTx({
+            let tx = await val1Wallet.createAndSignTx({
                 msgs: [msgProposal],
-                chainID: "test-2",
+                chainID: "test-1",
             });
             console.log("adhjkgasjkghajkshg")
-            let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
+            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
             console.log("asgasga")
 
             await blockInclusion();
 
             // Check that the proposal was created successfully
-            let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;
+            let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             expect(txResult.code).toBe(0);
 
             // Get the proposal id and validate exists
@@ -57,17 +57,17 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
             expect(proposalId)
 
             // Vote for the proposal
-            tx = await val2Wallet.createAndSignTx({
+            tx = await val1Wallet.createAndSignTx({
                 msgs: [new MsgVote(
                     proposalId,
-                    val2WalletAddress,
+                    val1WalletAddress,
                     VoteOption.VOTE_OPTION_YES
                 )],
-                chainID: "test-2",
+                chainID: "test-1",
             });
-            result = await LCD.chain1.tx.broadcastSync(tx, "test-2");
+            result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
             await votingPeriod();
-            txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-2")
+            txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1")
             expect(txResult.code).toBe(0);
         }
         catch (e: any) {
@@ -84,33 +84,33 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
                 [new MsgState(
                     new State(
                         'uluna',
-                        '0.0015',
-                        '0.0015',
-                        '0.125',
+                        '1500000000000000',
+                        '1500000000000000',
+                        '125000000000000000',
                         [],
                         '0'
                     ),
                     'gov', // TODO: change to module address of 'gov'
                     )],
                 Coins.fromString("1000000000uluna"),
-                val2WalletAddress,
+                val1WalletAddress,
                 "metadata",
                 "title",
                 "summary"
             );
             // Create an alliance proposal sign and submit on chain-1
-            let tx = await val2Wallet.createAndSignTx({
+            let tx = await val1Wallet.createAndSignTx({
                 msgs: [msgProposal],
-                chainID: "test-2",
+                chainID: "test-1",
             });
             console.log("adhjkgasjkghajkshg")
-            let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
+            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
             console.log("asgasga")
 
             await blockInclusion();
 
             // Check that the proposal was created successfully
-            let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;
+            let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             expect(txResult.code).toBe(0);
 
             // Get the proposal id and validate exists
@@ -118,17 +118,17 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
             expect(proposalId)
 
             // Vote for the proposal
-            tx = await val2Wallet.createAndSignTx({
+            tx = await val1Wallet.createAndSignTx({
                 msgs: [new MsgVote(
                     proposalId,
-                    val2WalletAddress,
+                    val1WalletAddress,
                     VoteOption.VOTE_OPTION_YES
                 )],
-                chainID: "test-2",
+                chainID: "test-1",
             });
-            result = await LCD.chain1.tx.broadcastSync(tx, "test-2");
+            result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
             await votingPeriod();
-            txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-2")
+            txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1")
             expect(txResult.code).toBe(0);
         }
         catch (e: any) {
