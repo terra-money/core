@@ -1,7 +1,7 @@
-import { getMnemonics, blockInclusion, getLCDClient } from "../../helpers";
 import { Coins, Fee, MnemonicKey, MsgExecuteContract, MsgInstantiateContract, MsgRegisterFeeShare, MsgStoreCode } from "@terra-money/feather.js";
 import fs from "fs";
 import path from 'path';
+import { blockInclusion, getLCDClient, getMnemonics } from "../../helpers";
 
 describe("Feeshare Module (https://github.com/terra-money/core/tree/release/v2.6/x/feeshare) ", () => {
     // Prepare environment clients, accounts and wallets
