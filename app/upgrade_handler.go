@@ -89,6 +89,7 @@ func (app *TerraApp) RegisterUpgradeHandlers() {
 			app.GetModuleManager(),
 			app.GetConfigurator(),
 			app.GetAppCodec(),
+			app.Keepers.ICQKeeper,
 		),
 	)
 }
