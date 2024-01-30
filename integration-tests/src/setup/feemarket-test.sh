@@ -23,7 +23,7 @@ WALLET_8="terra19ekhxctawn8vqvppm6m5nl3htkwym3hcdcka2a"
 
 # Spam transactions
 spamtx() {
-  for i in {1..30}; do
+  for i in {1..15}; do
     $BINARY tx bank send $VAL_1 $WALLET_1 1uluna --from val1 --node http://localhost:16657 --keyring-backend test --fees 30000uluna --home $CHAIN_DIR/$CHAINID_1 -y
     $BINARY tx bank send $WALLET_1 $WALLET_1 1uluna --from wallet1 --node http://localhost:16657 --keyring-backend test --fees 30000uluna --home $CHAIN_DIR/$CHAINID_1 -y
     $BINARY tx bank send $WALLET_2 $WALLET_1 1uluna --from wallet2 --node http://localhost:16657 --keyring-backend test --fees 30000uluna --home $CHAIN_DIR/$CHAINID_1 -y
@@ -36,7 +36,7 @@ spamtx() {
   done
 }
 
-spamtx &
+spamtx
 
 echo ""
 echo "############################"
