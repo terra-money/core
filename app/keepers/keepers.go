@@ -255,6 +255,7 @@ func NewTerraAppKeepers(
 		keepers.StakingKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		keepers.GetSubspace(distrtypes.ModuleName),
 	)
 	keepers.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec,
