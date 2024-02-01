@@ -1,6 +1,5 @@
 import { Coins, MsgSubmitProposal, MsgVote } from "@terra-money/feather.js";
 import { Params } from "@terra-money/feather.js/dist/core/feemarket/params";
-// import { Params as Params_pb } from "@terra-money/terra.proto/feemarket/feemarket/v1/params"
 import { MsgParams, MsgState } from "@terra-money/feather.js/dist/core/feemarket/proposals";
 import { State } from "@terra-money/feather.js/dist/core/feemarket/state";
 import { VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
@@ -86,8 +85,8 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
         try {
             const state = new State(
                 'uluna',
-                '1500000000000000',
-                '1500000000000000',
+                '1550000000000000',
+                '1550000000000000',
                 '155000000000000000',
                 ['0'],
                 '0'
@@ -137,11 +136,8 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
             expect(txResult.code).toBe(0);
 
             // Query the feemarket state for uluna and validate the new values
-            // TODO: fix this query
-            // let foundState = await LCD.chain1.feemarket.state("test-1", "uluna");
-            // console.log(foundState)
-            // expect(foundState.states[0]).toMatchObject(state);
-            // checkState(foundState.states[0], state)
+            let foundState = await LCD.chain1.feemarket.state("test-1", "uluna");
+            checkState(foundState.states[0], state)
         }
         catch (e: any) {
             expect(e).toBeFalsy();
@@ -164,6 +160,12 @@ const checkParams = (foundParams: any, params: Params) => {
     expect(foundParams.default_fee_denom).toBe(params.defaultFeeDenom);
 }
 
-// const checkState = (foundState: any, state: State) => {
-//     console.log(foundState, state)
-// }
+const checkState = (foundState: any, state: State) => {
+    const exponent = BigNumber(10).exponentiatedBy(18);
+    expect(BigNumber(foundState.base_fee).multipliedBy(exponent).isEqualTo(BigNumber(state.baseFee))).toBe(true);
+    expect(BigNumber(foundState.min_base_fee).multipliedBy(exponent).isEqualTo(BigNumber(state.minBaseFee))).toBe(true);
+    expect(BigNumber(foundState.learning_rate).multipliedBy(exponent).isEqualTo(BigNumber(state.learningRate))).toBe(true);
+    expect(foundState.fee_denom).toBe(state.feeDenom);
+    expect(foundState.index).toBe(state.index);
+    expect(foundState.window).toStrictEqual(state.window);
+}
