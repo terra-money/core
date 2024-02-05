@@ -151,8 +151,8 @@ sed -i -e 's#":8080"#":'"$ROSETTA_1"'"#g' $CHAIN_DIR/$CHAINID_1/config/app.toml
 echo "Changing genesis.json..."
 sed -i -e 's/"voting_period": "172800s"/"voting_period": "2s"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
 sed -i -e 's/"reward_delay_time": "604800s"/"reward_delay_time": "0s"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
-# sed -i -e 's/"target_block_utilization": "15000000"/"target_block_utilization": "40000"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
-# sed -i -e 's/"max_block_utilization": "30000000"/"max_block_utilization": "400000"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
+sed -i -e 's/"target_block_utilization": "15000000"/"target_block_utilization": "40000"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
+sed -i -e 's/"max_block_utilization": "30000000"/"max_block_utilization": "400000"/g' $CHAIN_DIR/$CHAINID_1/config/genesis.json
 
 echo "Starting $CHAINID_1 in $CHAIN_DIR..."
 echo "Creating log file at $CHAIN_DIR/$CHAINID_1.log"
