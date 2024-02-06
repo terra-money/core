@@ -84,22 +84,16 @@ func (genState GenesisState) SetDefaultTerraConfig(cdc codec.JSONCodec) GenesisS
 
 	var feemarketGenState feemarkettypes.GenesisState
 	cdc.MustUnmarshalJSON(genState[feemarkettypes.ModuleName], &feemarketGenState)
-	feemarketGenState.States = []feemarkettypes.State{
-		{
-			FeeDenom:     config.BondDenom,
-			MinBaseFee:   math.LegacyMustNewDecFromStr("0.0015"),
-			BaseFee:      math.LegacyMustNewDecFromStr("0.0015"),
-			LearningRate: math.LegacyMustNewDecFromStr("0.125"),
-			Window:       []uint64{0},
-			Index:        0,
-		},
+	feemarketGenState.State = feemarkettypes.State{
+		LearningRate: math.LegacyMustNewDecFromStr("0.125"),
+		Window:       []uint64{0},
+		Index:        0,
 	}
 	feemarketGenState.Params = feemarkettypes.NewParams(
-		feemarkettypes.DefaultWindow,
+		feemarkettypes.DefaultWindowSize,
 		feemarkettypes.DefaultAlpha,
 		feemarkettypes.DefaultBeta,
 		feemarkettypes.DefaultTheta,
-		feemarkettypes.DefaultDelta,
 		feemarkettypes.DefaultTargetBlockUtilization,
 		feemarkettypes.DefaultMaxBlockUtilization,
 		feemarkettypes.DefaultMinLearningRate,
@@ -107,6 +101,13 @@ func (genState GenesisState) SetDefaultTerraConfig(cdc codec.JSONCodec) GenesisS
 		true,
 		config.BondDenom,
 	)
+	feemarketGenState.FeeDenomParams = []feemarkettypes.FeeDenomParam{
+		feemarkettypes.NewFeeDenomParam(
+			config.BondDenom,
+			math.LegacyMustNewDecFromStr("0.0015"),
+			math.LegacyMustNewDecFromStr("0.0015"),
+		),
+	}
 	genState[feemarkettypes.ModuleName] = cdc.MustMarshalJSON(&feemarketGenState)
 
 	return genState

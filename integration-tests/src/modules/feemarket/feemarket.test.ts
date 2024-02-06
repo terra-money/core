@@ -1,7 +1,6 @@
 import { Coins, MsgSubmitProposal, MsgVote } from "@terra-money/feather.js";
 import { Params } from "@terra-money/feather.js/dist/core/feemarket/params";
-import { MsgParams, MsgState } from "@terra-money/feather.js/dist/core/feemarket/proposals";
-import { State } from "@terra-money/feather.js/dist/core/feemarket/state";
+import { MsgFeeDenomParam, MsgParams } from "@terra-money/feather.js/dist/core/feemarket/proposals";
 import { VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
 import BigNumber from 'bignumber.js';
 import { blockInclusion, getLCDClient, getMnemonics, votingPeriod } from "../../helpers";
@@ -18,7 +17,6 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
             const params = new Params(
                 '0',
                 '1000000000000000000',
-                '0',
                 '0',
                 '135000000000000000',
                 '135000000000000000',
@@ -72,7 +70,7 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
             expect(txResult.code).toBe(0);
 
             // Query the feemarket params and validate the new values
-            let foundParams = await LCD.chain1.feemarket.params("test-1");
+            let foundParams = await LCD.chain1.feemarket.params("test-1") as any;
             checkParams(foundParams.params, params)          
         }
         catch (e: any) {
@@ -81,19 +79,12 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
     });
 
 
-    test('Must update global eip1559 fees state for uluna', async () => {
+    test('Must update feedenomparam for uluna', async () => {
         try {
-            const state = new State(
-                'uluna',
-                '1550000000000000',
-                '1550000000000000',
-                '155000000000000000',
-                ['0'],
-                '0'
-            )
             const msgProposal = new MsgSubmitProposal(
-                [new MsgState(
-                    state,
+                [new MsgFeeDenomParam(
+                    'uluna',
+                    '1550000000000000',
                     'terra10d07y265gmmuvt4z0w9aw880jnsr700juxf95n',
                     )],
                 Coins.fromString("1000000000uluna"),
@@ -136,8 +127,8 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
             expect(txResult.code).toBe(0);
 
             // Query the feemarket state for uluna and validate the new values
-            let foundState = await LCD.chain1.feemarket.state("test-1", "uluna");
-            checkState(foundState.states[0], state)
+            let foundFdp = await LCD.chain1.feemarket.feeDenomParam("test-1", "uluna") as any;
+            expect(foundFdp.fee_denom_params[0].min_base_fee).toEqual("0.001550000000000000")
         }
         catch (e: any) {
             expect(e).toBeFalsy();
@@ -150,7 +141,6 @@ const checkParams = (foundParams: any, params: Params) => {
     expect(BigNumber(foundParams.alpha).multipliedBy(exponent).isEqualTo(BigNumber(params.alpha))).toBe(true);
     expect(BigNumber(foundParams.beta).multipliedBy(exponent).isEqualTo(BigNumber(params.beta))).toBe(true);
     expect(BigNumber(foundParams.theta).multipliedBy(exponent).isEqualTo(BigNumber(params.theta))).toBe(true);
-    expect(BigNumber(foundParams.delta).multipliedBy(exponent).isEqualTo(BigNumber(params.delta))).toBe(true);
     expect(BigNumber(foundParams.min_learning_rate).multipliedBy(exponent).isEqualTo(BigNumber(params.minLearningRate))).toBe(true);
     expect(BigNumber(foundParams.max_learning_rate).multipliedBy(exponent).isEqualTo(BigNumber(params.maxLearningRate))).toBe(true);
     expect(foundParams.target_block_utilization).toBe(params.targetBlockUtilization);
@@ -158,14 +148,4 @@ const checkParams = (foundParams: any, params: Params) => {
     expect(foundParams.window).toBe(params.window);
     expect(foundParams.enabled).toBe(params.enabled);
     expect(foundParams.default_fee_denom).toBe(params.defaultFeeDenom);
-}
-
-const checkState = (foundState: any, state: State) => {
-    const exponent = BigNumber(10).exponentiatedBy(18);
-    expect(BigNumber(foundState.base_fee).multipliedBy(exponent).isEqualTo(BigNumber(state.baseFee))).toBe(true);
-    expect(BigNumber(foundState.min_base_fee).multipliedBy(exponent).isEqualTo(BigNumber(state.minBaseFee))).toBe(true);
-    expect(BigNumber(foundState.learning_rate).multipliedBy(exponent).isEqualTo(BigNumber(state.learningRate))).toBe(true);
-    expect(foundState.fee_denom).toBe(state.feeDenom);
-    expect(foundState.index).toBe(state.index);
-    expect(foundState.window).toStrictEqual(state.window);
 }
