@@ -11,7 +11,7 @@ describe("Feemarket Module dynamic fees (https://github.com/terra-money/feemarke
             let congested = true;
             let counter = 0;
             for (let i = 0; i < 100; i++) {
-                const gasPrice = await getGasPrice("test-1", "")
+                const gasPrice = await getGasPrice("test-1", "uluna")
                 if (congested) {
                     if (gasPrice.isEqualTo(minGasPrice)) {
                         congested = false;
@@ -21,9 +21,14 @@ describe("Feemarket Module dynamic fees (https://github.com/terra-money/feemarke
                     }
                 } else {
                     if (counter > 5) break;
-                    expect(gasPrice.eq(minGasPrice)).toBe(true);
-                    counter++;
-                    console.log(`non-congested gasPrice: ${gasPrice.toString()} counter: ${counter}`)
+                    if (gasPrice.isGreaterThan(minGasPrice)) {
+                        congested = true;
+                        counter = 0;
+                    } else {
+                        expect(gasPrice.eq(minGasPrice)).toBe(true);
+                        counter++;
+                        console.log(`non-congested gasPrice: ${gasPrice.toString()} counter: ${counter}`)
+                    }
                 }
                 // wait for 1 sec
                 await new Promise(resolve => setTimeout(resolve, 1000));
@@ -35,10 +40,9 @@ describe("Feemarket Module dynamic fees (https://github.com/terra-money/feemarke
     });
 
     const getGasPrice = async (chainId: string, feeDenom: string): Promise<BigNumber> => {
-        const foundState = await LCD.chain1.feemarket.state(chainId, feeDenom);
-        // TODO: change this to use feeDenom when it works
-        const state = foundState.states[0] as any;
-        const gasPrice = BigNumber(state.base_fee)
+        const foundFdp = await LCD.chain1.feemarket.feeDenomParam(chainId, feeDenom) as  any;
+        const fdp = foundFdp.fee_denom_params[0] as any;
+        const gasPrice = BigNumber(fdp.base_fee)
         return gasPrice
     }
 });
