@@ -8,8 +8,6 @@
     "test:relayer": "bash src/setup/relayer/init-relayer.sh",
     "test:chain:upgrade": "bash src/setup/chain-upgrade/chain-upgrade.sh",
     "test:start": "jest --runInBand --detectOpenHandles",
-    "test:feemarket:init": "bash src/setup/init-one-chain.sh && bash src/setup/feemarket-test.sh",
-    "test:feemarket:start": "jest src/modules/feemarket/gasprice.test.ts --testTimeout 9999999",
     "start": "npm run test:init && npm run test:relayer && npm run test:start",
     "test:clean": "rm -rf src/test-data chain-upgrade-data && pkill terrad && pkill terrad && pkill relayer"
   },

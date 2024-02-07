@@ -1,4 +1,4 @@
-import { Coins, MsgSubmitProposal, MsgVote } from "@terra-money/feather.js";
+import { Coins, MsgSend, MsgSubmitProposal, MsgVote } from "@terra-money/feather.js";
 import { Params } from "@terra-money/feather.js/dist/core/feemarket/params";
 import { MsgFeeDenomParam, MsgParams } from "@terra-money/feather.js/dist/core/feemarket/proposals";
 import { VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
@@ -11,16 +11,18 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
     const accounts = getMnemonics();
     const val1Wallet = LCD.chain1.wallet(accounts.val1);
     const val1WalletAddress = val1Wallet.key.accAddress("terra");
+    const rly1Wallet = LCD.chain1.wallet(accounts.rly1);
+    const rly1WalletAddress = rly1Wallet.key.accAddress("terra");
 
-    test('Must create a new global eip1559 fees param', async () => {
+    test('Must create a new global eip1559 fees param + test dynamic fees', async () => {
         try {
             const params = new Params(
-                '0',
+                '0',    
                 '1000000000000000000',
                 '0',
                 '135000000000000000',
                 '135000000000000000',
-                '15000000',
+                '5000',
                 '30000000',
                 '1',
                 true,
@@ -71,13 +73,62 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
 
             // Query the feemarket params and validate the new values
             let foundParams = await LCD.chain1.feemarket.params("test-1") as any;
-            checkParams(foundParams.params, params)          
+            checkParams(foundParams.params, params)
+            
+            // Start fee tests
+            for (let i=0;i<4;i++) {
+                let sendTx = await val1Wallet.createAndSignTx({
+                    msgs: [
+                        new MsgSend(
+                            val1WalletAddress,
+                            rly1WalletAddress,
+                            Coins.fromString("1uluna"),
+                        ),
+                    ],
+                    chainID: "test-1",
+                });
+                result = await LCD.chain1.tx.broadcastSync(sendTx, "test-1");
+                await blockInclusion();
+            }
+
+            const minGasPrice = BigNumber("0.0015");
+            let congested = true;
+            let counter = 0;
+            for (let i = 0; i < 100; i++) {
+                const gasPrice = await getGasPrice("test-1", "uluna")
+                if (congested) {
+                    if (gasPrice.isEqualTo(minGasPrice)) {
+                        congested = false;
+                    } else {
+                        expect(gasPrice.isGreaterThan(minGasPrice)).toBe(true);
+                        console.log(`congested gasPrice: ${gasPrice.toString()}`)
+                    }
+                } else {
+                    if (counter > 5) break;
+                    if (gasPrice.isGreaterThan(minGasPrice)) {
+                        congested = true;
+                        counter = 0;
+                    } else {
+                        expect(gasPrice.eq(minGasPrice)).toBe(true);
+                        counter++;
+                        console.log(`non-congested gasPrice: ${gasPrice.toString()} counter: ${counter}`)
+                    }
+                }
+                // wait for 1 sec
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
         }
         catch (e: any) {
             expect(e).toBeFalsy();
         }
     });
 
+    const getGasPrice = async (chainId: string, feeDenom: string): Promise<BigNumber> => {
+        const foundFdp = await LCD.chain1.feemarket.feeDenomParam(chainId, feeDenom) as  any;
+        const fdp = foundFdp.fee_denom_params[0] as any;
+        const gasPrice = BigNumber(fdp.base_fee)
+        return gasPrice
+    }
 
     test('Must update feedenomparam for uluna', async () => {
         try {
