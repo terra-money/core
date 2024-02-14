@@ -4,6 +4,6 @@ module.exports = {
   testEnvironment: 'node',
   testMatch: ['**/*.test.ts'],
   verbose: true,
-  testTimeout: 50000,
-  //globalTeardown: './src/teardown.ts',
+  testTimeout: 45000,
+  globalTeardown: './src/teardown.ts',
 };

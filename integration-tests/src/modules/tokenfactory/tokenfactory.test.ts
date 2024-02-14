@@ -468,7 +468,7 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                         ),
                     ],
                     chainID: "test-1",
-                    fee: new Fee(250_000, new Coins({ uluna: 100_000 })),
+                    fee: new Fee(80_000, new Coins({ uluna: 10_000 })),
                 });
                 let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
                 await blockInclusion();

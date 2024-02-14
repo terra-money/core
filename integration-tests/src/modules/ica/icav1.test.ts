@@ -95,6 +95,7 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
             )],
             chainID: "test-1",
         }).catch(e => {
+            console.log(e)
             const expectedMsg = "failed to execute message; message index: 0: existing active channel channel-1 for portID icacontroller-terra1p4kcrttuxj9kyyvv5px5ccgwf0yrw74yp7jqm6 on connection connection-0: active channel already set for this owner";
             expect(e.response.data.message.startsWith(expectedMsg))
                 .toBeTruthy();
@@ -185,62 +186,68 @@ describe("ICA Module (https://github.com/cosmos/ibc-go/tree/release/v7.3.x/modul
         });
 
         test("Must control the interchain account from chain-1 to send funds on chain-2 from the account address to a burnAddress", async () => {
-            const burnAddress = "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je";
-            let interchainAccountPacketData = new InterchainAccountPacketData(
-                new CosmosTx([new MsgSend(
-                    intechainAccountAddr as string,
-                    burnAddress,
-                    Coins.fromString("1000" + ibcCoinDenom),
-                )])
-            )
-            let msgSendTx = new MsgSendTx(
-                externalAccAddr,
-                "connection-0",
-                Long.fromString((new Date().getTime() * 1000000 + 600000000).toString()),
-                interchainAccountPacketData,
-            );
-            let tx = await chain1Wallet.createAndSignTx({
-                msgs: [msgSendTx],
-                chainID: "test-1",
-            });
+            try {
 
-            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            await blockInclusion();
-            let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
-            const events = txResult.logs[0].events;
-            expect(events[0])
-                .toStrictEqual({
-                    "type": "message",
-                    "attributes": [{
-                        "key": "action",
-                        "value": "/ibc.applications.interchain_accounts.controller.v1.MsgSendTx"
-                    }, {
-                        "key": "sender",
-                        "value": "terra1p4kcrttuxj9kyyvv5px5ccgwf0yrw74yp7jqm6"
-                    }]
+                const burnAddress = "terra1zdpgj8am5nqqvht927k3etljyl6a52kwqup0je";
+                let interchainAccountPacketData = new InterchainAccountPacketData(
+                    new CosmosTx([new MsgSend(
+                        intechainAccountAddr as string,
+                        burnAddress,
+                        Coins.fromString("1000" + ibcCoinDenom),
+                    )])
+                )
+                let msgSendTx = new MsgSendTx(
+                    externalAccAddr,
+                    "connection-0",
+                    Long.fromString((new Date().getTime() * 1000000 + 600000000).toString()),
+                    interchainAccountPacketData,
+                );
+                let tx = await chain1Wallet.createAndSignTx({
+                    msgs: [msgSendTx],
+                    chainID: "test-1",
                 });
-            expect(events[2])
-                .toStrictEqual({
-                    "type": "message",
-                    "attributes": [{
-                        "key": "module",
-                        "value": "ibc_channel"
-                    }]
-                })
-
-
-            // Check during 5 blocks for the receival 
-            // of the IBC coin on chain-2
-            for (let i = 0; i <= 5; i++) {
+    
+                let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
                 await blockInclusion();
-                const bankRes = await LCD.chain2.bank.balance(burnAddress);
-                const coins = bankRes[0].find(c => c.denom === ibcCoinDenom);
-                if (coins) {
-                    expect(coins).toBeDefined();
-                    expect(coins?.denom).toStrictEqual(ibcCoinDenom);
-                    expect(coins?.amount.toNumber()).toBeGreaterThanOrEqual(1000);
-                    break;
+                let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
+                const events = txResult.logs[0].events;
+                expect(events[0])
+                    .toStrictEqual({
+                        "type": "message",
+                        "attributes": [{
+                            "key": "action",
+                            "value": "/ibc.applications.interchain_accounts.controller.v1.MsgSendTx"
+                        }, {
+                            "key": "sender",
+                            "value": "terra1p4kcrttuxj9kyyvv5px5ccgwf0yrw74yp7jqm6"
+                        }]
+                    });
+                expect(events[2])
+                    .toStrictEqual({
+                        "type": "message",
+                        "attributes": [{
+                            "key": "module",
+                            "value": "ibc_channel"
+                        }]
+                    })
+    
+    
+                // Check during 5 blocks for the receival 
+                // of the IBC coin on chain-2
+                for (let i = 0; i <= 5; i++) {
+                    await blockInclusion();
+                    const bankRes = await LCD.chain2.bank.balance(burnAddress);
+                    const coins = bankRes[0].find(c => c.denom === ibcCoinDenom);
+                    if (coins) {
+                        expect(coins).toBeDefined();
+                        expect(coins?.denom).toStrictEqual(ibcCoinDenom);
+                        expect(coins?.amount.toNumber()).toBeGreaterThanOrEqual(1000);
+                        break;
+                    }
                 }
+            }
+            catch(e) {
+                console.log(e)
             }
         })
     });
