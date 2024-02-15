@@ -1,7 +1,7 @@
 import { Coins, Fee, MnemonicKey, MsgSend, MsgSubmitProposal, MsgVote } from "@terra-money/feather.js";
 import { VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
 import { blockInclusion, getLCDClient, getMnemonics, votingPeriod } from "../../helpers";
-import { FeemarketParams, MsgFeeDenomParam, MsgParams } from "@terra-money/feather.js/dist/core/feemarket";
+import { FeemarketParams, MsgFeeDenomParam, MsgRemoveFeeDenomParam, MsgParams } from "@terra-money/feather.js/dist/core/feemarket";
 
 
 describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1-alpha.2-terra.0) ", () => {
@@ -202,6 +202,184 @@ describe("Feemarket Module (https://github.com/terra-money/feemarket/tree/v0.0.1
         catch (e: any) {
             console.log(e)
             expect(e).toBeUndefined();
+        }
+    });
+
+    test('Must send a proposal to add fee denom for stake and validate it has been added correctly', async () => {
+        try {
+            // Create an state update proposal sign and submit on chain-1
+            let tx = await val1Wallet.createAndSignTx({
+                msgs: [new MsgSubmitProposal(
+                    [new MsgFeeDenomParam(
+                        'stake',
+                        '1550000000000000',
+                        'terra10d07y265gmmuvt4z0w9aw880jnsr700juxf95n',
+                    )],
+                    Coins.fromString("1000000000uluna"),
+                    val1WalletAddress,
+                    "metadata",
+                    "title",
+                    "summary"
+                )],
+                chainID: "test-1",
+                fee: new Fee(200000, Coins.fromString("1000000uluna"))
+            });
+            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await blockInclusion();
+
+            // Check that the proposal was created successfully
+            let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
+            expect(txResult.code).toBe(0);
+
+            // Get the proposal id and validate exists
+            const proposalId = Number(txResult.logs[0].eventsByType.submit_proposal.proposal_id[0]);
+            expect(proposalId).toBeDefined();
+
+            // Vote for the proposal
+            tx = await val1Wallet.createAndSignTx({
+                msgs: [new MsgVote(
+                    proposalId,
+                    val1WalletAddress,
+                    VoteOption.VOTE_OPTION_YES
+                )],
+                chainID: "test-1",
+                fee: new Fee(200000, Coins.fromString("1000000uluna"))
+            });
+            result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await votingPeriod();
+
+            // Validate the tx vote was casted successflully
+            txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1")
+            expect(txResult.code).toBe(0);
+
+            // Query the feemarket state for uluna and validate the new values
+            const res = (await LCD.chain1.feemarket.feeDenomParam("test-1", "stake"))[0];
+            expect(res.feeDenom).toEqual("stake");
+            expect(res.baseFee.toNumber()).toBeGreaterThanOrEqual(0.00155);
+            expect(res.minBaseFee.toString()).toStrictEqual("0.00155");
+        }
+        catch (e: any) {
+            console.log(e)
+            expect(e).toBeUndefined();
+        }
+    });
+
+    test('Must send a proposal to remove fee denom for stake and validate it has been removed correctly', async () => {
+        try {
+            // Create an state update proposal sign and submit on chain-1
+            let tx = await val1Wallet.createAndSignTx({
+                msgs: [new MsgSubmitProposal(
+                    [new MsgRemoveFeeDenomParam(
+                        'stake',
+                        'terra10d07y265gmmuvt4z0w9aw880jnsr700juxf95n',
+                    )],
+                    Coins.fromString("1000000000uluna"),
+                    val1WalletAddress,
+                    "metadata",
+                    "title",
+                    "summary"
+                )],
+                chainID: "test-1",
+                fee: new Fee(200000, Coins.fromString("1000000uluna"))
+            });
+            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await blockInclusion();
+
+            // Check that the proposal was created successfully
+            let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
+            expect(txResult.code).toBe(0);
+
+            // Get the proposal id and validate exists
+            const proposalId = Number(txResult.logs[0].eventsByType.submit_proposal.proposal_id[0]);
+            expect(proposalId).toBeDefined();
+
+            // Vote for the proposal
+            tx = await val1Wallet.createAndSignTx({
+                msgs: [new MsgVote(
+                    proposalId,
+                    val1WalletAddress,
+                    VoteOption.VOTE_OPTION_YES
+                )],
+                chainID: "test-1",
+                fee: new Fee(200000, Coins.fromString("1000000uluna"))
+            });
+            result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await votingPeriod();
+
+            // Validate the tx vote was casted successflully
+            txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1")
+            expect(txResult.code).toBe(0);
+
+            // Query the feemarket state for uluna and validate the new values
+            try {
+                await LCD.chain1.feemarket.feeDenomParam("test-1", "stake");
+            } catch(e: any) {
+                expect(e.message).toBe("Request failed with status code 500");
+                return;
+            }
+            throw new Error('No error was thrown when trying to query the removed fee denom.')
+        }
+        catch (e: any) {
+            console.log(e)
+            expect(e.message).toBeUndefined();
+        }
+    });
+
+    test('Must send a proposal to remove default fee denom uluna and validate it will not be removed after execution', async () => {
+        try {
+            // Create an state update proposal sign and submit on chain-1
+            let tx = await val1Wallet.createAndSignTx({
+                msgs: [new MsgSubmitProposal(
+                    [new MsgRemoveFeeDenomParam(
+                        'uluna',
+                        'terra10d07y265gmmuvt4z0w9aw880jnsr700juxf95n',
+                    )],
+                    Coins.fromString("1000000000uluna"),
+                    val1WalletAddress,
+                    "metadata",
+                    "title",
+                    "summary"
+                )],
+                chainID: "test-1",
+                fee: new Fee(200000, Coins.fromString("1000000uluna"))
+            });
+            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await blockInclusion();
+
+            // Check that the proposal was created successfully
+            let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
+            expect(txResult.code).toBe(0);
+
+            // Get the proposal id and validate exists
+            const proposalId = Number(txResult.logs[0].eventsByType.submit_proposal.proposal_id[0]);
+            expect(proposalId).toBeDefined();
+
+            // Vote for the proposal
+            tx = await val1Wallet.createAndSignTx({
+                msgs: [new MsgVote(
+                    proposalId,
+                    val1WalletAddress,
+                    VoteOption.VOTE_OPTION_YES
+                )],
+                chainID: "test-1",
+                fee: new Fee(200000, Coins.fromString("1000000uluna"))
+            });
+            result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await votingPeriod();
+
+            // Validate the tx vote was casted successflully
+            txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1")
+            expect(txResult.code).toBe(0);
+
+            // Query the feemarket state for uluna and validate the new values
+            const res = (await LCD.chain1.feemarket.feeDenomParam("test-1", "uluna"))[0];
+            expect(res.feeDenom).toEqual("uluna");
+            expect(res.baseFee.toNumber()).toBeGreaterThanOrEqual(0.00155);
+            expect(res.minBaseFee.toString()).toStrictEqual("0.00155");
+        }
+        catch (e: any) {
+            console.log(e)
+            expect(e.message).toBeUndefined();
         }
     });
 
