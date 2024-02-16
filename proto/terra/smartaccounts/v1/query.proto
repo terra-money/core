@@ -1,0 +1,25 @@
+syntax = "proto3";
+package terra.smartaccounts.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "terra/smartaccounts/v1/params.proto";
+
+option go_package = "github.com/terra-money/core/v2/x/smartaccounts/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/terra/smartaccounts/v1/params";
+  }
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params is the returned FeeShare parameter
+  Params params = 1 [ (gogoproto.nullable) = false ];
+}
+

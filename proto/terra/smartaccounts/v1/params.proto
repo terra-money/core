@@ -1,0 +1,9 @@
+syntax = "proto3";
+package terra.smartaccounts.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/terra-money/core/v2/x/smartaccounts/types";
+
+// Params defines the parameters for the smartaccounts module.
+message Params {}
