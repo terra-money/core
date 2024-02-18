@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/terra-money/core/v2/x/smartaccounts/exported"
+	"github.com/terra-money/core/v2/x/smartaccount/exported"
 )
 
 // Migrator is a struct for handling in-place state migrations.

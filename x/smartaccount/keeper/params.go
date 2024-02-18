@@ -3,7 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/terra-money/core/v2/x/smartaccounts/types"
+	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
 // GetParams returns the total set of fees parameters.

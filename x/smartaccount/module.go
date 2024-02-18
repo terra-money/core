@@ -1,4 +1,4 @@
-package smartaccounts
+package smartaccount
 
 import (
 	"context"
@@ -19,10 +19,10 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
-	"github.com/terra-money/core/v2/x/smartaccounts/client/cli"
-	"github.com/terra-money/core/v2/x/smartaccounts/exported"
-	"github.com/terra-money/core/v2/x/smartaccounts/keeper"
-	"github.com/terra-money/core/v2/x/smartaccounts/types"
+	"github.com/terra-money/core/v2/x/smartaccount/client/cli"
+	"github.com/terra-money/core/v2/x/smartaccount/exported"
+	"github.com/terra-money/core/v2/x/smartaccount/keeper"
+	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
 // type check to ensure the interface is properly implemented
@@ -32,7 +32,7 @@ var (
 	_ module.AppModuleSimulation = AppModule{}
 )
 
-// ConsensusVersion defines the current x/smartaccounts module consensus version.
+// ConsensusVersion defines the current x/smartaccount module consensus version.
 const ConsensusVersion = 1
 
 // AppModuleBasic type for the fees module

@@ -1,0 +1,10 @@
+syntax = "proto3";
+package terra.smartaccount.v1;
+
+import "gogoproto/gogo.proto";
+import "terra/smartaccount/v1/params.proto";
+
+option go_package = "github.com/terra-money/core/v2/x/smartaccount/types";
+
+// Msg defines the fees Msg service.
+service Msg {}

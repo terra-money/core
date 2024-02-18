@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 
-	"github.com/terra-money/core/v2/x/smartaccounts/types"
+	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module
@@ -34,7 +34,7 @@ func GetQueryCmd() *cobra.Command {
 func GetCmdQueryParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "params",
-		Short: "Query the current smartaccounts module parameters",
+		Short: "Query the current smartaccount module parameters",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)

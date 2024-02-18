@@ -5,7 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 
-	"github.com/terra-money/core/v2/x/smartaccounts/types"
+	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
 // NewTxCmd returns a root CLI command handler for certain modules/SmartAccounts

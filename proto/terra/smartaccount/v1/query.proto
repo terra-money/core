@@ -1,16 +1,16 @@
 syntax = "proto3";
-package terra.smartaccounts.v1;
+package terra.smartaccount.v1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "terra/smartaccounts/v1/params.proto";
+import "terra/smartaccount/v1/params.proto";
 
-option go_package = "github.com/terra-money/core/v2/x/smartaccounts/types";
+option go_package = "github.com/terra-money/core/v2/x/smartaccount/types";
 
 // Query defines the gRPC querier service.
 service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/terra/smartaccounts/v1/params";
+    option (google.api.http).get = "/terra/smartaccount/v1/params";
   }
 }
 

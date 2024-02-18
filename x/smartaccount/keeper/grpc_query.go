@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/terra-money/core/v2/x/smartaccounts/types"
+	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
 var _ types.QueryServer = Querier{}

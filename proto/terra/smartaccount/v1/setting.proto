@@ -1,10 +1,10 @@
 syntax = "proto3";
-package terra.smartaccounts.v1;
+package terra.smartaccount.v1;
 
 import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
 
-option go_package = "github.com/terra-money/core/v2/x/smartaccounts/types";
+option go_package = "github.com/terra-money/core/v2/x/smartaccount/types";
 
 message Setting {
     // Owner that can do priviledged operations on the Smart Account
