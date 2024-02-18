@@ -16,7 +16,7 @@ func (k Keeper) InitGenesis(
 	}
 
 	for _, setting := range genesisState.Settings {
-		if err := k.SetSetting(ctx, setting.Owner, *setting); err != nil {
+		if err := k.SetSetting(ctx, *setting); err != nil {
 			panic(err)
 		}
 	}

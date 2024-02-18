@@ -48,6 +48,7 @@ func (ms MsgServer) UpdateAuthorization(
 		return nil, err
 	}
 	setting.Authorization = msg.AuthorizationMsgs
+	setting.Fallback = msg.Fallback
 	if err := ms.k.SetSetting(ctx, *setting); err != nil {
 		return nil, err
 	}

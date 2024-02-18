@@ -30,6 +30,11 @@ func (sad SmartAccountCheckDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 		for _, auth := range setting.Authorization {
 			_ = auth
 			// TODO: add code that calls authorization on contracts
+			if err != nil  && setting.Fallback {
+				return next(ctx, tx, simulate)
+			} else if err != nil {
+				return ctx, err
+			}
 		}
 	}
 
