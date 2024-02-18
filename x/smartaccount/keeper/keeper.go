@@ -54,12 +54,29 @@ func (k Keeper) GetSetting(ctx sdk.Context, ownerAddr string) (*types.Setting, e
 }
 
 // SetSetting sets the smart account setting for the ownerAddr
-func (k Keeper) SetSetting(ctx sdk.Context, ownerAddr string, setting types.Setting) error {
+func (k Keeper) SetSetting(ctx sdk.Context, setting types.Setting) error {
 	store := ctx.KVStore(k.storeKey)
 	bz, err := setting.Marshal()
 	if err != nil {
 		return err
 	}
-	store.Set(types.GetKeyPrefixSetting(ownerAddr), bz)
+	if setting.Owner == "" {
+		return sdkerrors.ErrInvalidRequest.Wrap("owner cannot be empty")
+	}
+	store.Set(types.GetKeyPrefixSetting(setting.Owner), bz)
+	return nil
+}
+
+// DeleteSetting deletes the smart account setting for the ownerAddr
+func (k Keeper) DeleteSetting(ctx sdk.Context, ownerAddr string) error {
+	store := ctx.KVStore(k.storeKey)
+	if ownerAddr == "" {
+		return sdkerrors.ErrInvalidRequest.Wrap("owner cannot be empty")
+	}
+	bz := store.Get(types.GetKeyPrefixSetting(ownerAddr))
+	if bz == nil {
+		return sdkerrors.ErrKeyNotFound.Wrapf("setting not found for ownerAddr: %s", ownerAddr)
+	}
+	store.Delete(types.GetKeyPrefixSetting(ownerAddr))
 	return nil
 }

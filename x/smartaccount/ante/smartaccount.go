@@ -26,14 +26,14 @@ func (sad SmartAccountCheckDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, sim
 		return ctx, err
 	}
 
-	if len(setting.Authorization) > 0 {
+	if setting.Authorization != nil && len(setting.Authorization) > 0 {
 		for _, auth := range setting.Authorization {
 			_ = auth
 			// TODO: add code that calls authorization on contracts
 		}
 	}
 
-	if len(setting.PreTransaction) > 0 {
+	if setting.PreTransaction != nil && len(setting.PreTransaction) > 0 {
 		for _, preTx := range setting.PreTransaction {
 			_ = preTx
 			// TODO: add code that calls pre-transaction on contracts

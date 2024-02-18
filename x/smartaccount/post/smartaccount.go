@@ -35,7 +35,7 @@ func (sad SmartAccountPostTxDecorator) PostHandle(
 		return ctx, err
 	}
 
-	if len(setting.PostTransaction) > 0 {
+	if setting.PostTransaction != nil && len(setting.PostTransaction) > 0 {
 		for _, postTx := range setting.PostTransaction {
 			_ = postTx
 			// TODO: add code that calls post-transaction on contracts

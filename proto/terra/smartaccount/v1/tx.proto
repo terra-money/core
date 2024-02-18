@@ -3,6 +3,7 @@ package terra.smartaccount.v1;
 
 import "gogoproto/gogo.proto";
 import "cosmos/msg/v1/msg.proto";
+import "terra/smartaccount/v1/setting.proto";
 
 option go_package = "github.com/terra-money/core/v2/x/smartaccount/types";
 
@@ -12,10 +13,7 @@ service Msg {
 
     // CreateSmartAccount defines a method for creating a smart account.
     rpc CreateSmartAccount(MsgCreateSmartAccount) returns (MsgCreateSmartAccountResponse);
-
-    // Authorization defines a method for initializing the wasm authentication contract.
-    rpc Authorization(MsgAuthorization) returns (MsgAuthorizationResponse);
-
+    
     // UpdateAuthorization defines a method for updating the wasm authentication contract.
     rpc UpdateAuthorization(MsgUpdateAuthorization) returns (MsgUpdateAuthorizationResponse);
 
@@ -32,18 +30,10 @@ message MsgCreateSmartAccount {
 
 message MsgCreateSmartAccountResponse {}
 
-
-message MsgAuthorization {
-    string contract_address = 1;
-    string init_msg = 2;
-}
-
-message MsgAuthorizationResponse {}
-
 message MsgUpdateAuthorization {
     string account = 1;
     bool fallback = 2;
-    repeated string authorization = 3;
+    repeated AuthorizationMsg authorization_msgs = 3;
 }
 
 message MsgUpdateAuthorizationResponse {}

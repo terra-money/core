@@ -12,7 +12,7 @@ message Setting {
     string owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
     // List of contract addresses to perform auth instead of SigVerify
-    repeated string authorization = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+    repeated AuthorizationMsg authorization = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
     
     // List of contract addresses to perform pre-txn logic
     repeated string pre_transaction = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
@@ -22,4 +22,9 @@ message Setting {
 
     // Fallback to default SigVerify if custom authorization fails
     bool Fallback = 5;
+}
+
+message AuthorizationMsg {
+    string contract_address = 1;
+    string init_msg = 2;
 }
