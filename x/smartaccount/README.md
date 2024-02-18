@@ -1,11 +1,3 @@
-# fee-share
+# smart-account
 
-This module is a heavily modified fork of [evmos/x/revenue](https://github.com/evmos/evmos/tree/main/x/revenue).
-A big thanks go to the original authors.
-
-For information on the module, read the [SmartAccounts Spec](spec/README.md). 
-
-## Guides
-
-- [Register a Contract](spec/00_register.md)
-- [Update Contract Withdraw Address](spec/00_register.md#update-a-contracts-withdrawal-address)
+This module upgrades accounts on Terra to be smart accounts. Smart Accounts will be able to have different authentication methods, hooks that run before and after a transaction to perform checks. All logic will be written in CosmWasm for ease of upgrade and allows third-party devs to add more modules that could be used in the future.
