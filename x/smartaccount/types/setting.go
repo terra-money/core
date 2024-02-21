@@ -11,7 +11,7 @@ func NewSetting(ownerAddr string) Setting {
 }
 
 func NewSettings() []*Setting {
-	return []*Setting{}
+	return make([]*Setting, 0)
 }
 
 func DefaultSettings() []*Setting {
