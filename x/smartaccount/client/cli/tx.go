@@ -23,6 +23,7 @@ func GetTxCmd() *cobra.Command {
 
 	txCmd.AddCommand(
 		NewCreateSmartAccount(),
+		NewDisableSmartAccount(),
 	)
 	return txCmd
 }
@@ -44,6 +45,38 @@ func NewCreateSmartAccount() *cobra.Command {
 			account := cliCtx.GetFromAddress()
 
 			msg := &types.MsgCreateSmartAccount{
+				Account: account.String(),
+			}
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+// NewRegisterFeeShare returns a CLI command handler for registering a
+// contract for fee distribution
+func NewDisableSmartAccount() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "disable-smart-account",
+		Short: "Disable smart account of the caller.",
+		Long:  "Disable a smart account of the caller.",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			account := cliCtx.GetFromAddress()
+
+			msg := &types.MsgDisableSmartAccount{
 				Account: account.String(),
 			}
 

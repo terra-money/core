@@ -84,6 +84,14 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 				return ctx, err
 			}
 		}
+	} else if setting.Fallback {
+		// run through the default handlers for signature verification
+		newCtx, err := sad.defaultVerifySigDecorator(ctx, tx, simulate)
+		if err != nil {
+			return newCtx, err
+		}
+		// continue to the next handler after default signature verification
+		return next(newCtx, tx, simulate)
 	}
 
 	return next(ctx, tx, simulate)

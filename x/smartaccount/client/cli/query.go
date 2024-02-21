@@ -24,6 +24,7 @@ func GetQueryCmd() *cobra.Command {
 
 	smartAccountsQueryCmd.AddCommand(
 		GetCmdQueryParams(),
+		GetCmdQuerySetting(),
 	)
 
 	return smartAccountsQueryCmd
@@ -51,6 +52,36 @@ func GetCmdQueryParams() *cobra.Command {
 			}
 
 			return clientCtx.PrintProto(&res.Params)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdQuerySetting() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "setting",
+		Short: "Query the current smartaccount setting for address",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			req := &types.QuerySettingRequest{
+				Address: args[0],
+			}
+
+			res, err := queryClient.Setting(context.Background(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(&res.Setting)
 		},
 	}
 
