@@ -21,6 +21,8 @@ import (
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/terra-money/core/v2/x/smartaccount"
+	smartaccounttypes "github.com/terra-money/core/v2/x/smartaccount/types"
 
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -76,9 +78,6 @@ import (
 
 	"github.com/terra-money/alliance/x/alliance"
 	feeshare "github.com/terra-money/core/v2/x/feeshare"
-
-	"github.com/terra-money/core/v2/x/smartaccount"
-	smartaccounttypes "github.com/terra-money/core/v2/x/smartaccount/types"
 
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	terrappsparams "github.com/terra-money/core/v2/app/params"

@@ -1,9 +1,6 @@
 package keepers
 
 import (
-
-	// #nosec G702
-
 	"path/filepath"
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"

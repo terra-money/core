@@ -6,7 +6,6 @@ import (
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	dbm "github.com/cometbft/cometbft-db"
-	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/suite"
@@ -16,6 +15,8 @@ import (
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	secp256k1 "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -32,6 +33,7 @@ type AppTestSuite struct {
 	Ctx            sdk.Context
 	QueryHelper    *baseapp.QueryServiceTestHelper
 	TestAccs       []sdk.AccAddress
+	TestAccPrivs   []cryptotypes.PrivKey
 	EncodingConfig appparams.EncodingConfig
 }
 
@@ -80,7 +82,9 @@ func (s *AppTestSuite) Setup() {
 
 	s.App.Keepers.DistrKeeper.SetFeePool(s.Ctx, distrtypes.InitialFeePool())
 
-	s.TestAccs = s.CreateRandomAccounts(3)
+	testAccounts, privKeys := s.CreateRandomAccounts(3)
+	s.TestAccs = testAccounts
+	s.TestAccPrivs = privKeys
 }
 
 func (s *AppTestSuite) AssertEventEmitted(ctx sdk.Context, eventTypeExpected string, numEventsExpected int) {
@@ -96,17 +100,20 @@ func (s *AppTestSuite) AssertEventEmitted(ctx sdk.Context, eventTypeExpected str
 }
 
 // CreateRandomAccounts is a function return a list of randomly generated AccAddresses
-func (s *AppTestSuite) CreateRandomAccounts(numAccts int) []sdk.AccAddress {
+func (s *AppTestSuite) CreateRandomAccounts(numAccts int) ([]sdk.AccAddress, []cryptotypes.PrivKey) {
 	testAddrs := make([]sdk.AccAddress, numAccts)
+	testPrivKeys := make([]cryptotypes.PrivKey, numAccts)
 	for i := 0; i < numAccts; i++ {
-		pk := ed25519.GenPrivKey().PubKey()
+		priv := secp256k1.GenPrivKey()
+		pk := priv.PubKey()
 		testAddrs[i] = sdk.AccAddress(pk.Address())
+		testPrivKeys[i] = priv
 
 		err := s.FundAcc(testAddrs[i], sdk.NewCoins(sdk.NewInt64Coin("uluna", 100000000)))
 		s.Require().NoError(err)
 	}
 
-	return testAddrs
+	return testAddrs, testPrivKeys
 }
 
 // FundAcc funds target address with specified amount.
