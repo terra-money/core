@@ -33,7 +33,7 @@ func NewSmartAccountAuthDecorator(
 	defaultVerifySigDecorator := sdk.ChainAnteDecorators(
 		authante.NewSetPubKeyDecorator(ak),
 		authante.NewValidateSigCountDecorator(ak),
-		authante.NewSigGasConsumeDecorator(ak, authante.DefaultSigVerificationGasConsumer),
+		authante.NewSigGasConsumeDecorator(ak, sigGasConsumer),
 		authante.NewSigVerificationDecorator(ak, signModeHandler),
 	)
 	return SmartAccountAuthDecorator{

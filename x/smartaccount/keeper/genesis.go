@@ -32,7 +32,9 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		var setting types.Setting
-		setting.Unmarshal(iter.Value())
+		if err := setting.Unmarshal(iter.Value()); err != nil {
+			panic(err)
+		}
 		settings = append(settings, &setting)
 	}
 
