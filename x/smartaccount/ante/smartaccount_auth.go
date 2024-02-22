@@ -59,6 +59,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		return ctx, err
 	}
 
+	ctx = ctx.WithValue(types.ModuleName, setting)
 	if setting.Authorization != nil && len(setting.Authorization) > 0 {
 		for _, auth := range setting.Authorization {
 			// TODO: add code that calls authorization on contracts
