@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-
 set -e
-
 echo "Generating gogo proto code"
 cd proto
 
