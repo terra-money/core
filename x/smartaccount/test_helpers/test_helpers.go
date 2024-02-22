@@ -13,7 +13,7 @@ type SmartAccountTestSuite struct {
 	WasmKeeper         wasmkeeper.Keeper
 }
 
-func (s SmartAccountTestSuite) SetupTests() {
+func (s *SmartAccountTestSuite) SetupTests() {
 	s.Setup()
 	s.SmartAccountKeeper = s.App.Keepers.SmartAccountKeeper
 	s.WasmKeeper = s.App.Keepers.WasmKeeper

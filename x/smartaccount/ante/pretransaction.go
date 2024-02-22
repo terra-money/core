@@ -1,8 +1,9 @@
 package ante
 
 import (
-	sdkerrors "cosmossdk.io/errors"
 	"encoding/json"
+
+	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	tx2 "github.com/cosmos/cosmos-sdk/types/tx"
@@ -39,6 +40,9 @@ func (pth PreTransactionHookDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 				return ctx, err
 			}
 			data, err := BuildPreTransactionHookMsg(tx)
+			if err != nil {
+				return ctx, err
+			}
 			_, err = pth.wasmKeeper.Sudo(ctx, contractAddr, data)
 			if err != nil {
 				return ctx, err
