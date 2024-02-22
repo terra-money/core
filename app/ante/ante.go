@@ -81,6 +81,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		// ante.NewSigGasConsumeDecorator(options.AccountKeeper, sigGasConsumer),
 		// ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		smartaccountante.NewSmartAccountAuthDecorator(*options.SmartAccountKeeper, options.WasmKeeper, options.AccountKeeper, sigGasConsumer, options.SignModeHandler),
+		smartaccountante.NewPreTransactionHookDecorator(*options.SmartAccountKeeper, options.WasmKeeper),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCkeeper),
 	}
