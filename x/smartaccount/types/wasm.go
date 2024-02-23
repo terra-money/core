@@ -11,7 +11,7 @@ type Authorization struct {
 	Sender      string   `json:"sender"`
 	Account     string   `json:"account"`
 	Signatures  [][]byte `json:"signatures"`
-	SignedBytes []byte   `json:"signed_bytes"`
+	SignedBytes [][]byte `json:"signed_bytes"`
 	Data        []byte   `json:"data"`
 }
 
