@@ -9,3 +9,7 @@ import (
 type SmartAccountKeeper interface {
 	GetSetting(ctx sdk.Context, ownerAddr string) (*smartaccounttypes.Setting, error)
 }
+
+type WasmKeeper interface {
+	Sudo(ctx sdk.Context, contractAddress sdk.AccAddress, msg []byte) ([]byte, error)
+}

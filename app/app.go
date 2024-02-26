@@ -258,11 +258,13 @@ func NewTerraApp(
 				SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 				SigGasConsumer:  cosmosante.DefaultSigVerificationGasConsumer,
 			},
-			BankKeeper:        app.Keepers.BankKeeper,
-			FeeShareKeeper:    app.Keepers.FeeShareKeeper,
-			IBCkeeper:         app.Keepers.IBCKeeper,
-			TxCounterStoreKey: app.keys[wasmtypes.StoreKey],
-			WasmConfig:        wasmConfig,
+			BankKeeper:         app.Keepers.BankKeeper,
+			SmartAccountKeeper: &app.Keepers.SmartAccountKeeper,
+			WasmKeeper:         &app.Keepers.WasmKeeper,
+			FeeShareKeeper:     app.Keepers.FeeShareKeeper,
+			IBCkeeper:          app.Keepers.IBCKeeper,
+			TxCounterStoreKey:  app.keys[wasmtypes.StoreKey],
+			WasmConfig:         wasmConfig,
 		},
 	)
 	if err != nil {

@@ -29,3 +29,16 @@ func (q Querier) Params(
 	params := q.GetParams(ctx)
 	return &types.QueryParamsResponse{Params: params}, nil
 }
+
+// Setting returns the fees module setting
+func (q Querier) Setting(
+	c context.Context,
+	req *types.QuerySettingRequest,
+) (*types.QuerySettingResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	setting, err := q.GetSetting(ctx, req.Address)
+	if err != nil {
+		return nil, err
+	}
+	return &types.QuerySettingResponse{Setting: *setting}, nil
+}

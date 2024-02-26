@@ -17,7 +17,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
 	"github.com/terra-money/core/v2/x/smartaccount/client/cli"
 	"github.com/terra-money/core/v2/x/smartaccount/exported"
@@ -90,7 +89,7 @@ func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c client.Context, serveMux *ru
 
 // GetTxCmd returns the root tx command for the fees module.
 func (AppModuleBasic) GetTxCmd() *cobra.Command {
-	return cli.NewTxCmd()
+	return cli.GetTxCmd()
 }
 
 // GetQueryCmd returns the fees module's root query command.
@@ -104,7 +103,6 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 	keeper keeper.Keeper
-	ak     authkeeper.AccountKeeper
 
 	// legacySubspace is used solely for migration of x/params managed parameters
 	legacySubspace exported.Subspace
@@ -113,13 +111,11 @@ type AppModule struct {
 // NewAppModule creates a new AppModule Object
 func NewAppModule(
 	k keeper.Keeper,
-	ak authkeeper.AccountKeeper,
 	ss exported.Subspace,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         k,
-		ak:             ak,
 		legacySubspace: ss,
 	}
 }

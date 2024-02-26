@@ -2,22 +2,27 @@ package types
 
 import "github.com/CosmWasm/wasmvm/types"
 
+type SudoMsg struct {
+	PreTransaction  *PreTransaction  `json:"pre_transaction,omitempty"`
+	PostTransaction *PostTransaction `json:"post_transaction,omitempty"`
+}
+
 type Authorization struct {
 	Sender      string   `json:"sender"`
 	Account     string   `json:"account"`
 	Signatures  [][]byte `json:"signatures"`
-	SignedBytes []byte   `json:"signed_bytes"`
+	SignedBytes [][]byte `json:"signed_bytes"`
 	Data        []byte   `json:"data"`
 }
 
 type PreTransaction struct {
-	Sender   string              `json:"sender"`
-	Account  string              `json:"account"`
-	Messages []types.StargateMsg `json:"messages"`
+	Sender   string            `json:"sender"`
+	Account  string            `json:"account"`
+	Messages []types.CosmosMsg `json:"msgs"`
 }
 
 type PostTransaction struct {
-	Sender  string              `json:"sender"`
-	Account string              `json:"account"`
-	Msgs    []types.StargateMsg `json:"msgs"`
+	Sender  string            `json:"sender"`
+	Account string            `json:"account"`
+	Msgs    []types.CosmosMsg `json:"msgs"`
 }

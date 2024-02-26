@@ -22,8 +22,15 @@ func (ms MsgServer) CreateSmartAccount(
 	goCtx context.Context, msg *types.MsgCreateSmartAccount,
 ) (*types.MsgCreateSmartAccountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	setting, _ := ms.k.GetSetting(ctx, msg.Account)
+	if setting != nil {
+		return nil, sdkerrors.ErrInvalidRequest.Wrapf("smart account already exists for %s", msg.Account)
+	}
+
 	if err := ms.k.SetSetting(ctx, types.Setting{
-		Owner: msg.Account,
+		Owner:    msg.Account,
+		Fallback: true,
 	}); err != nil {
 		return nil, err
 	}

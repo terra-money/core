@@ -45,12 +45,12 @@ func (k Keeper) GetSetting(ctx sdk.Context, ownerAddr string) (*types.Setting, e
 		return nil, sdkerrors.ErrKeyNotFound.Wrapf("setting not found for ownerAddr: %s", ownerAddr)
 	}
 
-	var setting *types.Setting
+	var setting types.Setting
 	if err := setting.Unmarshal(bz); err != nil {
 		return nil, err
 	}
 
-	return setting, nil
+	return &setting, nil
 }
 
 // SetSetting sets the smart account setting for the ownerAddr
