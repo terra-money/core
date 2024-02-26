@@ -51,7 +51,11 @@ func NewSmartAccountAuthDecorator(
 
 // AnteHandle checks if the tx provides sufficient fee to cover the required fee from the fee market.
 func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	// check if the tx is from a smart account
+	// skip the smartaccount auth decorator if the tx is a simulation
+	if simulate {
+		return next(ctx, tx, simulate)
+	}
+
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
 		return ctx, sdkerrors.ErrInvalidType.Wrap("expected SigVerifiableTx")
@@ -60,12 +64,9 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 	// Signer here is the account that the state transition is affecting
 	// e.g. Account that is transferring some Coins
 	signers := sigTx.GetSigners()
-	// Current only supports one signer (TODO review in the future)
-	if len(signers) != 1 {
-		return ctx, sdkerrors.ErrorInvalidSigner.Wrap("only one account is supported (sigTx.GetSigners()!= 1)")
-	}
 	account := signers[0].String()
 
+	// check if the tx is from a smart account
 	setting, err := sad.sak.GetSetting(ctx, account)
 	if sdkerrors.ErrKeyNotFound.Is(err) {
 		// run through the default handlers for signature verification
@@ -77,6 +78,11 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		return next(newCtx, tx, simulate)
 	} else if err != nil {
 		return ctx, err
+	}
+
+	// Current smartaccount only supports one signer (TODO review in the future)
+	if len(signers) != 1 {
+		return ctx, sdkerrors.ErrorInvalidSigner.Wrap("only one account is supported (sigTx.GetSigners()!= 1)")
 	}
 
 	// Sender here is the account that signed the transaction
@@ -158,10 +164,18 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 				return ctx, err
 			}
 		}
-		if !success {
+		if !success && !setting.Fallback {
 			return ctx, sdkerrors.ErrUnauthorized.Wrap("authorization failed")
+		} else if !success && setting.Fallback {
+			// run through the default handlers for signature verification
+			newCtx, err := sad.defaultVerifySigDecorator(ctx, tx, simulate)
+			if err != nil {
+				return newCtx, err
+			}
+			// continue to the next handler after default signature verification
+			return next(newCtx, tx, simulate)
 		}
-	} else if setting.Fallback {
+	} else {
 		// run through the default handlers for signature verification
 		newCtx, err := sad.defaultVerifySigDecorator(ctx, tx, simulate)
 		if err != nil {
