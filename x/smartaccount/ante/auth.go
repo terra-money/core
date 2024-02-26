@@ -164,28 +164,19 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 				return ctx, err
 			}
 		}
-		if !success && !setting.Fallback {
+		if success {
+			return next(ctx, tx, simulate)
+		} else if !setting.Fallback {
 			return ctx, sdkerrors.ErrUnauthorized.Wrap("authorization failed")
-		} else if !success && setting.Fallback {
-			// run through the default handlers for signature verification
-			newCtx, err := sad.defaultVerifySigDecorator(ctx, tx, simulate)
-			if err != nil {
-				return newCtx, err
-			}
-			// continue to the next handler after default signature verification
-			return next(newCtx, tx, simulate)
 		}
-	} else {
-		// run through the default handlers for signature verification
-		newCtx, err := sad.defaultVerifySigDecorator(ctx, tx, simulate)
-		if err != nil {
-			return newCtx, err
-		}
-		// continue to the next handler after default signature verification
-		return next(newCtx, tx, simulate)
 	}
-
-	return next(ctx, tx, simulate)
+	// run through the default handlers for signature verification
+	newCtx, err := sad.defaultVerifySigDecorator(ctx, tx, simulate)
+	if err != nil {
+		return newCtx, err
+	}
+	// continue to the next handler after default signature verification
+	return next(newCtx, tx, simulate)
 }
 
 // signatureDataToBz converts a SignatureData into raw bytes signature.
