@@ -17,9 +17,9 @@ import (
 
 // SmartAccountAuthDecorator does authentication for smart accounts
 type SmartAccountAuthDecorator struct {
-	sak                       SmartAccountKeeper
-	wk                        WasmKeeper
-	ak                        authante.AccountKeeper
+	smartAccountKeeper        SmartAccountKeeper
+	wasmKeeper                WasmKeeper
+	accountKeeper             authante.AccountKeeper
 	signModeHandler           authsigning.SignModeHandler
 	defaultVerifySigDecorator sdk.AnteHandler
 }
@@ -41,9 +41,9 @@ func NewSmartAccountAuthDecorator(
 		authante.NewSigVerificationDecorator(ak, signModeHandler),
 	)
 	return SmartAccountAuthDecorator{
-		sak:                       sak,
-		wk:                        wk,
-		ak:                        ak,
+		smartAccountKeeper:        sak,
+		wasmKeeper:                wk,
+		accountKeeper:             ak,
 		signModeHandler:           signModeHandler,
 		defaultVerifySigDecorator: defaultVerifySigDecorator,
 	}
@@ -67,7 +67,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 	account := signers[0].String()
 
 	// check if the tx is from a smart account
-	setting, err := sad.sak.GetSetting(ctx, account)
+	setting, err := sad.smartAccountKeeper.GetSetting(ctx, account)
 	if sdkerrors.ErrKeyNotFound.Is(err) {
 		// run through the default handlers for signature verification
 		newCtx, err := sad.defaultVerifySigDecorator(ctx, tx, simulate)
@@ -106,7 +106,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		return ctx, err
 	}
 
-	acc, err := authante.GetSignerAcc(ctx, sad.ak, senderAddr)
+	acc, err := authante.GetSignerAcc(ctx, sad.accountKeeper, senderAddr)
 	if err != nil {
 		return ctx, err
 	}
@@ -152,7 +152,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 			if err != nil {
 				return ctx, err
 			}
-			_, err = sad.wk.Sudo(ctx, contractAddr, authMsgBz)
+			_, err = sad.wasmKeeper.Sudo(ctx, contractAddr, authMsgBz)
 			// so long as one of the authorization is successful, we're good
 			if err == nil {
 				success = true

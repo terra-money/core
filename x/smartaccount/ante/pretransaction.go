@@ -15,13 +15,13 @@ import (
 
 // SmartAccountCheckDecorator does authentication for smart accounts
 type PreTransactionHookDecorator struct {
-	smartaccountKeeper SmartAccountKeeper
+	smartAccountKeeper SmartAccountKeeper
 	wasmKeeper         WasmKeeper
 }
 
 func NewPreTransactionHookDecorator(sak SmartAccountKeeper, wk WasmKeeper) PreTransactionHookDecorator {
 	return PreTransactionHookDecorator{
-		smartaccountKeeper: sak,
+		smartAccountKeeper: sak,
 		wasmKeeper:         wk,
 	}
 }
