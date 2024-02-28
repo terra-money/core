@@ -138,9 +138,10 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		success := false
 		for _, auth := range setting.Authorization {
 			authMsg := types.Authorization{
-				Sender:      senderAddr.String(),
-				Account:     account,
-				Data:        []byte(auth.InitMsg),
+				Sender:  senderAddr.String(),
+				Account: account,
+				// TODO: add in future when needed
+				Data:        []byte{},
 				Signatures:  signaturesBs,
 				SignedBytes: signedBytes,
 			}
