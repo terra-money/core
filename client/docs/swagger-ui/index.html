@@ -3,11 +3,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Terra Blockchain Swagger UI</title>
+    <title>Swagger | Terra Blockchain </title>
     <link rel="stylesheet" type="text/css" href="swagger-ui.css" >
     <link rel="stylesheet" type="text/css" href="swagger-ui-dark.css" >
     <link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16" />
     <style>
       html {
         box-sizing: border-box;
@@ -49,7 +48,8 @@
         plugins: [
           SwaggerUIBundle.plugins.DownloadUrl
         ],
-        layout: "StandaloneLayout"
+        layout: "StandaloneLayout",
+        filter : true
       })
 
       window.ui = ui
