@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -40,6 +41,8 @@ func (s *AnteTestSuite) TestAuthAnteHandler() {
 
 	acc := s.TestAccs[0]
 	pubKey := s.TestAccPrivs[0].PubKey()
+	// endcoding this since this should be encoded in base64 when submitted by the user
+	pkEncoded := []byte(base64.StdEncoding.EncodeToString(pubKey.Bytes()))
 
 	codeId, _, err := s.WasmKeeper.Create(s.Ctx, acc, test_helpers.SmartAuthContractWasm, nil)
 	require.NoError(s.T(), err)
@@ -50,14 +53,13 @@ func (s *AnteTestSuite) TestAuthAnteHandler() {
 	initMsg := smartaccounttypes.Initialization{
 		Sender:  acc.String(),
 		Account: acc.String(),
-		Msg:     pubKey.Bytes(),
+		Msg:     pkEncoded,
 	}
 	sudoInitMsg := smartaccounttypes.SudoMsg{Initialization: &initMsg}
 	sudoInitMsgBs, err := json.Marshal(sudoInitMsg)
 	require.NoError(s.T(), err)
 	fmt.Println("easgkldsklg")
-	gggg, err := s.WasmKeeper.Sudo(s.Ctx, contractAddr, sudoInitMsgBs)
-	fmt.Println(gggg)
+	_, err = s.WasmKeeper.Sudo(s.Ctx, contractAddr, sudoInitMsgBs)
 	fmt.Println(err)
 	require.NoError(s.T(), err)
 	fmt.Println("hdhsh")
