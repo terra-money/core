@@ -117,7 +117,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                     val2WalletAddress,
                     VoteOption.VOTE_OPTION_YES
                 )],
-                fee: new Fee(100_000, "0uluna"),
+                fee: new Fee(100_000, "100000uluna"),
                 chainID: "test-2",
             });
             result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
@@ -231,7 +231,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                             ibcCoin.denom,
                         ),
                     ],
-                    fee: new Fee(300_000, "0uluna"),
+                    fee: new Fee(300_000, "100000uluna"),
                     chainID: "test-2",
                 });
                 let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
@@ -261,7 +261,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                             new Coin(ibcCoin.denom, 1000),
                         ),
                     ],
-                    fee: new Fee(300_000, "0uluna"),
+                    fee: new Fee(300_000, "100000uluna"),
                     chainID: "test-2",
                 });
                 let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
@@ -321,7 +321,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                     val2WalletAddress,
                     VoteOption.VOTE_OPTION_YES
                 )],
-                fee: new Fee(100_000, "0uluna"),
+                fee: new Fee(100_000, "100000uluna"),
                 chainID: "test-2",
             });
             result = await LCD.chain2.tx.broadcastSync(tx, "test-2");

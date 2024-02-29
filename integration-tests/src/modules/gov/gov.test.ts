@@ -174,7 +174,7 @@ describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/rele
                     val2WalletAddress,
                     VoteOption.VOTE_OPTION_YES
                 )],
-                fee: new Fee(100_000, "0uluna"),
+                fee: new Fee(100_000, "100000uluna"),
                 chainID: "test-2",
             });
             result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
