@@ -136,11 +136,11 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		success := false
 		for _, auth := range setting.Authorization {
 			authMsg := types.Authorization{
-				Sender:  senderAddr.String(),
+				Senders: []string{senderAddr.String()},
 				Account: account,
 				// TODO: add in future when needed
-				Signature:   signatureBz,
-				SignedBytes: signedBytes,
+				Signatures:  [][]byte{signatureBz},
+				SignedBytes: [][]byte{signedBytes},
 				Data:        []byte{},
 			}
 			sudoAuthMsg := types.SudoMsg{Authorization: &authMsg}

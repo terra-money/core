@@ -16,11 +16,11 @@ type Initialization struct {
 }
 
 type Authorization struct {
-	Sender      string `json:"sender"`
-	Account     string `json:"account"`
-	Signature   []byte `json:"signature"`
-	SignedBytes []byte `json:"signed_bytes"`
-	Data        []byte `json:"data"`
+	Senders     []string `json:"senders"`
+	Account     string   `json:"account"`
+	Signatures  [][]byte `json:"signatures"`
+	SignedBytes [][]byte `json:"signed_bytes"`
+	Data        []byte   `json:"data"`
 }
 
 type PreTransaction struct {
