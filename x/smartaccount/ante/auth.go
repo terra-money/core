@@ -99,6 +99,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 	}
 
 	signature := signatures[0]
+	signaturesBs := [][]byte{}
 
 	senderAddr, err := sdk.AccAddressFromHexUnsafe(signature.PubKey.Address().String())
 	if err != nil {
@@ -130,6 +131,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 	if err != nil {
 		return ctx, err
 	}
+	signaturesBs = append(signaturesBs, signatureBz...)
 
 	ctx = ctx.WithValue(types.ModuleName, setting)
 	if setting.Authorization != nil && len(setting.Authorization) > 0 {
@@ -139,8 +141,8 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 				Senders: []string{senderAddr.String()},
 				Account: account,
 				// TODO: add in future when needed
-				Signatures:  [][]byte{signatureBz},
-				SignedBytes: [][]byte{signedBytes},
+				Signatures:  signaturesBs,
+				SignedBytes: signedBytes,
 				Data:        []byte{},
 			}
 			sudoAuthMsg := types.SudoMsg{Authorization: &authMsg}
@@ -183,42 +185,42 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 // For SingleSignatureData, it returns the signature raw bytes.
 // For MultiSignatureData, it returns an array of all individual signatures,
 // as well as the aggregated signature.
-func signatureDataToBz(data signing.SignatureData) ([]byte, error) {
+func signatureDataToBz(data signing.SignatureData) ([][]byte, error) {
 	if data == nil {
 		return nil, fmt.Errorf("got empty SignatureData")
 	}
 
 	switch data := data.(type) {
 	case *signing.SingleSignatureData:
-		return data.Signature, nil
-	// case *signing.MultiSignatureData:
-	// 	sigs := [][]byte{}
-	// 	var err error
+		return [][]byte{data.Signature}, nil
+	case *signing.MultiSignatureData:
+		sigs := [][]byte{}
+		var err error
 
-	// 	for _, d := range data.Signatures {
-	// 		nestedSigs, err := signatureDataToBz(d)
-	// 		if err != nil {
-	// 			return nil, err
-	// 		}
-	// 		sigs = append(sigs, nestedSigs...)
-	// 	}
+		for _, d := range data.Signatures {
+			nestedSigs, err := signatureDataToBz(d)
+			if err != nil {
+				return nil, err
+			}
+			sigs = append(sigs, nestedSigs...)
+		}
 
-	// 	multisig := cryptotypes.MultiSignature{
-	// 		Signatures: sigs,
-	// 	}
-	// 	aggregatedSig, err := multisig.Marshal()
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	sigs = append(sigs, aggregatedSig)
+		multisig := cryptotypes.MultiSignature{
+			Signatures: sigs,
+		}
+		aggregatedSig, err := multisig.Marshal()
+		if err != nil {
+			return nil, err
+		}
+		sigs = append(sigs, aggregatedSig)
 
-	// 	return sigs, nil
+		return sigs, nil
 	default:
 		return nil, sdkerrors.ErrInvalidType.Wrapf("unexpected signature data type %T", data)
 	}
 }
 
-func GetSignBytesArr(pubKey cryptotypes.PubKey, signerData authsigning.SignerData, sigData signing.SignatureData, handler authsigning.SignModeHandler, tx sdk.Tx) (signersBytes []byte, err error) {
+func GetSignBytesArr(pubKey cryptotypes.PubKey, signerData authsigning.SignerData, sigData signing.SignatureData, handler authsigning.SignModeHandler, tx sdk.Tx) (signersBytes [][]byte, err error) {
 	switch data := sigData.(type) {
 	case *signing.SingleSignatureData:
 		signBytes, err := handler.GetSignBytes(data.SignMode, signerData, tx)
@@ -228,14 +230,14 @@ func GetSignBytesArr(pubKey cryptotypes.PubKey, signerData authsigning.SignerDat
 		// if !pubKey.VerifySignature(signBytes, data.Signature) {
 		// 	return nil, fmt.Errorf("unable to verify single signer signature")
 		// }
-		return signBytes, nil
+		return [][]byte{signBytes}, nil
 
-	// case *signing.MultiSignatureData:
-	// 	multiPK, ok := pubKey.(multisig.PubKey)
-	// 	if !ok {
-	// 		return nil, fmt.Errorf("expected %T, got %T", (multisig.PubKey)(nil), pubKey)
-	// 	}
-	// 	return GetMultiSigSignBytes(multiPK, data, signerData, handler, tx)
+	case *signing.MultiSignatureData:
+		multiPK, ok := pubKey.(multisig.PubKey)
+		if !ok {
+			return nil, fmt.Errorf("expected %T, got %T", (multisig.PubKey)(nil), pubKey)
+		}
+		return GetMultiSigSignBytes(multiPK, data, signerData, handler, tx)
 	default:
 		return nil, fmt.Errorf("unexpected SignatureData %T", sigData)
 	}
