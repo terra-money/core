@@ -99,7 +99,6 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 	}
 
 	signature := signatures[0]
-	signaturesBs := [][]byte{}
 
 	senderAddr, err := sdk.AccAddressFromHexUnsafe(signature.PubKey.Address().String())
 	if err != nil {
@@ -131,7 +130,6 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 	if err != nil {
 		return ctx, err
 	}
-	signaturesBs = append(signaturesBs, signatureBz...)
 
 	ctx = ctx.WithValue(types.ModuleName, setting)
 	if setting.Authorization != nil && len(setting.Authorization) > 0 {
@@ -141,11 +139,12 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 				Sender:  senderAddr.String(),
 				Account: account,
 				// TODO: add in future when needed
-				Data:        []byte{},
-				Signatures:  signaturesBs,
+				Signature:   signatureBz,
 				SignedBytes: signedBytes,
+				Data:        []byte{},
 			}
-			authMsgBz, err := json.Marshal(authMsg)
+			sudoAuthMsg := types.SudoMsg{Authorization: &authMsg}
+			sudoAuthMsgBs, err := json.Marshal(sudoAuthMsg)
 			if err != nil {
 				return ctx, err
 			}
@@ -153,7 +152,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 			if err != nil {
 				return ctx, err
 			}
-			_, err = sad.wasmKeeper.Sudo(ctx, contractAddr, authMsgBz)
+			_, err = sad.wasmKeeper.Sudo(ctx, contractAddr, sudoAuthMsgBs)
 			// so long as one of the authorization is successful, we're good
 			if err == nil {
 				success = true
@@ -184,59 +183,59 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 // For SingleSignatureData, it returns the signature raw bytes.
 // For MultiSignatureData, it returns an array of all individual signatures,
 // as well as the aggregated signature.
-func signatureDataToBz(data signing.SignatureData) ([][]byte, error) {
+func signatureDataToBz(data signing.SignatureData) ([]byte, error) {
 	if data == nil {
 		return nil, fmt.Errorf("got empty SignatureData")
 	}
 
 	switch data := data.(type) {
 	case *signing.SingleSignatureData:
-		return [][]byte{data.Signature}, nil
-	case *signing.MultiSignatureData:
-		sigs := [][]byte{}
-		var err error
+		return data.Signature, nil
+	// case *signing.MultiSignatureData:
+	// 	sigs := [][]byte{}
+	// 	var err error
 
-		for _, d := range data.Signatures {
-			nestedSigs, err := signatureDataToBz(d)
-			if err != nil {
-				return nil, err
-			}
-			sigs = append(sigs, nestedSigs...)
-		}
+	// 	for _, d := range data.Signatures {
+	// 		nestedSigs, err := signatureDataToBz(d)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		sigs = append(sigs, nestedSigs...)
+	// 	}
 
-		multisig := cryptotypes.MultiSignature{
-			Signatures: sigs,
-		}
-		aggregatedSig, err := multisig.Marshal()
-		if err != nil {
-			return nil, err
-		}
-		sigs = append(sigs, aggregatedSig)
+	// 	multisig := cryptotypes.MultiSignature{
+	// 		Signatures: sigs,
+	// 	}
+	// 	aggregatedSig, err := multisig.Marshal()
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	sigs = append(sigs, aggregatedSig)
 
-		return sigs, nil
+	// 	return sigs, nil
 	default:
 		return nil, sdkerrors.ErrInvalidType.Wrapf("unexpected signature data type %T", data)
 	}
 }
 
-func GetSignBytesArr(pubKey cryptotypes.PubKey, signerData authsigning.SignerData, sigData signing.SignatureData, handler authsigning.SignModeHandler, tx sdk.Tx) (signersBytes [][]byte, err error) {
+func GetSignBytesArr(pubKey cryptotypes.PubKey, signerData authsigning.SignerData, sigData signing.SignatureData, handler authsigning.SignModeHandler, tx sdk.Tx) (signersBytes []byte, err error) {
 	switch data := sigData.(type) {
 	case *signing.SingleSignatureData:
 		signBytes, err := handler.GetSignBytes(data.SignMode, signerData, tx)
 		if err != nil {
 			return nil, err
 		}
-		if !pubKey.VerifySignature(signBytes, data.Signature) {
-			return nil, fmt.Errorf("unable to verify single signer signature")
-		}
-		return [][]byte{signBytes}, nil
+		// if !pubKey.VerifySignature(signBytes, data.Signature) {
+		// 	return nil, fmt.Errorf("unable to verify single signer signature")
+		// }
+		return signBytes, nil
 
-	case *signing.MultiSignatureData:
-		multiPK, ok := pubKey.(multisig.PubKey)
-		if !ok {
-			return nil, fmt.Errorf("expected %T, got %T", (multisig.PubKey)(nil), pubKey)
-		}
-		return GetMultiSigSignBytes(multiPK, data, signerData, handler, tx)
+	// case *signing.MultiSignatureData:
+	// 	multiPK, ok := pubKey.(multisig.PubKey)
+	// 	if !ok {
+	// 		return nil, fmt.Errorf("expected %T, got %T", (multisig.PubKey)(nil), pubKey)
+	// 	}
+	// 	return GetMultiSigSignBytes(multiPK, data, signerData, handler, tx)
 	default:
 		return nil, fmt.Errorf("unexpected SignatureData %T", sigData)
 	}
