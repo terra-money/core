@@ -3,7 +3,6 @@ package tests
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -31,7 +30,7 @@ func TestAnteSuite(t *testing.T) {
 }
 
 func (s *AnteTestSuite) Setup() {
-	s.SmartAccountTestSuite.Setup()
+	s.SmartAccountTestSuite.SetupTests()
 	s.WasmKeeper = wasmkeeper.NewDefaultPermissionKeeper(s.App.Keepers.WasmKeeper)
 	s.Decorator = ante.NewSmartAccountAuthDecorator(s.SmartAccountKeeper, s.WasmKeeper, s.App.Keepers.AccountKeeper, nil, s.EncodingConfig.TxConfig.SignModeHandler())
 }
@@ -39,7 +38,8 @@ func (s *AnteTestSuite) Setup() {
 func (s *AnteTestSuite) TestAuthAnteHandler() {
 	s.Setup()
 
-	acc := s.TestAccs[0]
+	// testAcc1 using private key of testAcc0
+	acc := s.TestAccs[1]
 	pubKey := s.TestAccPrivs[0].PubKey()
 	// endcoding this since this should be encoded in base64 when submitted by the user
 	pkEncoded := []byte(base64.StdEncoding.EncodeToString(pubKey.Bytes()))
@@ -58,11 +58,9 @@ func (s *AnteTestSuite) TestAuthAnteHandler() {
 	sudoInitMsg := smartaccounttypes.SudoMsg{Initialization: &initMsg}
 	sudoInitMsgBs, err := json.Marshal(sudoInitMsg)
 	require.NoError(s.T(), err)
-	fmt.Println("easgkldsklg")
+
 	_, err = s.WasmKeeper.Sudo(s.Ctx, contractAddr, sudoInitMsgBs)
-	fmt.Println(err)
 	require.NoError(s.T(), err)
-	fmt.Println("hdhsh")
 
 	// set settings
 	authMsg := &smartaccounttypes.AuthorizationMsg{
