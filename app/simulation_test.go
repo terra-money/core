@@ -12,6 +12,7 @@ import (
 	"github.com/terra-money/core/v2/app/keepers"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
