@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/require"
@@ -33,6 +34,7 @@ func (s *AnteTestSuite) Setup() {
 	s.SmartAccountTestSuite.SetupTests()
 	s.WasmKeeper = wasmkeeper.NewDefaultPermissionKeeper(s.App.Keepers.WasmKeeper)
 	s.Decorator = ante.NewSmartAccountAuthDecorator(s.SmartAccountKeeper, s.WasmKeeper, s.App.Keepers.AccountKeeper, nil, s.EncodingConfig.TxConfig.SignModeHandler())
+	s.Ctx = s.Ctx.WithChainID("test")
 }
 
 func (s *AnteTestSuite) TestAuthAnteHandler() {
@@ -73,7 +75,17 @@ func (s *AnteTestSuite) TestAuthAnteHandler() {
 	})
 	require.NoError(s.T(), err)
 
-	txBuilder := s.BuildDefaultMsgTx(0, &types.MsgSend{
+	// signing with testAcc1 pk which should error
+	txBuilder := s.BuildDefaultMsgTx(1, &types.MsgSend{
+		FromAddress: acc.String(),
+		ToAddress:   acc.String(),
+		Amount:      sdk.NewCoins(sdk.NewInt64Coin("uluna", 1)),
+	})
+	_, err = s.Decorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
+	require.Error(s.T(), err)
+
+	// signing with testAcc0 pk which should pass
+	txBuilder = s.BuildDefaultMsgTx(0, &types.MsgSend{
 		FromAddress: acc.String(),
 		ToAddress:   acc.String(),
 		Amount:      sdk.NewCoins(sdk.NewInt64Coin("uluna", 1)),
@@ -84,25 +96,46 @@ func (s *AnteTestSuite) TestAuthAnteHandler() {
 
 func (s *AnteTestSuite) BuildDefaultMsgTx(accountIndex int, msgs ...sdk.Msg) client.TxBuilder {
 	pk := s.TestAccPrivs[accountIndex]
+	sender := s.TestAccs[accountIndex]
+	acc := s.App.Keepers.AccountKeeper.GetAccount(s.Ctx, msgs[0].GetSigners()[0])
 	txBuilder := s.EncodingConfig.TxConfig.NewTxBuilder()
 	err := txBuilder.SetMsgs(
 		msgs...,
 	)
 	require.NoError(s.T(), err)
+
 	signer := authsigning.SignerData{
+		Address:       sender.String(),
 		ChainID:       "test",
-		AccountNumber: 0,
-		Sequence:      0,
+		AccountNumber: acc.GetAccountNumber(),
+		Sequence:      acc.GetSequence(),
+		PubKey:        pk.PubKey(),
 	}
-	sig, err := tx.SignWithPrivKey(
+
+	emptySig := signing.SignatureV2{
+		PubKey: signer.PubKey,
+		Data: &signing.SingleSignatureData{
+			SignMode:  s.EncodingConfig.TxConfig.SignModeHandler().DefaultMode(),
+			Signature: nil,
+		},
+		Sequence: signer.Sequence,
+	}
+
+	err = txBuilder.SetSignatures(emptySig)
+	require.NoError(s.T(), err)
+
+	sigV2, err := tx.SignWithPrivKey(
 		s.EncodingConfig.TxConfig.SignModeHandler().DefaultMode(),
 		signer,
 		txBuilder,
 		pk,
 		s.EncodingConfig.TxConfig,
-		0,
+		acc.GetSequence(),
 	)
 	require.NoError(s.T(), err)
-	txBuilder.SetSignatures(sig)
+
+	err = txBuilder.SetSignatures(sigV2)
+	require.NoError(s.T(), err)
+
 	return txBuilder
 }

@@ -64,10 +64,11 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 	// Signer here is the account that the state transition is affecting
 	// e.g. Account that is transferring some Coins
 	signers := sigTx.GetSigners()
-	account := signers[0].String()
+	account := signers[0]
+	accountStr := account.String()
 
 	// check if the tx is from a smart account
-	setting, err := sad.smartAccountKeeper.GetSetting(ctx, account)
+	setting, err := sad.smartAccountKeeper.GetSetting(ctx, accountStr)
 	if sdkerrors.ErrKeyNotFound.Is(err) {
 		// run through the default handlers for signature verification
 		newCtx, err := sad.defaultVerifySigDecorator(ctx, tx, simulate)
@@ -106,7 +107,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		return ctx, err
 	}
 
-	acc, err := authante.GetSignerAcc(ctx, sad.accountKeeper, senderAddr)
+	acc, err := authante.GetSignerAcc(ctx, sad.accountKeeper, account)
 	if err != nil {
 		return ctx, err
 	}
@@ -139,7 +140,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		for _, auth := range setting.Authorization {
 			authMsg := types.Authorization{
 				Senders: []string{senderAddr.String()},
-				Account: account,
+				Account: accountStr,
 				// TODO: add in future when needed
 				Signatures:  signaturesBs,
 				SignedBytes: signedBytes,
@@ -227,6 +228,9 @@ func GetSignBytesArr(pubKey cryptotypes.PubKey, signerData authsigning.SignerDat
 		if err != nil {
 			return nil, err
 		}
+		// TODO: should this be removed?
+		// this works right now because its secp256k1
+		// if verification is done only in wasm, then this probably would not work
 		// if !pubKey.VerifySignature(signBytes, data.Signature) {
 		// 	return nil, fmt.Errorf("unable to verify single signer signature")
 		// }
