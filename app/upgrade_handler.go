@@ -6,6 +6,7 @@ import (
 	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	terraappconfig "github.com/terra-money/core/v2/app/config"
+	v2_10 "github.com/terra-money/core/v2/app/upgrades/v2.10"
 	v2_2_0 "github.com/terra-money/core/v2/app/upgrades/v2.2.0"
 	v2_3_0 "github.com/terra-money/core/v2/app/upgrades/v2.3.0"
 	v2_4 "github.com/terra-money/core/v2/app/upgrades/v2.4"
@@ -93,10 +94,11 @@ func (app *TerraApp) RegisterUpgradeHandlers() {
 	)
 	app.Keepers.UpgradeKeeper.SetUpgradeHandler(
 		terraappconfig.Upgrade2_10,
-		v2_9.CreateUpgradeHandler(
+		v2_10.CreateUpgradeHandler(
 			app.GetModuleManager(),
 			app.GetConfigurator(),
 			app.GetAppCodec(),
+			app.Keepers.StakingKeeper,
 		),
 	)
 }
