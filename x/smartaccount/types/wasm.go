@@ -30,7 +30,7 @@ type PreTransaction struct {
 }
 
 type PostTransaction struct {
-	Sender  string            `json:"sender"`
-	Account string            `json:"account"`
-	Msgs    []types.CosmosMsg `json:"msgs"`
+	Sender   string            `json:"sender"`
+	Account  string            `json:"account"`
+	Messages []types.CosmosMsg `json:"msgs"`
 }

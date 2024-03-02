@@ -3,14 +3,13 @@ package ante
 import (
 	"encoding/json"
 
-	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrortypes "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	tx2 "github.com/cosmos/cosmos-sdk/types/tx"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
-	smartaccounttypes "github.com/terra-money/core/v2/x/smartaccount/types"
+	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
 // SmartAccountCheckDecorator does authentication for smart accounts
@@ -28,7 +27,7 @@ func NewPreTransactionHookDecorator(sak SmartAccountKeeper, wk WasmKeeper) PreTr
 
 // AnteHandle checks if the tx provides sufficient fee to cover the required fee from the fee market.
 func (pth PreTransactionHookDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	setting, ok := ctx.Value(smartaccounttypes.ModuleName).(smartaccounttypes.Setting)
+	setting, ok := ctx.Value(types.ModuleName).(types.Setting)
 	if !ok {
 		return next(ctx, tx, simulate)
 	}
@@ -54,10 +53,10 @@ func (pth PreTransactionHookDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, si
 }
 
 // TODO: to refactor
-func BuildPreTransactionHookMsg(tx sdk.Tx) ([]byte, error) {
+func BuildPrePostTransactionHookMsg(tx sdk.Tx, isPreTx bool) ([]byte, error) {
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
-		return nil, sdkerrors.Wrap(sdkerrortypes.ErrInvalidType, "expected SigVerifiableTx")
+		return nil, sdkerrors.ErrInvalidType.Wrap("expected SigVerifiableTx")
 	}
 
 	// Signer here is the account that the state transition is affecting
@@ -65,14 +64,14 @@ func BuildPreTransactionHookMsg(tx sdk.Tx) ([]byte, error) {
 	signers := sigTx.GetSigners()
 	// Current only supports one signer (TODO review in the future)
 	if len(signers) != 1 {
-		return nil, sdkerrors.Wrap(sdkerrortypes.ErrorInvalidSigner, "only one signer is supported")
+		return nil, sdkerrors.ErrorInvalidSigner.Wrap("only one signer is supported")
 	}
 
 	// Sender here is the account that signed the transaction
 	// Could be different from the account above (confusingly named signer)
 	signatures, _ := sigTx.GetSignaturesV2()
 	if len(signatures) == 0 {
-		return nil, sdkerrors.Wrap(sdkerrortypes.ErrNoSignatures, "no signatures found")
+		return nil, sdkerrors.ErrNoSignatures.Wrap("no signatures found")
 	}
 	senderAddr, err := sdk.AccAddressFromHexUnsafe(signatures[0].PubKey.Address().String())
 	if err != nil {
@@ -94,11 +93,26 @@ func BuildPreTransactionHookMsg(tx sdk.Tx) ([]byte, error) {
 			Stargate: &stargateMsg,
 		})
 	}
-	preTx := smartaccounttypes.PreTransaction{
-		Sender:   senderAddr.String(),
-		Account:  signers[0].String(),
-		Messages: stargateMsgs,
+	var msg types.SudoMsg
+	if isPreTx {
+		preTx := types.PreTransaction{
+			Sender:   senderAddr.String(),
+			Account:  signers[0].String(),
+			Messages: stargateMsgs,
+		}
+		msg = types.SudoMsg{PreTransaction: &preTx}
+	} else {
+		postTx := types.PostTransaction{
+			Sender:   senderAddr.String(),
+			Account:  signers[0].String(),
+			Messages: stargateMsgs,
+		}
+		msg = types.SudoMsg{PostTransaction: &postTx}
 	}
-	msg := smartaccounttypes.SudoMsg{PreTransaction: &preTx}
+
 	return json.Marshal(msg)
+}
+
+func BuildPreTransactionHookMsg(tx sdk.Tx) ([]byte, error) {
+	return BuildPrePostTransactionHookMsg(tx, true)
 }
