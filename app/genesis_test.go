@@ -20,6 +20,7 @@ import (
 	"github.com/terra-money/alliance/x/alliance"
 	"github.com/terra-money/core/v2/app"
 	"github.com/terra-money/core/v2/x/feeshare"
+	"github.com/terra-money/core/v2/x/smartaccount"
 	"github.com/terra-money/core/v2/x/tokenfactory"
 
 	mocktestutils "github.com/cosmos/cosmos-sdk/testutil/mock"
@@ -224,6 +225,7 @@ func (s *AppGenesisTestSuite) TestMigration() {
 			"upgrade":                upgrade.AppModule{}.ConsensusVersion(),
 			"vesting":                vesting.AppModule{}.ConsensusVersion(),
 			"wasm":                   wasm.AppModule{}.ConsensusVersion(),
+			"smartaccount":           smartaccount.AppModule{}.ConsensusVersion(),
 		},
 	)
 	s.Require().NoError(err)
@@ -257,6 +259,7 @@ func (s *AppGenesisTestSuite) TestMigration() {
 		"upgrade":                2,
 		"vesting":                1,
 		"wasm":                   4,
+		"smartaccount":           1,
 	})
 }
 
@@ -684,6 +687,34 @@ func (s *AppGenesisTestSuite) TestGenesis() {
 			"unbonding_delegations": [],
 			"redelegations": [],
 			"exported": false
+		},
+		"smartaccount": {
+			"params": {
+			},
+			"settings": [
+			]
+		},
+		"staking": {
+			"delegations": [
+			],
+			"exported": false,
+			"last_total_power": "0",
+			"last_validator_powers": [
+			],
+			"params": {
+				"bond_denom": "uluna",
+				"historical_entries": 10000,
+				"max_entries": 7,
+				"max_validators": 100,
+				"min_commission_rate": "0.000000000000000000",
+				"unbonding_time": "1814400s"
+			},
+			"redelegations": [
+			],
+			"unbonding_delegations": [
+			],
+			"validators": [
+			]
 		},
 		"tokenfactory": {
 			"params": {

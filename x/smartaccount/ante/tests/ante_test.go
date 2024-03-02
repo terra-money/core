@@ -22,8 +22,9 @@ import (
 type AnteTestSuite struct {
 	test_helpers.SmartAccountTestSuite
 
-	Decorator  ante.SmartAccountAuthDecorator
-	WasmKeeper *wasmkeeper.PermissionedKeeper
+	AuthDecorator  ante.SmartAccountAuthDecorator
+	PreTxDecorator ante.PreTransactionHookDecorator
+	WasmKeeper     *wasmkeeper.PermissionedKeeper
 }
 
 func TestAnteSuite(t *testing.T) {
@@ -33,7 +34,8 @@ func TestAnteSuite(t *testing.T) {
 func (s *AnteTestSuite) Setup() {
 	s.SmartAccountTestSuite.SetupTests()
 	s.WasmKeeper = wasmkeeper.NewDefaultPermissionKeeper(s.App.Keepers.WasmKeeper)
-	s.Decorator = ante.NewSmartAccountAuthDecorator(s.SmartAccountKeeper, s.WasmKeeper, s.App.Keepers.AccountKeeper, nil, s.EncodingConfig.TxConfig.SignModeHandler())
+	s.AuthDecorator = ante.NewSmartAccountAuthDecorator(s.SmartAccountKeeper, s.WasmKeeper, s.App.Keepers.AccountKeeper, nil, s.EncodingConfig.TxConfig.SignModeHandler())
+	s.PreTxDecorator = ante.NewPreTransactionHookDecorator(s.SmartAccountKeeper, s.WasmKeeper)
 	s.Ctx = s.Ctx.WithChainID("test")
 }
 
@@ -81,7 +83,7 @@ func (s *AnteTestSuite) TestAuthAnteHandler() {
 		ToAddress:   acc.String(),
 		Amount:      sdk.NewCoins(sdk.NewInt64Coin("uluna", 1)),
 	})
-	_, err = s.Decorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
+	_, err = s.AuthDecorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
 	require.Error(s.T(), err)
 
 	// signing with testAcc0 pk which should pass
@@ -90,7 +92,7 @@ func (s *AnteTestSuite) TestAuthAnteHandler() {
 		ToAddress:   acc.String(),
 		Amount:      sdk.NewCoins(sdk.NewInt64Coin("uluna", 1)),
 	})
-	_, err = s.Decorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
+	_, err = s.AuthDecorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
 	require.NoError(s.T(), err)
 }
 

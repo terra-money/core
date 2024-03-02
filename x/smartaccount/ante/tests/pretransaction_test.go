@@ -16,7 +16,7 @@ func (s *AnteTestSuite) TestPreTransactionHookWithoutSmartAccount() {
 		ToAddress:   s.TestAccs[1].String(),
 		Amount:      sdk.NewCoins(sdk.NewInt64Coin("uluna", 100000000)),
 	})
-	_, err := s.Decorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
+	_, err := s.PreTxDecorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
 	require.NoError(s.T(), err)
 }
 
@@ -28,7 +28,7 @@ func (s *AnteTestSuite) TestPreTransactionHookWithEmptySmartAccount() {
 		ToAddress:   s.TestAccs[1].String(),
 		Amount:      sdk.NewCoins(sdk.NewInt64Coin("uluna", 100000000)),
 	})
-	_, err := s.Decorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
+	_, err := s.PreTxDecorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
 	require.NoError(s.T(), err)
 }
 
@@ -42,7 +42,7 @@ func (s *AnteTestSuite) TestInvalidContractAddress() {
 		ToAddress:   s.TestAccs[1].String(),
 		Amount:      sdk.NewCoins(sdk.NewInt64Coin("uluna", 100000000)),
 	})
-	_, err := s.Decorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
+	_, err := s.PreTxDecorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
 	require.ErrorContainsf(s.T(), err, "no such contract", "error message: %s", err)
 }
 
@@ -63,7 +63,7 @@ func (s *AnteTestSuite) TestSendCoinsWithLimitSendHook() {
 		ToAddress:   acc.String(),
 		Amount:      sdk.NewCoins(sdk.NewInt64Coin("uluna", 100000000)),
 	})
-	_, err = s.Decorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
+	_, err = s.PreTxDecorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
 	require.NoError(s.T(), err)
 }
 
@@ -84,6 +84,6 @@ func (s *AnteTestSuite) TestStakingWithLimitSendHook() {
 		ValidatorAddress: acc.String(),
 		Amount:           sdk.NewInt64Coin("uluna", 100000000),
 	})
-	_, err = s.Decorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
+	_, err = s.PreTxDecorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
 	require.ErrorContainsf(s.T(), err, "Unauthorized message type", "error message: %s", err)
 }

@@ -25,9 +25,9 @@ func (suite *CodecTestSuite) TestRegisterInterfaces() {
 	impls := registry.ListImplementations(sdk.MsgInterfaceProtoName)
 	suite.Require().Equal(4, len(impls))
 	suite.Require().ElementsMatch([]string{
-		"/juno.feeshare.v1.MsgRegisterFeeShare",
-		"/juno.feeshare.v1.MsgCancelFeeShare",
-		"/juno.feeshare.v1.MsgUpdateFeeShare",
-		"/juno.feeshare.v1.MsgUpdateParams",
+		"/terra.smartaccount.v1.MsgCreateSmartAccount",
+		"/terra.smartaccount.v1.MsgUpdateAuthorization",
+		"/terra.smartaccount.v1.MsgUpdateTransactionHooks",
+		"/terra.smartaccount.v1.MsgDisableSmartAccount",
 	}, impls)
 }
