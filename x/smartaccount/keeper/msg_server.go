@@ -41,11 +41,9 @@ func (ms MsgServer) UpdateAuthorization(
 	goCtx context.Context, msg *types.MsgUpdateAuthorization,
 ) (*types.MsgUpdateAuthorizationResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	for _, authMsg := range msg.AuthorizationMsgs {
-		// TODO: call SudoMsg::Initialization for wasm contract and verify it is successful
-		// if err return nil, err
-		_ = authMsg
-	}
+
+	// TODO: Run through the authorization messages and check if they are valid
+	// Should be either done here or the auth ante handler
 	setting, err := ms.k.GetSetting(ctx, msg.Account)
 	if sdkerrors.ErrKeyNotFound.Is(err) {
 		setting = &types.Setting{
@@ -66,7 +64,19 @@ func (ms MsgServer) UpdateTransactionHooks(
 	goCtx context.Context, msg *types.MsgUpdateTransactionHooks,
 ) (*types.MsgUpdateTransactionHooksResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	_ = ctx
+	setting, err := ms.k.GetSetting(ctx, msg.Account)
+	if sdkerrors.ErrKeyNotFound.Is(err) {
+		setting = &types.Setting{
+			Owner: msg.Account,
+		}
+	} else if err != nil {
+		return nil, err
+	}
+	setting.PostTransaction = msg.PostTransactionHooks
+	setting.PreTransaction = msg.PreTransactionHooks
+	if err := ms.k.SetSetting(ctx, *setting); err != nil {
+		return nil, err
+	}
 	return &types.MsgUpdateTransactionHooksResponse{}, nil
 }
 

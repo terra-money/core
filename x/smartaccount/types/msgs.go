@@ -9,6 +9,26 @@ var (
 	_ sdk.Msg = &MsgUpdateTransactionHooks{}
 )
 
+func NewMsgCreateSmartAccount(account string) *MsgCreateSmartAccount {
+	return &MsgCreateSmartAccount{
+		Account: account,
+	}
+}
+
+func NewMsgDisableSmartAccount(account string) *MsgDisableSmartAccount {
+	return &MsgDisableSmartAccount{
+		Account: account,
+	}
+}
+
+func NewMsgUpdateAuthorization(account string, authorizationMsgs []*AuthorizationMsg, fallback bool) *MsgUpdateAuthorization {
+	return &MsgUpdateAuthorization{
+		Account:           account,
+		AuthorizationMsgs: authorizationMsgs,
+		Fallback:          fallback,
+	}
+}
+
 // GetSignBytes implements the LegacyMsg interface.
 func (m MsgCreateSmartAccount) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))

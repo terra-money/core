@@ -88,28 +88,79 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 
 	// Sender here is the account that signed the transaction
 	// Could be different from the account above (confusingly named signer)
-	signatures, err := sigTx.GetSignaturesV2()
+	senderAddr, signaturesBs, signedBytes, err := sad.GetParamsForCustomAuthVerification(ctx, sigTx, account)
 	if err != nil {
 		return ctx, err
 	}
+
+	// set the setting in the context for the pre and post tx handlers
+	ctx = ctx.WithValue(types.ModuleName, setting)
+
+	// run through the custom authorization verification
+	if setting.Authorization != nil && len(setting.Authorization) > 0 {
+		success, err := sad.CustomAuthVerify(
+			ctx,
+			setting.Authorization,
+			[]string{senderAddr.String()},
+			accountStr,
+			signaturesBs,
+			signedBytes,
+			[]byte{},
+		)
+		if err != nil {
+			return ctx, err
+		}
+		if success {
+			return next(ctx, tx, simulate)
+		} else if !setting.Fallback {
+			return ctx, sdkerrors.ErrUnauthorized.Wrap("authorization failed")
+		}
+	}
+
+	panic(tx.GetMsgs()[0].String())
+
+	// run through the default handlers for signature verification
+	// if no custom authorization is set or if the custom authorization fails with fallback
+	newCtx, err := sad.defaultVerifySigDecorator(ctx, tx, simulate)
+	if err != nil {
+		return newCtx, err
+	}
+	// continue to the next handler after default signature verification
+	return next(newCtx, tx, simulate)
+}
+
+func (sad SmartAccountAuthDecorator) GetParamsForCustomAuthVerification(
+	ctx sdk.Context,
+	sigTx authsigning.SigVerifiableTx,
+	account sdk.AccAddress,
+) (
+	senderAddr sdk.AccAddress,
+	signatureBz [][]byte,
+	signedBytes [][]byte,
+	err error,
+) {
+	signatures, err := sigTx.GetSignaturesV2()
+	if err != nil {
+		return nil, nil, nil, err
+	}
 	if len(signatures) == 0 {
-		return ctx, sdkerrors.ErrNoSignatures.Wrap("no signatures found")
+		return nil, nil, nil, sdkerrors.ErrNoSignatures.Wrap("no signatures found")
 	} else if len(signatures) > 1 {
 		// TODO: remove when support multi sig auth
-		return ctx, sdkerrors.ErrUnauthorized.Wrap("multiple signatures not supported")
+		return nil, nil, nil, sdkerrors.ErrUnauthorized.Wrap("multiple signatures not supported")
 	}
 
 	signature := signatures[0]
 	signaturesBs := [][]byte{}
 
-	senderAddr, err := sdk.AccAddressFromHexUnsafe(signature.PubKey.Address().String())
+	senderAddr, err = sdk.AccAddressFromHexUnsafe(signature.PubKey.Address().String())
 	if err != nil {
-		return ctx, err
+		return nil, nil, nil, err
 	}
 
 	acc, err := authante.GetSignerAcc(ctx, sad.accountKeeper, account)
 	if err != nil {
-		return ctx, err
+		return nil, nil, nil, err
 	}
 	var accNum uint64
 	if ctx.BlockHeight() != 0 {
@@ -124,62 +175,54 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		PubKey:        signature.PubKey,
 	}
 
-	signatureBz, err := signatureDataToBz(signature.Data)
+	signatureBz, err = signatureDataToBz(signature.Data)
 	if err != nil {
-		return ctx, err
+		return nil, nil, nil, err
 	}
-	signedBytes, err := GetSignBytesArr(signature.PubKey, signerData, signature.Data, sad.signModeHandler, tx)
+	signedBytes, err = GetSignBytesArr(signature.PubKey, signerData, signature.Data, sad.signModeHandler, sigTx)
 	if err != nil {
-		return ctx, err
+		return nil, nil, nil, err
 	}
 	signaturesBs = append(signaturesBs, signatureBz...)
+	return senderAddr, signaturesBs, signedBytes, nil
+}
 
-	ctx = ctx.WithValue(types.ModuleName, setting)
-	if setting.Authorization != nil && len(setting.Authorization) > 0 {
-		success := false
-		for _, auth := range setting.Authorization {
-			authMsg := types.Authorization{
-				Senders: []string{senderAddr.String()},
-				Account: accountStr,
-				// TODO: add in future when needed
-				Signatures:  signaturesBs,
-				SignedBytes: signedBytes,
-				Data:        []byte{},
-			}
-			sudoAuthMsg := types.SudoMsg{Authorization: &authMsg}
-			sudoAuthMsgBs, err := json.Marshal(sudoAuthMsg)
-			if err != nil {
-				return ctx, err
-			}
-			contractAddr, err := sdk.AccAddressFromBech32(auth.ContractAddress)
-			if err != nil {
-				return ctx, err
-			}
-			_, err = sad.wasmKeeper.Sudo(ctx, contractAddr, sudoAuthMsgBs)
-			// so long as one of the authorization is successful, we're good
-			if err == nil {
-				success = true
-				break
-			}
-			if err != nil && setting.Fallback {
-				return next(ctx, tx, simulate)
-			} else if err != nil {
-				return ctx, err
-			}
+func (sad SmartAccountAuthDecorator) CustomAuthVerify(
+	ctx sdk.Context,
+	authMsgs []*types.AuthorizationMsg,
+	sender []string,
+	account string,
+	signatures,
+	signedBytes [][]byte,
+	data []byte,
+) (success bool, err error) {
+	success = false
+	for _, auth := range authMsgs {
+		authMsg := types.Authorization{
+			Senders: sender,
+			Account: account,
+			// TODO: add in future when needed
+			Signatures:  signatures,
+			SignedBytes: signedBytes,
+			Data:        data,
 		}
-		if success {
-			return next(ctx, tx, simulate)
-		} else if !setting.Fallback {
-			return ctx, sdkerrors.ErrUnauthorized.Wrap("authorization failed")
+		sudoAuthMsg := types.SudoMsg{Authorization: &authMsg}
+		sudoAuthMsgBs, err := json.Marshal(sudoAuthMsg)
+		if err != nil {
+			return success, err
+		}
+		contractAddr, err := sdk.AccAddressFromBech32(auth.ContractAddress)
+		if err != nil {
+			return success, err
+		}
+		_, err = sad.wasmKeeper.Sudo(ctx, contractAddr, sudoAuthMsgBs)
+		// so long as one of the authorization is successful, we're good
+		if err == nil {
+			success = true
+			break
 		}
 	}
-	// run through the default handlers for signature verification
-	newCtx, err := sad.defaultVerifySigDecorator(ctx, tx, simulate)
-	if err != nil {
-		return newCtx, err
-	}
-	// continue to the next handler after default signature verification
-	return next(newCtx, tx, simulate)
+	return success, nil
 }
 
 // signatureDataToBz converts a SignatureData into raw bytes signature.
