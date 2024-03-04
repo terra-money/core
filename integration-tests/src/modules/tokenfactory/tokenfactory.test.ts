@@ -464,17 +464,17 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                         new MsgSend(
                             tokenFactoryWalletAddr,
                             randomAccountAddr,
-                            Coins.fromString("1000000000" + factoryDenom),
+                            Coins.fromString("100" + factoryDenom),
                         ),
                     ],
                     chainID: "test-1",
-                    fee: new Fee(100_000, new Coins({ uluna: 100_000 })),
+                    fee: new Fee(2000_000, new Coins({ uluna: 100_000 })),
                 });
                 let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
                 await blockInclusion();
                 let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
                 expect(txResult.raw_log)
-                    .toStrictEqual("failed to execute message; message index: 0: {Loading CosmWasm module: sudo}: gas meter hit maximum limit");
+                    .toStrictEqual(`failed to execute message; message index: 0: failed to call before send hook for denom ${factoryDenom}: Custom Error val: \"Invalid Send Amount\": execute wasm contract failed`);
             });
         });
     })
