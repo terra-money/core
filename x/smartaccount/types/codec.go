@@ -22,6 +22,14 @@ var (
 	AminoCdc = codec.NewAminoCodec(amino)
 )
 
+const (
+	// Amino names
+	createSmartAccount     = "terra/MsgCreateSmartAccount"
+	disableSmartAccount    = "terra/MsgDisableSmartAccount"
+	updateAuthorization    = "terra/MsgUpdateAuthorization"
+	updateTransactionHooks = "terra/MsgUpdateTransactionHooks"
+)
+
 // NOTE: This is required for the GetSignBytes function
 func init() {
 	RegisterLegacyAminoCodec(amino)
@@ -51,4 +59,8 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 // concrete types on the provided LegacyAmino codec. These types are used for
 // Amino JSON serialization and EIP-712 compatibility.
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	cdc.RegisterConcrete(&MsgCreateSmartAccount{}, createSmartAccount, nil)
+	cdc.RegisterConcrete(&MsgUpdateAuthorization{}, updateAuthorization, nil)
+	cdc.RegisterConcrete(&MsgUpdateTransactionHooks{}, updateTransactionHooks, nil)
+	cdc.RegisterConcrete(&MsgDisableSmartAccount{}, disableSmartAccount, nil)
 }
