@@ -2,6 +2,7 @@ package main
 
 import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 )
 
