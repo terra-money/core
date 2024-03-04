@@ -6,7 +6,7 @@ import (
 	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
-func (s *IntegrationTestSuite) TestMsgCreateSmartAccount() {
+func (s *IntegrationTestSuite) TestMsgCreateAndDisableSmartAccount() {
 	s.Setup()
 	sender := s.TestAccs[0]
 
@@ -27,6 +27,15 @@ func (s *IntegrationTestSuite) TestMsgCreateSmartAccount() {
 	// Ensure that the smart account cannot be created again
 	_, err = ms.CreateSmartAccount(s.Ctx, msg)
 	s.Require().Error(err)
+
+	// Disable the smart account
+	msgDisable := types.NewMsgDisableSmartAccount(sender.String())
+	_, err = ms.DisableSmartAccount(s.Ctx, msgDisable)
+	s.Require().NoError(err)
+
+	// Ensure that the smart account was disabled
+	_, err = s.App.Keepers.SmartAccountKeeper.GetSetting(s.Ctx, sender.String())
+	s.Require().Error(err)
 }
 
 func (s *IntegrationTestSuite) TestMsgUpdateAuthorization() {
@@ -44,7 +53,7 @@ func (s *IntegrationTestSuite) TestMsgUpdateAuthorization() {
 		ContractAddress: "abc",
 		InitMsg:         "abc",
 	}
-	msgUpdate := types.NewMsgUpdateAuthorization(sender.String(), []types.AuthorizationMsg{&authorization}, true)
+	msgUpdate := types.NewMsgUpdateAuthorization(sender.String(), []*types.AuthorizationMsg{&authorization}, true)
 	_, err = ms.UpdateAuthorization(s.Ctx, msgUpdate)
 	s.Require().NoError(err)
 
@@ -52,5 +61,20 @@ func (s *IntegrationTestSuite) TestMsgUpdateAuthorization() {
 	setting, err := s.App.Keepers.SmartAccountKeeper.GetSetting(s.Ctx, sender.String())
 	s.Require().NoError(err)
 	s.Require().Equal(sender.String(), setting.Owner)
-	s.Require().Equal([]*types.AuthorizationMsg{&authorization}, *setting.Authorization[0])
+	s.Require().Equal([]*types.AuthorizationMsg{&authorization}, setting.Authorization)
+
+	// update authorization again
+	authorization2 := types.AuthorizationMsg{
+		ContractAddress: "bbc",
+		InitMsg:         "bbc",
+	}
+	msgUpdate2 := types.NewMsgUpdateAuthorization(sender.String(), []*types.AuthorizationMsg{&authorization2}, true)
+	_, err = ms.UpdateAuthorization(s.Ctx, msgUpdate2)
+	s.Require().NoError(err)
+
+	// Ensure that the smart account was updated again
+	setting, err = s.App.Keepers.SmartAccountKeeper.GetSetting(s.Ctx, sender.String())
+	s.Require().NoError(err)
+	s.Require().Equal(sender.String(), setting.Owner)
+	s.Require().Equal([]*types.AuthorizationMsg{&authorization2}, setting.Authorization)
 }
