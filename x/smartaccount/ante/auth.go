@@ -117,8 +117,6 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		}
 	}
 
-	panic(tx.GetMsgs()[0].String())
-
 	// run through the default handlers for signature verification
 	// if no custom authorization is set or if the custom authorization fails with fallback
 	newCtx, err := sad.defaultVerifySigDecorator(ctx, tx, simulate)

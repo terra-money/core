@@ -21,7 +21,7 @@ message Setting {
     repeated string post_transaction = 4 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
     // Fallback to default SigVerify if custom authorization fails
-    bool Fallback = 5;
+    bool fallback = 5;
 }
 
 message AuthorizationMsg {
