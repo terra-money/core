@@ -26,7 +26,7 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
 	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
@@ -215,7 +215,7 @@ func (s *AppGenesisTestSuite) TestMigration() {
 			"ibchooks":               ibchooks.AppModule{}.ConsensusVersion(),
 			"interchainaccounts":     ica.AppModule{}.ConsensusVersion(),
 			"mint":                   mint.AppModule{}.ConsensusVersion(),
-			"packetfowardmiddleware": router.AppModule{}.ConsensusVersion(),
+			"packetfowardmiddleware": packetforward.AppModule{}.ConsensusVersion(),
 			"params":                 params.AppModule{}.ConsensusVersion(),
 			"slashing":               slashing.AppModule{}.ConsensusVersion(),
 			"staking":                staking.AppModule{}.ConsensusVersion(),
@@ -248,7 +248,7 @@ func (s *AppGenesisTestSuite) TestMigration() {
 		"interchainquery":        1,
 		"mint":                   2,
 		"mock":                   0,
-		"packetfowardmiddleware": 1,
+		"packetfowardmiddleware": 2,
 		"params":                 1,
 		"slashing":               3,
 		"staking":                4,
