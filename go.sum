@@ -1129,6 +1129,8 @@ github.com/tendermint/go-amino v0.16.0 h1:GyhmgQKvqF82e2oZeuMSp9JTN0N09emoSZlb2l
 github.com/tendermint/go-amino v0.16.0/go.mod h1:TQU0M1i/ImAo+tYpZi73AU3V/dKeCoMC9Sphe2ZwGME=
 github.com/terra-money/alliance v0.3.4 h1:rBEKw8o9mN8AL6yCS2+Pb8DIi82an2HUnfdUtq5CPNo=
 github.com/terra-money/alliance v0.3.4/go.mod h1:HDiUexeXRUkLkLRw5jLQcHuVt1Sx43HfyVl0kfwW3JM=
+github.com/terra-money/alliance v0.3.5-0.20240306071813-1ec7992d16a8 h1:OYQQSwoqdRpiRgTyCf7cEy15FUk82r+tSv34M9fcQks=
+github.com/terra-money/alliance v0.3.5-0.20240306071813-1ec7992d16a8/go.mod h1:HDiUexeXRUkLkLRw5jLQcHuVt1Sx43HfyVl0kfwW3JM=
 github.com/terra-money/cosmos-sdk v0.47.6-terra.0 h1:BrK2cq8W5HsMT5siVdJCFDx1vcEMm+BGN5713FEm84g=
 github.com/terra-money/cosmos-sdk v0.47.6-terra.0/go.mod h1:xTc1chW8HyUWCfrgGbjS5jNu9RzlPVrBNfbL9RmZUio=
 github.com/terra-money/ibc-go/v7 v7.3.1-terra.0 h1:CF+iicqyI4BJsW2zjUrUrTxRRrPWFZC30VqvlRyVl28=
