@@ -90,6 +90,7 @@ func (app *TerraApp) RegisterUpgradeHandlers() {
 			app.GetModuleManager(),
 			app.GetConfigurator(),
 			app.GetAppCodec(),
+			app.Keepers.ICQKeeper,
 		),
 	)
 	app.Keepers.UpgradeKeeper.SetUpgradeHandler(
@@ -130,7 +131,7 @@ func (app *TerraApp) RegisterUpgradeStores() {
 		storeUpgrades := storetypes.StoreUpgrades{Added: []string{icqtypes.StoreKey}}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	} else if upgradeInfo.Name == terraappconfig.Upgrade2_9 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		storeUpgrades := storetypes.StoreUpgrades{Deleted: []string{"builder"}}
+		storeUpgrades := storetypes.StoreUpgrades{Deleted: []string{"builder"}, Added: []string{icqtypes.StoreKey}}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	} else if upgradeInfo.Name == terraappconfig.Upgrade2_10 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{}
