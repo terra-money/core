@@ -138,13 +138,13 @@
       }
     },
     {
-      "url": "./tmp-swagger-gen/router/v1/query.swagger.json",
+      "url": "./tmp-swagger-gen/packetforward/v1/query.swagger.json",
       "tags" : {
         "add" : ["5.IBC"]
       },
       "operationIds": {
         "rename": {
-          "Params": "IBCRouterParams"
+          "Params": "IBCPacketforwardParams"
         }
       }
     },
