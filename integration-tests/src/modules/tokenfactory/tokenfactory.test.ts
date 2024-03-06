@@ -154,7 +154,7 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                 msgs: [
                     new MsgMint(
                         tokenFactoryWalletAddr,
-                        Coin.fromString("1000000000" + factoryDenom)
+                        Coin.fromString("10000000000" + factoryDenom)
                     ),
                 ],
                 chainID: "test-1",
@@ -182,7 +182,7 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                     "value": "terra19ejy8n9qsectrf4semdp9cpknflld0j6my8d0p"
                 }, {
                     "key": "amount",
-                    "value": "1000000000" + factoryDenom
+                    "value": "10000000000" + factoryDenom
                 }]
             },
             {
@@ -192,7 +192,7 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                     "value": "terra19ejy8n9qsectrf4semdp9cpknflld0j6my8d0p"
                 }, {
                     "key": "amount",
-                    "value": "1000000000" + factoryDenom
+                    "value": "10000000000" + factoryDenom
                 }]
             },
             {
@@ -202,7 +202,7 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                     "value": "terra19ejy8n9qsectrf4semdp9cpknflld0j6my8d0p"
                 }, {
                     "key": "amount",
-                    "value": "1000000000" + factoryDenom
+                    "value": "10000000000" + factoryDenom
                 }]
             },
             {
@@ -212,7 +212,7 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                     "value": tokenFactoryWalletAddr
                 }, {
                     "key": "amount",
-                    "value": "1000000000" + factoryDenom
+                    "value": "10000000000" + factoryDenom
                 }]
             },
             {
@@ -225,7 +225,7 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                     "value": "terra19ejy8n9qsectrf4semdp9cpknflld0j6my8d0p"
                 }, {
                     "key": "amount",
-                    "value": "1000000000" + factoryDenom
+                    "value": "10000000000" + factoryDenom
                 }]
             },
             {
@@ -242,7 +242,7 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                     "value": tokenFactoryWalletAddr
                 }, {
                     "key": "amount",
-                    "value": "1000000000" + factoryDenom
+                    "value": "10000000000" + factoryDenom
                 }]
             }]);
         });
@@ -468,7 +468,7 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
                         ),
                     ],
                     chainID: "test-1",
-                    fee: new Fee(100_000, new Coins({ uluna: 100_000 })),
+                    fee: new Fee(80_000, new Coins({ uluna: 10_000 })),
                 });
                 let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
                 await blockInclusion();

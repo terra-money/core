@@ -39,6 +39,8 @@ import (
 
 	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
 
+	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
+
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
@@ -61,6 +63,7 @@ func (keepers *TerraAppKeepers) GenerateKeys() {
 		consensusparamtypes.StoreKey, tokenfactorytypes.StoreKey, wasmtypes.StoreKey,
 		ibcfeetypes.StoreKey, ibchookstypes.StoreKey, crisistypes.StoreKey,
 		alliancetypes.StoreKey, feesharetypes.StoreKey, icqtypes.StoreKey,
+		feemarkettypes.StoreKey,
 	)
 
 	keepers.tkeys = sdk.NewTransientStoreKeys(paramstypes.TStoreKey)

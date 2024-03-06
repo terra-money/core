@@ -1,6 +1,6 @@
-import { getLCDClient, blockInclusion, votingPeriod, getMnemonics } from "../../helpers";
-import { Coins, MsgVote, Fee, MsgSubmitProposal, Proposal, Int } from "@terra-money/feather.js";
+import { Coins, Int, MsgSubmitProposal, MsgVote, Proposal } from "@terra-money/feather.js";
 import { ProposalStatus, VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
+import { blockInclusion, getLCDClient, getMnemonics, votingPeriod } from "../../helpers";
 
 describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/release/v0.47.x/x/gov) ", () => {
     // Prepare environment clients, accounts and wallets
@@ -174,7 +174,7 @@ describe("Governance Module (https://github.com/terra-money/cosmos-sdk/tree/rele
                     val2WalletAddress,
                     VoteOption.VOTE_OPTION_YES
                 )],
-                fee: new Fee(100_000, "0uluna"),
+                // fee: new Fee(100_000, "0uluna"),
                 chainID: "test-2",
             });
             result = await LCD.chain2.tx.broadcastSync(tx, "test-2");

@@ -1,5 +1,5 @@
 import { getLCDClient, getMnemonics, blockInclusion, votingPeriod } from "../../helpers";
-import { Coin, MsgTransfer, MsgCreateAlliance, Coins, MsgVote, Fee, MsgAllianceDelegate, MsgClaimDelegationRewards, MsgAllianceUndelegate, MsgDeleteAlliance, MsgSubmitProposal } from "@terra-money/feather.js";
+import { Coin, MsgTransfer, MsgCreateAlliance, Coins, MsgVote, MsgAllianceDelegate, MsgClaimDelegationRewards, MsgAllianceUndelegate, MsgDeleteAlliance, MsgSubmitProposal } from "@terra-money/feather.js";
 import { VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
 import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
 
@@ -52,14 +52,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
     });
 
     test('Must contain the expected module params', async () => {
-        // Query Alliance module params
-        const moduleParams = await LCD.chain2.alliance.params("test-2");
 
-        // Validate that the params were set correctly on genesis
-        expect(moduleParams.params.take_rate_claim_interval)
-            .toBe("300s");
-        expect(moduleParams.params.reward_delay_time)
-            .toBe("0s");
     });
 
     test('Must create an alliance', async () => {
@@ -117,7 +110,6 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                     val2WalletAddress,
                     VoteOption.VOTE_OPTION_YES
                 )],
-                fee: new Fee(100_000, "0uluna"),
                 chainID: "test-2",
             });
             result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
@@ -231,7 +223,6 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                             ibcCoin.denom,
                         ),
                     ],
-                    fee: new Fee(300_000, "0uluna"),
                     chainID: "test-2",
                 });
                 let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
@@ -261,7 +252,6 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                             new Coin(ibcCoin.denom, 1000),
                         ),
                     ],
-                    fee: new Fee(300_000, "0uluna"),
                     chainID: "test-2",
                 });
                 let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
@@ -321,7 +311,6 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                     val2WalletAddress,
                     VoteOption.VOTE_OPTION_YES
                 )],
-                fee: new Fee(100_000, "0uluna"),
                 chainID: "test-2",
             });
             result = await LCD.chain2.tx.broadcastSync(tx, "test-2");

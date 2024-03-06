@@ -3,6 +3,9 @@ package app
 import (
 	"encoding/json"
 
+	"cosmossdk.io/math"
+	feemarkettypes "github.com/skip-mev/feemarket/x/feemarket/types"
+
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
 	icagenesistypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/genesis/types"
@@ -78,6 +81,34 @@ func (genState GenesisState) SetDefaultTerraConfig(cdc codec.JSONCodec) GenesisS
 		AllowMessages: icaAllowedMsgs(),
 	}
 	genState[icatypes.ModuleName] = cdc.MustMarshalJSON(&icaGenState)
+
+	var feemarketGenState feemarkettypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[feemarkettypes.ModuleName], &feemarketGenState)
+	feemarketGenState.State = feemarkettypes.State{
+		LearningRate: math.LegacyMustNewDecFromStr("0.125"),
+		Window:       []uint64{0},
+		Index:        0,
+	}
+	feemarketGenState.Params = feemarkettypes.NewParams(
+		feemarkettypes.DefaultWindowSize,
+		feemarkettypes.DefaultAlpha,
+		feemarkettypes.DefaultBeta,
+		feemarkettypes.DefaultTheta,
+		feemarkettypes.DefaultTargetBlockUtilization,
+		feemarkettypes.DefaultMaxBlockUtilization,
+		feemarkettypes.DefaultMinLearningRate,
+		feemarkettypes.DefaultMaxLearningRate,
+		true,
+		config.BondDenom,
+	)
+	feemarketGenState.FeeDenomParams = []feemarkettypes.FeeDenomParam{
+		feemarkettypes.NewFeeDenomParam(
+			config.BondDenom,
+			math.LegacyMustNewDecFromStr("0.0015"),
+			math.LegacyMustNewDecFromStr("0.0015"),
+		),
+	}
+	genState[feemarkettypes.ModuleName] = cdc.MustMarshalJSON(&feemarketGenState)
 
 	return genState
 }

@@ -6,7 +6,6 @@ module.exports = async () => {
         const pathToDataDir = path.join(__dirname, "/test-data");
         execSync("pkill relayer")
         execSync("pkill terrad")
-        execSync("pkill terrad")
         execSync(`rm -r ${pathToDataDir}`)
     }
     catch (e) {

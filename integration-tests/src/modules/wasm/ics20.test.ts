@@ -108,13 +108,11 @@ describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) "
         })
 
         test("must create the channel for the ICS20 contract", async () => {
-            // Stop the relayer to don't create conflicts
+            // Stop the relayer to don't create conflicts if it's running
             try {
                 execSync("pkill relayer")
             }
-            catch (e) {
-                console.log(e)
-            }
+            catch (e) { }
 
             // Create the path
             const pathToRelayDir = path.join(__dirname, "/../../test-data/relayer");
@@ -139,6 +137,8 @@ describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) "
 
         describe("after channel has been created", () => {
             test("Must send funds from test-1 to test-2", async () => {
+                try {
+
                 // SubMessage to Transfer the funds thoguht the IBC channel
                 // which must be parsed to base64 and embeded into the "send"
                 // message. (we're not using JSON.stringify(object) because it causes and error)
@@ -243,6 +243,11 @@ describe("Wasm Module (https://github.com/CosmWasm/wasmd/releases/tag/v0.45.0) "
                 let ibcCoin = queryRes[0].find(coin => coin.denom.startsWith("ibc/"));
                 expect(ibcCoin).toBeDefined();
                 expect(ibcCoin?.amount?.toString()).toStrictEqual("100000");
+                }
+                catch(e){
+                    console.log(e);
+                    expect(e).toBeUndefined();
+                }
             })
         })
     })
