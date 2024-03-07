@@ -10,8 +10,8 @@ func NewSetting(ownerAddr string) Setting {
 	}
 }
 
-func NewSettings() []*Setting {
-	return make([]*Setting, 0)
+func NewSettings(setting ...*Setting) []*Setting {
+	return append([]*Setting(nil), setting...)
 }
 
 func DefaultSettings() []*Setting {

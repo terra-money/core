@@ -60,7 +60,7 @@ export function getMnemonics() {
     let mnemonic5 = new MnemonicKey({
         mnemonic: "script key fold coyote cage squirrel prevent pole auction slide vintage shoot mirror erosion equip goose capable critic test space sketch monkey eight candy"
     })
-    let mnemonic6 = new MnemonicKey({
+    let smartaccountMnemonic = new MnemonicKey({
         mnemonic: "work clap clarify edit explain exact depth ramp law hard feel beauty stumble occur prevent crush distance purpose scrap current describe skirt panther skirt"
     })
 
@@ -83,6 +83,6 @@ export function getMnemonics() {
         mnemonic3,
         mnemonic4,
         mnemonic5,
-        mnemonic6,
+        smartaccountMnemonic,
     }
 }
