@@ -1,8 +1,11 @@
 package keeper_test
 
 import (
-	smartaccountkeeper "github.com/terra-money/core/v2/x/smartaccount/keeper"
+	"encoding/base64"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+	"github.com/terra-money/core/v2/x/smartaccount/test_helpers"
 	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
@@ -15,9 +18,8 @@ func (s *IntegrationTestSuite) TestMsgCreateAndDisableSmartAccount() {
 	s.Require().Error(err)
 
 	// Create a smart account
-	ms := smartaccountkeeper.NewMsgServer(s.App.Keepers.SmartAccountKeeper)
 	msg := types.NewMsgCreateSmartAccount(sender.String())
-	_, err = ms.CreateSmartAccount(s.Ctx, msg)
+	_, err = s.msgServer.CreateSmartAccount(s.Ctx, msg)
 	s.Require().NoError(err)
 
 	// Ensure that the smart account was created
@@ -25,12 +27,12 @@ func (s *IntegrationTestSuite) TestMsgCreateAndDisableSmartAccount() {
 	s.Require().NoError(err)
 
 	// Ensure that the smart account cannot be created again
-	_, err = ms.CreateSmartAccount(s.Ctx, msg)
+	_, err = s.msgServer.CreateSmartAccount(s.Ctx, msg)
 	s.Require().Error(err)
 
 	// Disable the smart account
 	msgDisable := types.NewMsgDisableSmartAccount(sender.String())
-	_, err = ms.DisableSmartAccount(s.Ctx, msgDisable)
+	_, err = s.msgServer.DisableSmartAccount(s.Ctx, msgDisable)
 	s.Require().NoError(err)
 
 	// Ensure that the smart account was disabled
@@ -40,43 +42,67 @@ func (s *IntegrationTestSuite) TestMsgCreateAndDisableSmartAccount() {
 
 func (s *IntegrationTestSuite) TestMsgUpdateAuthorization() {
 	s.Setup()
-	sender := s.TestAccs[0]
 
-	// Create a smart account
-	ms := smartaccountkeeper.NewMsgServer(s.App.Keepers.SmartAccountKeeper)
-	msg := types.NewMsgCreateSmartAccount(sender.String())
-	_, err := ms.CreateSmartAccount(s.Ctx, msg)
+	// create smart account 1
+	acc := s.TestAccs[1]
+	msg := types.NewMsgCreateSmartAccount(acc.String())
+	_, err := s.msgServer.CreateSmartAccount(s.Ctx, msg)
 	s.Require().NoError(err)
 
-	// update authorization
-	authorization := types.AuthorizationMsg{
-		ContractAddress: "abc",
-		InitMsg:         &types.Initialization{},
+	// testAcc1 using private key of testAcc0
+	pubKey := s.TestAccPrivs[0].PubKey()
+	// endcoding this since this should be encoded in base64 when submitted by the user
+	pkEncoded := []byte(base64.StdEncoding.EncodeToString(pubKey.Bytes()))
+
+	codeId, _, err := s.wasmKeeper.Create(s.Ctx, acc, test_helpers.SmartAuthContractWasm, nil)
+	require.NoError(s.T(), err)
+	contractAddr, _, err := s.wasmKeeper.Instantiate(s.Ctx, codeId, acc, acc, []byte("{}"), "auth", sdk.NewCoins())
+	require.NoError(s.T(), err)
+
+	// create updateAuth msg
+	initMsg := types.Initialization{
+		Senders: []string{},
+		Account: acc.String(),
+		Msg:     pkEncoded,
 	}
-	msgUpdate := types.NewMsgUpdateAuthorization(sender.String(), []*types.AuthorizationMsg{&authorization}, true)
-	_, err = ms.UpdateAuthorization(s.Ctx, msgUpdate)
-	s.Require().NoError(err)
+	authMsg := &types.AuthorizationMsg{
+		ContractAddress: contractAddr.String(),
+		InitMsg:         &initMsg,
+	}
+	_, err = s.msgServer.UpdateAuthorization(s.Ctx, types.NewMsgUpdateAuthorization(
+		acc.String(),
+		[]*types.AuthorizationMsg{authMsg},
+		false,
+	))
+	require.NoError(s.T(), err)
 
 	// Ensure that the smart account was updated
-	setting, err := s.App.Keepers.SmartAccountKeeper.GetSetting(s.Ctx, sender.String())
+	setting, err := s.App.Keepers.SmartAccountKeeper.GetSetting(s.Ctx, acc.String())
 	s.Require().NoError(err)
-	s.Require().Equal(sender.String(), setting.Owner)
-	s.Require().Equal([]*types.AuthorizationMsg{&authorization}, setting.Authorization)
+	s.Require().Equal(acc.String(), setting.Owner)
+	s.CheckAuthorizationEqual([]*types.AuthorizationMsg{authMsg}, setting.Authorization)
 
-	// update authorization again
-	authorization2 := types.AuthorizationMsg{
-		ContractAddress: "bbc",
-		InitMsg:         &types.Initialization{},
+	// deploy another auth contract
+	contractAddr2, _, err := s.wasmKeeper.Instantiate(s.Ctx, codeId, acc, acc, []byte("{}"), "auth", sdk.NewCoins())
+	require.NoError(s.T(), err)
+
+	// create updateAuth msg
+	authMsg2 := &types.AuthorizationMsg{
+		ContractAddress: contractAddr2.String(),
+		InitMsg:         &initMsg,
 	}
-	msgUpdate2 := types.NewMsgUpdateAuthorization(sender.String(), []*types.AuthorizationMsg{&authorization2}, true)
-	_, err = ms.UpdateAuthorization(s.Ctx, msgUpdate2)
-	s.Require().NoError(err)
+	_, err = s.msgServer.UpdateAuthorization(s.Ctx, types.NewMsgUpdateAuthorization(
+		acc.String(),
+		[]*types.AuthorizationMsg{authMsg2},
+		false,
+	))
+	require.NoError(s.T(), err)
 
 	// Ensure that the smart account was updated again
-	setting, err = s.App.Keepers.SmartAccountKeeper.GetSetting(s.Ctx, sender.String())
+	setting, err = s.App.Keepers.SmartAccountKeeper.GetSetting(s.Ctx, acc.String())
 	s.Require().NoError(err)
-	s.Require().Equal(sender.String(), setting.Owner)
-	s.Require().Equal([]*types.AuthorizationMsg{&authorization2}, setting.Authorization)
+	s.Require().Equal(acc.String(), setting.Owner)
+	s.CheckAuthorizationEqual([]*types.AuthorizationMsg{authMsg2}, setting.Authorization)
 }
 
 func (s *IntegrationTestSuite) TestMsgUpdateTransactionHooks() {
@@ -84,9 +110,8 @@ func (s *IntegrationTestSuite) TestMsgUpdateTransactionHooks() {
 	sender := s.TestAccs[0]
 
 	// Create a smart account
-	ms := smartaccountkeeper.NewMsgServer(s.App.Keepers.SmartAccountKeeper)
 	msg := types.NewMsgCreateSmartAccount(sender.String())
-	_, err := ms.CreateSmartAccount(s.Ctx, msg)
+	_, err := s.msgServer.CreateSmartAccount(s.Ctx, msg)
 	s.Require().NoError(err)
 
 	// update transaction hooks
@@ -97,7 +122,7 @@ func (s *IntegrationTestSuite) TestMsgUpdateTransactionHooks() {
 		pretx,
 		posttx,
 	)
-	_, err = ms.UpdateTransactionHooks(s.Ctx, msgUpdate)
+	_, err = s.msgServer.UpdateTransactionHooks(s.Ctx, msgUpdate)
 	s.Require().NoError(err)
 
 	// Ensure that the smart account was updated
@@ -115,7 +140,7 @@ func (s *IntegrationTestSuite) TestMsgUpdateTransactionHooks() {
 		pretx,
 		posttx,
 	)
-	_, err = ms.UpdateTransactionHooks(s.Ctx, msgUpdate)
+	_, err = s.msgServer.UpdateTransactionHooks(s.Ctx, msgUpdate)
 	s.Require().NoError(err)
 
 	// Ensure that the smart account was updated again
@@ -124,4 +149,30 @@ func (s *IntegrationTestSuite) TestMsgUpdateTransactionHooks() {
 	s.Require().Equal(sender.String(), setting.Owner)
 	s.Require().Equal(pretx, setting.PreTransaction)
 	s.Require().Equal(posttx, setting.PostTransaction)
+}
+
+func (s *IntegrationTestSuite) CheckSettingEqual(a types.Setting, b types.Setting) {
+	s.Require().Equal(a.Owner, b.Owner)
+	s.Require().Equal(a.Fallback, b.Fallback)
+	s.CheckAuthorizationEqual(a.Authorization, b.Authorization)
+	s.Require().Equal(a.PreTransaction, b.PreTransaction)
+	s.Require().Equal(a.PostTransaction, b.PostTransaction)
+}
+
+func (s *IntegrationTestSuite) CheckAuthorizationEqual(a []*types.AuthorizationMsg, b []*types.AuthorizationMsg) {
+	s.Require().Equal(len(a), len(b))
+	for i := range a {
+		s.Require().Equal(a[i].ContractAddress, b[i].ContractAddress)
+		s.Require().Equal(a[i].InitMsg.Msg, b[i].InitMsg.Msg)
+		s.Require().Equal(a[i].InitMsg.Account, b[i].InitMsg.Account)
+		if a[i].InitMsg.Senders == nil && b[i].InitMsg.Senders == nil {
+			return
+		} else if a[i].InitMsg.Senders == nil {
+			s.Require().Len(b[i].InitMsg.Senders, 0)
+		} else if b[i].InitMsg.Senders == nil {
+			s.Require().Len(a[i].InitMsg.Senders, 0)
+		} else {
+			s.Require().Equal(a[i].InitMsg.Senders, b[i].InitMsg.Senders)
+		}
+	}
 }

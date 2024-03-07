@@ -10,16 +10,18 @@ import (
 	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
-type MsgServer struct {
+var _ types.MsgServer = msgServer{}
+
+type msgServer struct {
 	k Keeper
 }
 
 // NewMsgServer returns the MsgServer implementation.
 func NewMsgServer(k Keeper) types.MsgServer {
-	return &MsgServer{k}
+	return &msgServer{k}
 }
 
-func (ms MsgServer) CreateSmartAccount(
+func (ms msgServer) CreateSmartAccount(
 	goCtx context.Context, msg *types.MsgCreateSmartAccount,
 ) (*types.MsgCreateSmartAccountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -38,7 +40,7 @@ func (ms MsgServer) CreateSmartAccount(
 	return &types.MsgCreateSmartAccountResponse{}, nil
 }
 
-func (ms MsgServer) UpdateAuthorization(
+func (ms msgServer) UpdateAuthorization(
 	goCtx context.Context, msg *types.MsgUpdateAuthorization,
 ) (*types.MsgUpdateAuthorizationResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -52,7 +54,6 @@ func (ms MsgServer) UpdateAuthorization(
 		return nil, err
 	}
 	setting.Authorization = msg.AuthorizationMsgs
-	// TODO: check if this is right
 	for _, auth := range msg.AuthorizationMsgs {
 		sudoInitMsg := types.SudoMsg{Initialization: auth.InitMsg}
 		sudoInitMsgBs, err := json.Marshal(sudoInitMsg)
@@ -60,8 +61,13 @@ func (ms MsgServer) UpdateAuthorization(
 			return nil, err
 		}
 
-		contractAddress := sdk.AccAddress(auth.ContractAddress)
-		ms.k.wasmKeeper.Sudo(ctx, contractAddress, sudoInitMsgBs)
+		contractAddress, err := sdk.AccAddressFromBech32(auth.ContractAddress)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := ms.k.wasmKeeper.Sudo(ctx, contractAddress, sudoInitMsgBs); err != nil {
+			return nil, err
+		}
 	}
 	setting.Fallback = msg.Fallback
 	if err := ms.k.SetSetting(ctx, *setting); err != nil {
@@ -70,7 +76,7 @@ func (ms MsgServer) UpdateAuthorization(
 	return &types.MsgUpdateAuthorizationResponse{}, nil
 }
 
-func (ms MsgServer) UpdateTransactionHooks(
+func (ms msgServer) UpdateTransactionHooks(
 	goCtx context.Context, msg *types.MsgUpdateTransactionHooks,
 ) (*types.MsgUpdateTransactionHooksResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -91,7 +97,7 @@ func (ms MsgServer) UpdateTransactionHooks(
 }
 
 // DisableSmartAccount converts smart acc back to a basic acc
-func (ms MsgServer) DisableSmartAccount(
+func (ms msgServer) DisableSmartAccount(
 	goCtx context.Context, msg *types.MsgDisableSmartAccount,
 ) (*types.MsgDisableSmartAccountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)

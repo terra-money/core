@@ -5,31 +5,23 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/terra-money/core/v2/app/test_helpers"
-	"github.com/terra-money/core/v2/x/feeshare/types"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/terra-money/core/v2/x/smartaccount/keeper"
+	"github.com/terra-money/core/v2/x/smartaccount/test_helpers"
+	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
-// BankKeeper defines the expected interface needed to retrieve account balances.
-type BankKeeper interface {
-	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
-	SendCoins(ctx sdk.Context, fromAddr, toAddr sdk.AccAddress, amt sdk.Coins) error
-	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
-	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
-	SendCoinsFromModuleToModule(ctx sdk.Context, senderModule, recipientModule string, amt sdk.Coins) error
-}
-
 type IntegrationTestSuite struct {
-	test_helpers.AppTestSuite
-
-	queryClient types.QueryClient
+	test_helpers.SmartAccountTestSuite
+	msgServer  types.MsgServer
+	wasmKeeper *wasmkeeper.PermissionedKeeper
 }
 
-func (s *IntegrationTestSuite) SetupTest() {
-	s.Setup()
-
-	s.queryClient = types.NewQueryClient(s.QueryHelper)
+func (s *IntegrationTestSuite) Setup() {
+	s.SmartAccountTestSuite.SetupTests()
+	s.msgServer = keeper.NewMsgServer(s.SmartAccountKeeper)
+	s.wasmKeeper = wasmkeeper.NewDefaultPermissionKeeper(s.App.Keepers.WasmKeeper)
+	s.Ctx = s.Ctx.WithChainID("test")
 }
 
 func TestKeeperTestSuite(t *testing.T) {
