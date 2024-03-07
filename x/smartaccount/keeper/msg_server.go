@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"encoding/json"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -53,6 +54,34 @@ func (ms MsgServer) UpdateAuthorization(
 		return nil, err
 	}
 	setting.Authorization = msg.AuthorizationMsgs
+	// TODO: check if this is right
+	for _, auth := range msg.AuthorizationMsgs {
+		if auth.ContractAddress == "" {
+			return nil, sdkerrors.ErrInvalidRequest.Wrapf("contract address cannot be empty")
+		}
+		if auth.InitMsg == "" {
+			return nil, sdkerrors.ErrInvalidRequest.Wrapf("init msg cannot be empty")
+		}
+		var sudoMsg types.SudoMsg
+		err := json.Unmarshal([]byte(auth.InitMsg), &sudoMsg)
+		if err != nil {
+			return nil, sdkerrors.ErrInvalidRequest.Wrapf("failed to unmarshal auth msg: %s", err)
+		}
+
+		initMsg := types.Initialization{
+			Sender:  sudoMsg.Authorization.Senders[0],
+			Account: sudoMsg.Authorization.Senders[0],
+			Msg:     sudoMsg.Authorization.Data,
+		}
+		sudoInitMsg := types.SudoMsg{Initialization: &initMsg}
+		sudoInitMsgBs, err := json.Marshal(sudoInitMsg)
+		if err != nil {
+			return nil, err
+		}
+
+		contractAddress := sdk.AccAddress(auth.ContractAddress)
+		ms.k.wasmKeeper.Sudo(ctx, contractAddress, sudoInitMsgBs)
+	}
 	setting.Fallback = msg.Fallback
 	if err := ms.k.SetSetting(ctx, *setting); err != nil {
 		return nil, err

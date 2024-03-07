@@ -16,19 +16,22 @@ import (
 // Keeper of this module maintains collections of smartaccount for contracts
 // registered to receive transaction fees.
 type Keeper struct {
-	storeKey storetypes.StoreKey
-	cdc      codec.BinaryCodec
+	storeKey   storetypes.StoreKey
+	cdc        codec.BinaryCodec
+	wasmKeeper types.WasmKeeper
 }
 
 // NewKeeper creates new instances of the fees Keeper
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
+	wk types.WasmKeeper,
 ) Keeper {
 
 	return Keeper{
-		storeKey: storeKey,
-		cdc:      cdc,
+		storeKey:   storeKey,
+		cdc:        cdc,
+		wasmKeeper: wk,
 	}
 }
 
