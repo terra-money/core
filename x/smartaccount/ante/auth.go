@@ -156,20 +156,20 @@ func (sad SmartAccountAuthDecorator) GetParamsForCustomAuthVerification(
 		return nil, nil, nil, err
 	}
 
-	acc, err := authante.GetSignerAcc(ctx, sad.accountKeeper, account)
+	senderAcc, err := authante.GetSignerAcc(ctx, sad.accountKeeper, senderAddr)
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	var accNum uint64
+	var senderAccNum uint64
 	if ctx.BlockHeight() != 0 {
-		accNum = acc.GetAccountNumber()
+		senderAccNum = senderAcc.GetAccountNumber()
 	}
 
 	signerData := authsigning.SignerData{
 		Address:       senderAddr.String(),
 		ChainID:       ctx.ChainID(),
-		AccountNumber: accNum,
-		Sequence:      acc.GetSequence(),
+		AccountNumber: senderAccNum,
+		Sequence:      senderAcc.GetSequence(),
 		PubKey:        signature.PubKey,
 	}
 

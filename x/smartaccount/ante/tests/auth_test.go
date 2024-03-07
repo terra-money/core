@@ -99,7 +99,8 @@ func (s *AnteTestSuite) TestAuthAnteHandler() {
 func (s *AnteTestSuite) BuildDefaultMsgTx(accountIndex int, msgs ...sdk.Msg) client.TxBuilder {
 	pk := s.TestAccPrivs[accountIndex]
 	sender := s.TestAccs[accountIndex]
-	acc := s.App.Keepers.AccountKeeper.GetAccount(s.Ctx, msgs[0].GetSigners()[0])
+	senderAcc := s.App.Keepers.AccountKeeper.GetAccount(s.Ctx, sender)
+	senderSeq := senderAcc.GetSequence()
 	txBuilder := s.EncodingConfig.TxConfig.NewTxBuilder()
 	err := txBuilder.SetMsgs(
 		msgs...,
@@ -109,8 +110,8 @@ func (s *AnteTestSuite) BuildDefaultMsgTx(accountIndex int, msgs ...sdk.Msg) cli
 	signer := authsigning.SignerData{
 		Address:       sender.String(),
 		ChainID:       "test",
-		AccountNumber: acc.GetAccountNumber(),
-		Sequence:      acc.GetSequence(),
+		AccountNumber: senderAcc.GetAccountNumber(),
+		Sequence:      senderSeq,
 		PubKey:        pk.PubKey(),
 	}
 
@@ -132,7 +133,7 @@ func (s *AnteTestSuite) BuildDefaultMsgTx(accountIndex int, msgs ...sdk.Msg) cli
 		txBuilder,
 		pk,
 		s.EncodingConfig.TxConfig,
-		acc.GetSequence(),
+		senderSeq,
 	)
 	require.NoError(s.T(), err)
 
