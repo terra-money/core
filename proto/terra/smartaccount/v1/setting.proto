@@ -3,6 +3,7 @@ package terra.smartaccount.v1;
 
 import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
+import "terra/smartaccount/v1/wasm.proto";
 
 option go_package = "github.com/terra-money/core/v2/x/smartaccount/types";
 
@@ -26,5 +27,5 @@ message Setting {
 
 message AuthorizationMsg {
     string contract_address = 1;
-    string init_msg = 2;
+    Initialization init_msg = 2;
 }

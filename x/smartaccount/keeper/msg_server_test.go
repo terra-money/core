@@ -51,7 +51,7 @@ func (s *IntegrationTestSuite) TestMsgUpdateAuthorization() {
 	// update authorization
 	authorization := types.AuthorizationMsg{
 		ContractAddress: "abc",
-		InitMsg:         "abc",
+		InitMsg:         &types.Initialization{},
 	}
 	msgUpdate := types.NewMsgUpdateAuthorization(sender.String(), []*types.AuthorizationMsg{&authorization}, true)
 	_, err = ms.UpdateAuthorization(s.Ctx, msgUpdate)
@@ -66,7 +66,7 @@ func (s *IntegrationTestSuite) TestMsgUpdateAuthorization() {
 	// update authorization again
 	authorization2 := types.AuthorizationMsg{
 		ContractAddress: "bbc",
-		InitMsg:         "bbc",
+		InitMsg:         &types.Initialization{},
 	}
 	msgUpdate2 := types.NewMsgUpdateAuthorization(sender.String(), []*types.AuthorizationMsg{&authorization2}, true)
 	_, err = ms.UpdateAuthorization(s.Ctx, msgUpdate2)

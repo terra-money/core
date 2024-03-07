@@ -9,12 +9,6 @@ type SudoMsg struct {
 	PostTransaction *PostTransaction `json:"post_transaction,omitempty"`
 }
 
-type Initialization struct {
-	Sender  string `json:"sender"`
-	Account string `json:"account"`
-	Msg     []byte `json:"msg"`
-}
-
 type Authorization struct {
 	Senders     []string `json:"senders"`
 	Account     string   `json:"account"`

@@ -55,7 +55,7 @@ func (s *AnteTestSuite) TestAuthAnteHandler() {
 
 	// create initMsg
 	initMsg := smartaccounttypes.Initialization{
-		Sender:  acc.String(),
+		Senders: []string{},
 		Account: acc.String(),
 		Msg:     pkEncoded,
 	}
@@ -69,7 +69,7 @@ func (s *AnteTestSuite) TestAuthAnteHandler() {
 	// set settings
 	authMsg := &smartaccounttypes.AuthorizationMsg{
 		ContractAddress: contractAddr.String(),
-		InitMsg:         string(sudoInitMsgBs),
+		InitMsg:         sudoInitMsg.Initialization,
 	}
 	err = s.SmartAccountKeeper.SetSetting(s.Ctx, smartaccounttypes.Setting{
 		Owner:         acc.String(),

@@ -17,6 +17,7 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
 
     // TODO: convert pubkey to base64 string similar to golang pubkey.Bytes()
     const pubkeybb = pubkey as PublicKey
+    
     const ggg = pubkeybb.toAmino()
 
     const key = ggg.value as string;
@@ -42,7 +43,7 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
             let tx = await deployer.createAndSignTx({
                 msgs: [new MsgStoreCode(
                     deployerAddress,
-                    fs.readFileSync(path.join(__dirname, "/../../contracts/smart_auth_contract.wasm")).toString("base64"),
+                    fs.readFileSync(path.join(__dirname, "/../../x/smartaccount/test_helpers/test_data/smart_auth_contract.wasm")).toString("base64"),
                 )],
                 chainID: "test-1",
             });

@@ -474,6 +474,7 @@ func NewTerraAppKeepers(
 	keepers.SmartAccountKeeper = smartaccountkeeper.NewKeeper(
 		appCodec,
 		keys[smartaccounttypes.StoreKey],
+		keepers.WasmKeeper.Keeper,
 	)
 
 	keepers.Ics20WasmHooks.ContractKeeper = keepers.WasmKeeper.Keeper

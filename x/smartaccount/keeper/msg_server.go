@@ -43,8 +43,6 @@ func (ms MsgServer) UpdateAuthorization(
 ) (*types.MsgUpdateAuthorizationResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// TODO: Run through the authorization messages and check if they are valid
-	// Should be either done here or the auth ante handler
 	setting, err := ms.k.GetSetting(ctx, msg.Account)
 	if sdkerrors.ErrKeyNotFound.Is(err) {
 		setting = &types.Setting{
@@ -56,24 +54,7 @@ func (ms MsgServer) UpdateAuthorization(
 	setting.Authorization = msg.AuthorizationMsgs
 	// TODO: check if this is right
 	for _, auth := range msg.AuthorizationMsgs {
-		if auth.ContractAddress == "" {
-			return nil, sdkerrors.ErrInvalidRequest.Wrapf("contract address cannot be empty")
-		}
-		if auth.InitMsg == "" {
-			return nil, sdkerrors.ErrInvalidRequest.Wrapf("init msg cannot be empty")
-		}
-		var sudoMsg types.SudoMsg
-		err := json.Unmarshal([]byte(auth.InitMsg), &sudoMsg)
-		if err != nil {
-			return nil, sdkerrors.ErrInvalidRequest.Wrapf("failed to unmarshal auth msg: %s", err)
-		}
-
-		initMsg := types.Initialization{
-			Sender:  sudoMsg.Authorization.Senders[0],
-			Account: sudoMsg.Authorization.Senders[0],
-			Msg:     sudoMsg.Authorization.Data,
-		}
-		sudoInitMsg := types.SudoMsg{Initialization: &initMsg}
+		sudoInitMsg := types.SudoMsg{Initialization: auth.InitMsg}
 		sudoInitMsgBs, err := json.Marshal(sudoInitMsg)
 		if err != nil {
 			return nil, err
