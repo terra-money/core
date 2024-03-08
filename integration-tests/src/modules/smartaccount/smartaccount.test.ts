@@ -1,5 +1,5 @@
-import { Coins, MsgExecuteContract, MsgInstantiateContract, MsgSend, MsgStoreCode, PublicKey } from "@terra-money/feather.js";
-import { AuthorizationMsg, MsgCreateSmartAccount, MsgUpdateAuthorization } from "@terra-money/feather.js/dist/core/smartaccount";
+import { Coins, MsgInstantiateContract, MsgSend, MsgStoreCode, SimplePublicKey } from "@terra-money/feather.js";
+import { AuthorizationMsg, Initialization, MsgCreateSmartAccount, MsgUpdateAuthorization } from "@terra-money/feather.js/dist/core/smartaccount";
 import fs from "fs";
 import path from 'path';
 import { blockInclusion, getLCDClient, getMnemonics } from "../../helpers";
@@ -11,39 +11,32 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
     const wallet = LCD.chain1.wallet(accounts.mnemonic5);
     const controlledAccountAddress = accounts.mnemonic5.accAddress("terra");
     
-    // const controller = accounts.mnemonic4.publicKey;
+    const controller = LCD.chain1.wallet(accounts.mnemonic4);
     const pubkey = accounts.mnemonic4.publicKey;
     expect(pubkey).toBeDefined();
 
     // TODO: convert pubkey to base64 string similar to golang pubkey.Bytes()
-    const pubkeybb = pubkey as PublicKey
+    const pubkeybb = pubkey as SimplePublicKey;
+    const pubkeyStr = pubkeybb.toData().key;
+    // AsCe1GUUuW2cT63a35JRpGYaJ6/xIZXvrZRfRGsyxIhK
+    console.log(pubkeyStr)
+    const initMsg =  Initialization.fromData({
+        senders: [],
+        account: controlledAccountAddress,
+        msg: pubkeyStr,
+    });
     
-    const ggg = pubkeybb.toAmino()
-
-    const key = ggg.value as string;
-    console.log(key)
-    const pubkeyBs = Buffer.from(key);
-    const initMsg = {
-        initialization: {
-            sender: controlledAccountAddress,
-            account: controlledAccountAddress,
-            public_key: pubkeyBs,
-        }
-    }
-    // marshal initMsg to bytes similar to json.Marshal in golang
-    const initMsgBytes = Buffer.from(JSON.stringify(initMsg)).toString('base64');
-
     const deployer = LCD.chain1.wallet(accounts.tokenFactoryMnemonic);
     const deployerAddress = accounts.tokenFactoryMnemonic.accAddress("terra");
 
-    let authContractAddress: string;
+    let authContractAddress = "terra14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9ssrc8au";
 
-    test.only('Deploy smart account auth contract and initialize priv key for wallet', async () => {
+    test('Deploy smart account auth contract and initialize priv key for wallet', async () => {
         try {
             let tx = await deployer.createAndSignTx({
                 msgs: [new MsgStoreCode(
                     deployerAddress,
-                    fs.readFileSync(path.join(__dirname, "/../../x/smartaccount/test_helpers/test_data/smart_auth_contract.wasm")).toString("base64"),
+                    fs.readFileSync(path.join(__dirname, "/../../../../x/smartaccount/test_helpers/test_data/smart_auth_contract.wasm")).toString("base64"),
                 )],
                 chainID: "test-1",
             });
@@ -72,29 +65,13 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
             txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
             authContractAddress = txResult.logs[0].events[4].attributes[0].value;
             expect(authContractAddress).toBeDefined();
-
-            // add pubkey of controller for smart account
-            tx = await wallet.createAndSignTx({
-                msgs: [new MsgExecuteContract(
-                    controlledAccountAddress,
-                    authContractAddress,
-                    initMsg,
-                )],
-                chainID: 'test-1',
-                gas: '400000',
-            });
-            result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            await blockInclusion();
-            txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
-            console.log(txResult);
-            codeId = Number(txResult.logs[0].events[1].attributes[1].value);
-            expect(codeId).toBeDefined();
         } catch(e: any) {
+            console.log(e)
             expect(e).toBeUndefined();
         }
     });
 
-    test('Create new smart account and give control to controller', async () => {
+    test('Create new smart account', async () => {
         try {
             // create the smartaccount
             let tx = await wallet.createAndSignTx({
@@ -104,14 +81,10 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
                 chainID: 'test-1',
                 gas: '400000',
             });
-            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await LCD.chain1.tx.broadcastSync(tx, "test-1");
             await blockInclusion();
-            let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
-            let codeId = Number(txResult.logs[0].events[1].attributes[1].value);
-            expect(codeId).toBeDefined();
             // Query smartaccount setting for the smart waccount
-            const setting = await LCD.chain1.smartaccount.setting(controlledAccountAddress);
-
+            let setting = await LCD.chain1.smartaccount.setting(controlledAccountAddress);
             expect(setting.toData())
                 .toEqual({
                     owner: controlledAccountAddress,
@@ -120,22 +93,41 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
                     pre_transaction: [],
                     fallback: true,
                 });
-            
+        } catch (e:any) {
+            console.log(e);
+            expect(e).toBeUndefined();
+        }
+    });
+
+    test.only('Give smart account control to controller', async () => {
+        try {
             // give control to controller
-            tx = await wallet.createAndSignTx({
+            const authMsg = new AuthorizationMsg(authContractAddress, initMsg);
+            console.log(authMsg.toData())
+            let tx = await wallet.createAndSignTx({
                 msgs: [new MsgUpdateAuthorization(
                     controlledAccountAddress,
                     false,
-                    [new AuthorizationMsg(authContractAddress, initMsgBytes)],
+                    [authMsg],
                 )],
                 chainID: 'test-1',
                 gas: '400000',
             });
-            result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            console.log("aaa")
+            console.log(result)
             await blockInclusion();
-            txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
-            codeId = Number(txResult.logs[0].events[1].attributes[1].value);
-            expect(codeId).toBeDefined();
+
+            // check if update authorization was successful
+            let setting = await LCD.chain1.smartaccount.setting(controlledAccountAddress);
+            expect(setting.toData())
+                .toEqual({
+                    owner: controlledAccountAddress,
+                    authorization: [authMsg.toData()],
+                    post_transaction: [],
+                    pre_transaction: [],
+                    fallback: false,
+                });
 
             // signing with the controlledAccountAddress should now fail 
             tx = await wallet.createAndSignTx({
@@ -147,15 +139,32 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
                     ),
                 ],
                 chainID: "test-1",
+                gas: '400000',
             });
             result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            expect(result.raw_log).toEqual("authorization failed: unauthorized");
+
+            // signing with the controller should now succeed
+            tx = await controller.createAndSignTx({
+                msgs: [
+                    new MsgSend(
+                        controlledAccountAddress,
+                        deployerAddress,
+                        Coins.fromString("1uluna"),
+                    ),
+                ],
+                chainID: "test-1",
+                gas: '400000',
+            });
+            console.log(controller.key.publicKey)
+            const deployerBalanceBefore = await LCD.chain1.bank.balance(deployerAddress);
+            result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            console.log(result)
             await blockInclusion();
-            txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
-            console.log(txResult);
-            codeId = Number(txResult.logs[0].events[1].attributes[1].value);
-            expect(codeId).toBeDefined();
+            const deployerBalanceAfter = await LCD.chain1.bank.balance(deployerAddress);
+            const deltaBalance = deployerBalanceAfter[0].sub(deployerBalanceBefore[0]);
+            expect(deltaBalance.toString()).toEqual("1uluna");
         } catch (e:any) {
-            console.log(e);
             expect(e).toBeUndefined();
         }
     });

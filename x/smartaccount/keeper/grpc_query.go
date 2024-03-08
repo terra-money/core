@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"encoding/base64"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -39,6 +40,9 @@ func (q Querier) Setting(
 	setting, err := q.GetSetting(ctx, req.Address)
 	if err != nil {
 		return nil, err
+	}
+	for _, auth := range setting.Authorization {
+		auth.InitMsg.Msg = []byte(base64.StdEncoding.EncodeToString(auth.InitMsg.Msg))
 	}
 	return &types.QuerySettingResponse{Setting: *setting}, nil
 }
