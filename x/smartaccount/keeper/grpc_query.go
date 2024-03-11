@@ -42,7 +42,10 @@ func (q Querier) Setting(
 		return nil, err
 	}
 	for _, auth := range setting.Authorization {
-		auth.InitMsg.Msg = []byte(base64.StdEncoding.EncodeToString(auth.InitMsg.Msg))
+		auth.InitMsg.Msg, err = base64.StdEncoding.DecodeString(string(auth.InitMsg.Msg))
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &types.QuerySettingResponse{Setting: *setting}, nil
 }

@@ -55,7 +55,6 @@ func (s *AnteTestSuite) TestAuthAnteHandler() {
 
 	// create initMsg
 	initMsg := smartaccounttypes.Initialization{
-		Senders: []string{},
 		Account: acc.String(),
 		Msg:     pkEncoded,
 	}

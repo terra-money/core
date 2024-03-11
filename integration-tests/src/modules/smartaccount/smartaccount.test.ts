@@ -130,7 +130,7 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
         }
     });
 
-    test.only('Only controller should be able to sign', async () => {
+    test('Only controller should be able to sign', async () => {
         try {
             // signing with the controlledAccountAddress should now fail 
             let tx = await wallet.createAndSignTx({
