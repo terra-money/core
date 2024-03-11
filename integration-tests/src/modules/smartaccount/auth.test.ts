@@ -1,5 +1,5 @@
-import { Coins, MsgInstantiateContract, MsgSend, MsgStoreCode, SimplePublicKey } from "@terra-money/feather.js";
-import { AuthorizationMsg, Initialization, MsgCreateSmartAccount, MsgUpdateAuthorization } from "@terra-money/feather.js/dist/core/smartaccount";
+import { Coin, Coins, MsgDelegate, MsgInstantiateContract, MsgSend, MsgStoreCode, SimplePublicKey, ValAddress } from "@terra-money/feather.js";
+import { AuthorizationMsg, Initialization, MsgCreateSmartAccount, MsgUpdateAuthorization, MsgUpdateTransactionHooks } from "@terra-money/feather.js/dist/core/smartaccount";
 import fs from "fs";
 import path from 'path';
 import { blockInclusion, getLCDClient, getMnemonics } from "../../helpers";
@@ -27,9 +27,9 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
     const deployer = LCD.chain1.wallet(accounts.tokenFactoryMnemonic);
     const deployerAddress = accounts.tokenFactoryMnemonic.accAddress("terra");
 
-    let authContractAddress = "terra14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9ssrc8au";
+    let authContractAddress: string, limitContractAddress: string;
 
-    test('Deploy smart account auth contract and initialize priv key for wallet', async () => {
+    test('Deploy smart account auth contract', async () => {
         try {
             let tx = await deployer.createAndSignTx({
                 msgs: [new MsgStoreCode(
@@ -101,7 +101,6 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
         try {
             // give control to controller
             const authMsg = new AuthorizationMsg(authContractAddress, initMsg);
-            console.log(authMsg.toData())
             let tx = await wallet.createAndSignTx({
                 msgs: [new MsgUpdateAuthorization(
                     controlledAccountAddress,
