@@ -6,9 +6,8 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/terra-money/core/v2/x/smartaccount/types";
 
 message Initialization {
-    repeated string senders = 1 [(gogoproto.jsontag) = "senders"];
-    string account = 2 [(gogoproto.jsontag) = "account"];
-    bytes msg = 3 [(gogoproto.jsontag) = "msg"];
+    string account = 1 [(gogoproto.jsontag) = "account"];
+    bytes msg = 2 [(gogoproto.jsontag) = "msg"];
 }
 
 

@@ -61,7 +61,6 @@ func (s *IntegrationTestSuite) TestMsgUpdateAuthorization() {
 
 	// create updateAuth msg
 	initMsg := types.Initialization{
-		Senders: []string{},
 		Account: acc.String(),
 		Msg:     pkEncoded,
 	}
@@ -165,14 +164,5 @@ func (s *IntegrationTestSuite) CheckAuthorizationEqual(a []*types.AuthorizationM
 		s.Require().Equal(a[i].ContractAddress, b[i].ContractAddress)
 		s.Require().Equal(a[i].InitMsg.Msg, b[i].InitMsg.Msg)
 		s.Require().Equal(a[i].InitMsg.Account, b[i].InitMsg.Account)
-		if a[i].InitMsg.Senders == nil && b[i].InitMsg.Senders == nil {
-			return
-		} else if a[i].InitMsg.Senders == nil {
-			s.Require().Len(b[i].InitMsg.Senders, 0)
-		} else if b[i].InitMsg.Senders == nil {
-			s.Require().Len(a[i].InitMsg.Senders, 0)
-		} else {
-			s.Require().Equal(a[i].InitMsg.Senders, b[i].InitMsg.Senders)
-		}
 	}
 }

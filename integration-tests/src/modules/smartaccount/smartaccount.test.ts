@@ -17,11 +17,9 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
 
     // TODO: convert pubkey to base64 string similar to golang pubkey.Bytes()
     const pubkeybb = pubkey as SimplePublicKey;
-    const pubkeyStr = pubkeybb.toData().key;
+    const pubkeyStr = pubkeybb.key;
     // AsCe1GUUuW2cT63a35JRpGYaJ6/xIZXvrZRfRGsyxIhK
-    console.log(pubkeyStr)
     const initMsg =  Initialization.fromData({
-        senders: [],
         account: controlledAccountAddress,
         msg: pubkeyStr,
     });
@@ -99,7 +97,7 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
         }
     });
 
-    test.only('Give smart account control to controller', async () => {
+    test('Give smart account control to controller', async () => {
         try {
             // give control to controller
             const authMsg = new AuthorizationMsg(authContractAddress, initMsg);
@@ -113,9 +111,7 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
                 chainID: 'test-1',
                 gas: '400000',
             });
-            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            console.log("aaa")
-            console.log(result)
+            await LCD.chain1.tx.broadcastSync(tx, "test-1");
             await blockInclusion();
 
             // check if update authorization was successful
@@ -128,9 +124,16 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
                     pre_transaction: [],
                     fallback: false,
                 });
+        } catch (e:any) {
+            console.log(e)
+            expect(e).toBeUndefined();
+        }
+    });
 
+    test.only('Only controller should be able to sign', async () => {
+        try {
             // signing with the controlledAccountAddress should now fail 
-            tx = await wallet.createAndSignTx({
+            let tx = await wallet.createAndSignTx({
                 msgs: [
                     new MsgSend(
                         controlledAccountAddress,
@@ -141,7 +144,7 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
                 chainID: "test-1",
                 gas: '400000',
             });
-            result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
             expect(result.raw_log).toEqual("authorization failed: unauthorized");
 
             // signing with the controller should now succeed
@@ -156,15 +159,14 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
                 chainID: "test-1",
                 gas: '400000',
             });
-            console.log(controller.key.publicKey)
             const deployerBalanceBefore = await LCD.chain1.bank.balance(deployerAddress);
             result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            console.log(result)
             await blockInclusion();
             const deployerBalanceAfter = await LCD.chain1.bank.balance(deployerAddress);
             const deltaBalance = deployerBalanceAfter[0].sub(deployerBalanceBefore[0]);
             expect(deltaBalance.toString()).toEqual("1uluna");
         } catch (e:any) {
+            console.log(e)
             expect(e).toBeUndefined();
         }
     });
