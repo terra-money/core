@@ -12,7 +12,6 @@ import (
 	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
-// SmartAccountCheckDecorator does authentication for smart accounts
 type PreTransactionHookDecorator struct {
 	smartAccountKeeper SmartAccountKeeper
 	wasmKeeper         WasmKeeper
@@ -25,7 +24,6 @@ func NewPreTransactionHookDecorator(sak SmartAccountKeeper, wk WasmKeeper) PreTr
 	}
 }
 
-// AnteHandle checks if the tx provides sufficient fee to cover the required fee from the fee market.
 func (pth PreTransactionHookDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	setting, ok := ctx.Value(types.ModuleName).(types.Setting)
 	if !ok {

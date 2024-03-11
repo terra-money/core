@@ -7,7 +7,6 @@ import (
 	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
-// PostTransactionHookDecorator does authentication for smart accounts
 type PostTransactionHookDecorator struct {
 	smartaccountKeeper SmartAccountKeeper
 	wasmKeeper         WasmKeeper
@@ -20,10 +19,6 @@ func NewPostTransactionHookDecorator(sak SmartAccountKeeper, wk WasmKeeper) Post
 	}
 }
 
-// FeeSharePostHandler if the smartaccount module is enabled
-// takes the total fees paid for each transaction and
-// split these fees equally between all the contacts
-// involved in the transaction based on the module params.
 func (pth PostTransactionHookDecorator) PostHandle(
 	ctx sdk.Context,
 	tx sdk.Tx,
