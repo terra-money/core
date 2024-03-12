@@ -197,7 +197,7 @@ func (sad SmartAccountAuthDecorator) GetParamsForCustomAuthVerification(
 func (sad SmartAccountAuthDecorator) CustomAuthVerify(
 	ctx sdk.Context,
 	authMsgs []*types.AuthorizationMsg,
-	sender []string,
+	senders []string,
 	account string,
 	signatures,
 	signedBytes [][]byte,
@@ -207,7 +207,7 @@ func (sad SmartAccountAuthDecorator) CustomAuthVerify(
 	var errs []error
 	for _, auth := range authMsgs {
 		authMsg := types.Authorization{
-			Senders:     sender,
+			Senders:     senders,
 			Account:     account,
 			Signatures:  signatures,
 			SignedBytes: signedBytes,
