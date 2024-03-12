@@ -2,6 +2,7 @@ package app_test
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -692,6 +693,13 @@ func (s *AppGenesisTestSuite) TestGenesis() {
 			"params": {
 			},
 			"settings": [
+				{
+					"owner": "terra1tck9vx8vwu6l83zy76ssdkhnhw8dfcrt80hc6x",
+					"authorization": [],
+					"pre_transaction": [],
+					"post_transaction": [],
+					"fallback": true
+				}
 			]
 		},
 		"staking": {
@@ -752,5 +760,7 @@ func (s *AppGenesisTestSuite) TestGenesis() {
 			"sequences": []
 		}
 	}`
+	// write jsonGenState to file for debugging
+	ioutil.WriteFile("genesis1.json", jsonGenState, 0644)
 	s.Require().JSONEq(string(jsonGenState), expectedState)
 }

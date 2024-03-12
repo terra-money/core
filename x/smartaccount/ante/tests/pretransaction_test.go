@@ -22,27 +22,39 @@ func (s *AnteTestSuite) TestPreTransactionHookWithoutSmartAccount() {
 
 func (s *AnteTestSuite) TestPreTransactionHookWithEmptySmartAccount() {
 	s.Setup()
+
+	// set settings
+	err := s.SmartAccountKeeper.SetSetting(s.Ctx, smartaccounttypes.Setting{
+		Owner: s.TestAccs[0].String(),
+	})
+	require.NoError(s.T(), err)
+
 	s.Ctx = s.Ctx.WithValue(smartaccounttypes.ModuleName, smartaccounttypes.Setting{})
 	txBuilder := s.BuildDefaultMsgTx(0, &types.MsgSend{
 		FromAddress: s.TestAccs[0].String(),
 		ToAddress:   s.TestAccs[1].String(),
 		Amount:      sdk.NewCoins(sdk.NewInt64Coin("uluna", 100000000)),
 	})
-	_, err := s.PreTxDecorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
+	_, err = s.PreTxDecorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
 	require.NoError(s.T(), err)
 }
 
 func (s *AnteTestSuite) TestInvalidContractAddress() {
 	s.Setup()
-	s.Ctx = s.Ctx.WithValue(smartaccounttypes.ModuleName, smartaccounttypes.Setting{
+
+	// set settings
+	err := s.SmartAccountKeeper.SetSetting(s.Ctx, smartaccounttypes.Setting{
+		Owner:          s.TestAccs[0].String(),
 		PreTransaction: []string{s.TestAccs[0].String()},
 	})
+	require.NoError(s.T(), err)
+
 	txBuilder := s.BuildDefaultMsgTx(0, &types.MsgSend{
 		FromAddress: s.TestAccs[0].String(),
 		ToAddress:   s.TestAccs[1].String(),
 		Amount:      sdk.NewCoins(sdk.NewInt64Coin("uluna", 100000000)),
 	})
-	_, err := s.PreTxDecorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
+	_, err = s.PreTxDecorator.AnteHandle(s.Ctx, txBuilder.GetTx(), false, sdk.ChainAnteDecorators(sdk.Terminator{}))
 	require.ErrorContainsf(s.T(), err, "no such contract", "error message: %s", err)
 }
 
@@ -55,9 +67,13 @@ func (s *AnteTestSuite) TestSendCoinsWithLimitSendHook() {
 	contractAddr, _, err := s.WasmKeeper.Instantiate(s.Ctx, codeId, acc, acc, []byte("{}"), "limit send", sdk.NewCoins())
 	require.NoError(s.T(), err)
 
-	s.Ctx = s.Ctx.WithValue(smartaccounttypes.ModuleName, smartaccounttypes.Setting{
+	// set settings
+	err = s.SmartAccountKeeper.SetSetting(s.Ctx, smartaccounttypes.Setting{
+		Owner:          acc.String(),
 		PreTransaction: []string{contractAddr.String()},
 	})
+	require.NoError(s.T(), err)
+
 	txBuilder := s.BuildDefaultMsgTx(0, &types.MsgSend{
 		FromAddress: acc.String(),
 		ToAddress:   acc.String(),
@@ -76,9 +92,13 @@ func (s *AnteTestSuite) TestStakingWithLimitSendHook() {
 	contractAddr, _, err := s.WasmKeeper.Instantiate(s.Ctx, codeId, acc, acc, []byte("{}"), "limit send", sdk.NewCoins())
 	require.NoError(s.T(), err)
 
-	s.Ctx = s.Ctx.WithValue(smartaccounttypes.ModuleName, smartaccounttypes.Setting{
+	// set settings
+	err = s.SmartAccountKeeper.SetSetting(s.Ctx, smartaccounttypes.Setting{
+		Owner:          acc.String(),
 		PreTransaction: []string{contractAddr.String()},
 	})
+	require.NoError(s.T(), err)
+
 	txBuilder := s.BuildDefaultMsgTx(0, &stakingtypes.MsgDelegate{
 		DelegatorAddress: acc.String(),
 		ValidatorAddress: acc.String(),
