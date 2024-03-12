@@ -63,15 +63,6 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 	account := signers[0]
 	accountStr := account.String()
 
-	// skip authorization checks if simulate since no signatures will be provided
-	if simulate {
-		setting, err := sad.smartAccountKeeper.GetSetting(ctx, accountStr)
-		if err == nil {
-			ctx = ctx.WithValue(types.ModuleName, setting)
-		}
-		return next(ctx, tx, simulate)
-	}
-
 	// check if the tx is from a smart account
 	setting, err := sad.smartAccountKeeper.GetSetting(ctx, accountStr)
 	if sdkerrors.ErrKeyNotFound.Is(err) {
@@ -86,6 +77,10 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		return ctx, err
 	}
 	ctx = ctx.WithValue(types.ModuleName, setting)
+	// skip authorization checks if simulate since no signatures will be provided
+	if simulate {
+		return next(ctx, tx, simulate)
+	}
 
 	// Current smartaccount only supports one signer (TODO review in the future)
 	if len(signers) != 1 {
