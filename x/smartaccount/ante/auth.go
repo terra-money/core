@@ -115,7 +115,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		if success {
 			return next(ctx, tx, simulate)
 		} else if !setting.Fallback {
-			return ctx, sdkerrors.ErrUnauthorized.Wrap("authorization failed")
+			return ctx, sdkerrors.ErrUnauthorized.Wrap(fmt.Sprintf("authorization failed: %s", err))
 		}
 	}
 
@@ -136,7 +136,7 @@ func (sad SmartAccountAuthDecorator) GetParamsForCustomAuthVerification(
 ) (
 	senderAddrs []string,
 	signatureBzs [][]byte,
-	signedBytes [][]byte,
+	signedBzs [][]byte,
 	err error,
 ) {
 	signatures, err := sigTx.GetSignaturesV2()
@@ -184,13 +184,14 @@ func (sad SmartAccountAuthDecorator) GetParamsForCustomAuthVerification(
 		if err != nil {
 			return nil, nil, nil, err
 		}
-		signedBytes, err = GetSignBytesArr(signature.PubKey, signerData, signature.Data, sad.signModeHandler, sigTx)
+		signedBytes, err := GetSignBytesArr(signature.PubKey, signerData, signature.Data, sad.signModeHandler, sigTx)
+		signedBzs = append(signedBzs, signedBytes...)
 		if err != nil {
 			return nil, nil, nil, err
 		}
 		signatureBzs = append(signatureBzs, signatureBz...)
 	}
-	return senderAddrs, signatureBzs, signedBytes, nil
+	return senderAddrs, signatureBzs, signedBzs, nil
 }
 
 func (sad SmartAccountAuthDecorator) CustomAuthVerify(
@@ -201,13 +202,13 @@ func (sad SmartAccountAuthDecorator) CustomAuthVerify(
 	signatures,
 	signedBytes [][]byte,
 	data []byte,
-) (success bool, err error) {
-	success = false
+) (bool, error) {
+	success := false
+	var errs []error
 	for _, auth := range authMsgs {
 		authMsg := types.Authorization{
-			Senders: sender,
-			Account: account,
-			// TODO: add in future when needed
+			Senders:     sender,
+			Account:     account,
 			Signatures:  signatures,
 			SignedBytes: signedBytes,
 			Data:        data,
@@ -226,9 +227,15 @@ func (sad SmartAccountAuthDecorator) CustomAuthVerify(
 		if err == nil {
 			success = true
 			break
+		} else {
+			errs = append(errs, err)
 		}
 	}
-	return success, nil
+	if success {
+		return success, nil
+	} else {
+		return success, fmt.Errorf("%v", errs)
+	}
 }
 
 // signatureDataToBz converts a SignatureData into raw bytes signature.
