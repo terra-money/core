@@ -52,11 +52,6 @@ func NewSmartAccountAuthDecorator(
 
 // AnteHandle checks if the tx provides sufficient fee to cover the required fee from the fee market.
 func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	// skip the smartaccount auth decorator if the tx is a simulation
-	if simulate {
-		return next(ctx, tx, simulate)
-	}
-
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
 		return ctx, sdkerrors.ErrInvalidType.Wrap("expected SigVerifiableTx")
@@ -67,6 +62,15 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 	signers := sigTx.GetSigners()
 	account := signers[0]
 	accountStr := account.String()
+
+	// skip authorization checks if simulate since no signatures will be provided
+	if simulate {
+		setting, err := sad.smartAccountKeeper.GetSetting(ctx, accountStr)
+		if err == nil {
+			ctx = ctx.WithValue(types.ModuleName, setting)
+		}
+		return next(ctx, tx, simulate)
+	}
 
 	// check if the tx is from a smart account
 	setting, err := sad.smartAccountKeeper.GetSetting(ctx, accountStr)
@@ -81,6 +85,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 	} else if err != nil {
 		return ctx, err
 	}
+	ctx = ctx.WithValue(types.ModuleName, setting)
 
 	// Current smartaccount only supports one signer (TODO review in the future)
 	if len(signers) != 1 {

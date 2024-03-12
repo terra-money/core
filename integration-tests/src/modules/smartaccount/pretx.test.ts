@@ -1,4 +1,4 @@
-import { Coin, Coins, MsgDelegate, MsgInstantiateContract, MsgStoreCode, ValAddress } from "@terra-money/feather.js";
+import { Coin, Coins, MsgDelegate, MsgInstantiateContract, MsgSend, MsgStoreCode, ValAddress } from "@terra-money/feather.js";
 import { MsgCreateSmartAccount, MsgUpdateTransactionHooks } from "@terra-money/feather.js/dist/core/smartaccount";
 import fs from "fs";
 import path from 'path';
@@ -113,8 +113,10 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
         }
     });
 
-    test('Transaction should fail for limit', async () => {
+    test('Transaction should fail for delegation', async () => {
         try {
+            let setting = await LCD.chain1.smartaccount.setting(controlledAccountAddress);
+            expect(setting.preTransaction).toEqual([limitContractAddress]);
             // signing with the controlledAccountAddress should now fail 
             let tx = await wallet.createAndSignTx({
                 msgs: [
@@ -127,9 +129,33 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
                 chainID: "test-1",
                 gas: '400000',
             });
-            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            console.log(result)
-            expect(result.raw_log).toEqual("Unauthorized: Unauthorized message type: execute wasm contract failed");
+            expect.assertions(1);
+            await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await blockInclusion();
+        } catch (e:any) {
+            console.log(e)
+            expect(e).toEqual("Unauthorized: Unauthorized message type: execute wasm contract failed");
+        }
+    });
+    
+    test('Transaction should pass for send', async () => {
+        try {
+            // signing with the controlledAccountAddress should now fail 
+            let tx = await wallet.createAndSignTx({
+                msgs: [
+                    new MsgSend(
+                        controlledAccountAddress,
+                        controlledAccountAddress,
+                        Coins.fromString("100000000uluna"),
+                    ),
+                ],
+                chainID: "test-1",
+                gas: '400000',
+            });
+            let res = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await blockInclusion();
+            let txResult = await LCD.chain1.tx.txInfo(res.txhash, "test-1") as any;
+            expect(txResult);
         } catch (e:any) {
             console.log(e)
             expect(e).toBeUndefined();
