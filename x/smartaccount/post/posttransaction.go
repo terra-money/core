@@ -26,7 +26,7 @@ func (pth PostTransactionHookDecorator) PostHandle(
 	success bool,
 	next sdk.PostHandler,
 ) (newCtx sdk.Context, err error) {
-	setting, ok := ctx.Value(types.ModuleName).(types.Setting)
+	setting, ok := ctx.Value(types.ModuleName).(*types.Setting)
 	if !ok {
 		return next(ctx, tx, simulate, success)
 	}

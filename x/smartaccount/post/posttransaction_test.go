@@ -4,6 +4,12 @@ import (
 	"testing"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+	"github.com/terra-money/core/v2/x/smartaccount/post"
+	"github.com/terra-money/core/v2/x/smartaccount/test_helpers"
+	smartaccounttypes "github.com/terra-money/core/v2/x/smartaccount/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -11,11 +17,6 @@ import (
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
-	"github.com/terra-money/core/v2/x/smartaccount/post"
-	"github.com/terra-money/core/v2/x/smartaccount/test_helpers"
-	smartaccounttypes "github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
 type PostTxTestSuite struct {

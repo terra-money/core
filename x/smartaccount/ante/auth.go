@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/terra-money/core/v2/x/smartaccount/types"
+
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,7 +14,6 @@ import (
 	authante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
 // SmartAccountAuthDecorator does authentication for smart accounts
