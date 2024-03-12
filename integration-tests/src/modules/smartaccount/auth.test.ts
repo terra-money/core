@@ -1,5 +1,5 @@
 import { Coins, MsgInstantiateContract, MsgSend, MsgStoreCode, SimplePublicKey } from "@terra-money/feather.js";
-import { AuthorizationMsg, Initialization, MsgCreateSmartAccount, MsgUpdateAuthorization } from "@terra-money/feather.js/dist/core/smartaccount";
+import { AuthorizationMsg, Initialization, MsgCreateSmartAccount, MsgDisableSmartAccount, MsgUpdateAuthorization } from "@terra-money/feather.js/dist/core/smartaccount";
 import fs from "fs";
 import path from 'path';
 import { blockInclusion, getLCDClient, getMnemonics } from "../../helpers";
@@ -146,6 +146,75 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
 
             // signing with the controller should now succeed
             tx = await controller.createAndSignTx({
+                msgs: [
+                    new MsgSend(
+                        controlledAccountAddress,
+                        deployerAddress,
+                        Coins.fromString("1uluna"),
+                    ),
+                ],
+                chainID: "test-1",
+                gas: '400000',
+            });
+            const deployerBalanceBefore = await LCD.chain1.bank.balance(deployerAddress);
+            result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await blockInclusion();
+            const deployerBalanceAfter = await LCD.chain1.bank.balance(deployerAddress);
+            const deltaBalance = deployerBalanceAfter[0].sub(deployerBalanceBefore[0]);
+            expect(deltaBalance.toString()).toEqual("1uluna");
+        } catch (e:any) {
+            console.log(e)
+            expect(e).toBeUndefined();
+        }
+    });
+
+    test('Disable smart contract', async () => {
+        try {
+            // signing with the controlledAccountAddress should now fail 
+            let tx = await controller.createAndSignTx({
+                msgs: [
+                    new MsgDisableSmartAccount(
+                        controlledAccountAddress,
+                    ),
+                ],
+                chainID: "test-1",
+                gas: '400000',
+            });
+            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            expect(result.raw_log).toEqual("[]");
+            await blockInclusion();
+
+            // check if update authorization was successful
+            try {
+                await LCD.chain1.smartaccount.setting(controlledAccountAddress);
+            } catch (e:any) {
+                expect(e).toBeDefined();
+            }
+        } catch (e:any) {
+            console.log(e)
+            expect(e).toBeUndefined();
+        }
+    });
+
+    test('Only original pk should be able to sign', async () => {
+        try {
+            // signing with the controller should now fail 
+            let tx = await controller.createAndSignTx({
+                msgs: [
+                    new MsgSend(
+                        controlledAccountAddress,
+                        controlledAccountAddress,
+                        Coins.fromString("1uluna"),
+                    ),
+                ],
+                chainID: "test-1",
+                gas: '400000',
+            });
+            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            expect(result.raw_log).toEqual("pubKey does not match signer address terra1wm6wwmnsdkrdugw507q4ngak589t4alq7uaqhf with signer index: 0: invalid pubkey");
+
+            // signing with the original pk should now succeed
+            tx = await wallet.createAndSignTx({
                 msgs: [
                     new MsgSend(
                         controlledAccountAddress,
