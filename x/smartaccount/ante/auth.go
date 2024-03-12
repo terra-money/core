@@ -82,14 +82,16 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		return next(ctx, tx, simulate)
 	}
 
-	// Current smartaccount only supports one signer (TODO review in the future)
+	// Current smartaccount only supports one signer
+	// Multiple signers here means that the transaction perform state changes on multiple wallets
+	// (Not the same as a multi-sig transaction)
 	if len(signers) != 1 {
 		return ctx, sdkerrors.ErrorInvalidSigner.Wrap("only one account is supported (sigTx.GetSigners()!= 1)")
 	}
 
 	// Sender here is the account that signed the transaction
 	// Could be different from the account above (confusingly named signer)
-	senderAddr, signaturesBs, signedBytes, err := sad.GetParamsForCustomAuthVerification(ctx, sigTx, account)
+	senderAddrs, signaturesBs, signedBytes, err := sad.GetParamsForCustomAuthVerification(ctx, sigTx, account)
 	if err != nil {
 		return ctx, err
 	}
@@ -99,7 +101,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		success, err := sad.CustomAuthVerify(
 			ctx,
 			setting.Authorization,
-			[]string{senderAddr.String()},
+			senderAddrs,
 			accountStr,
 			signaturesBs,
 			signedBytes,
@@ -111,7 +113,7 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		if success {
 			return next(ctx, tx, simulate)
 		} else if !setting.Fallback {
-			return ctx, sdkerrors.ErrUnauthorized.Wrap("authorization failed")
+			return ctx, sdkerrors.ErrUnauthorized.Wrap(fmt.Sprintf("authorization failed: %s", err))
 		}
 	}
 
@@ -130,9 +132,9 @@ func (sad SmartAccountAuthDecorator) GetParamsForCustomAuthVerification(
 	sigTx authsigning.SigVerifiableTx,
 	account sdk.AccAddress,
 ) (
-	senderAddr sdk.AccAddress,
-	signatureBz [][]byte,
-	signedBytes [][]byte,
+	senderAddrs []string,
+	signatureBzs [][]byte,
+	signedBzs [][]byte,
 	err error,
 ) {
 	signatures, err := sigTx.GetSignaturesV2()
@@ -141,63 +143,70 @@ func (sad SmartAccountAuthDecorator) GetParamsForCustomAuthVerification(
 	}
 	if len(signatures) == 0 {
 		return nil, nil, nil, sdkerrors.ErrNoSignatures.Wrap("no signatures found")
-	} else if len(signatures) > 1 {
-		// TODO: remove when support multi sig auth
-		return nil, nil, nil, sdkerrors.ErrUnauthorized.Wrap("multiple signatures not supported")
 	}
 
-	signature := signatures[0]
-	signaturesBs := [][]byte{}
+	for _, signature := range signatures {
+		// This is to get the list of signers that contributed to the signatures
+		sas, err := GetSignerAddrStrings(signature.PubKey)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		senderAddrs = append(senderAddrs, sas...)
 
-	senderAddr, err = sdk.AccAddressFromHexUnsafe(signature.PubKey.Address().String())
-	if err != nil {
-		return nil, nil, nil, err
-	}
+		// This is to get the address of the signer (either a multisig or a single sig)
+		// For multisig, the address to generated from the json encoded list of signers
+		// See: https://github.com/cosmos/cosmos-sdk/blob/v0.47.10/crypto/keys/multisig/multisig.go
+		senderAddr, err := sdk.AccAddressFromHexUnsafe(signature.PubKey.Address().String())
+		if err != nil {
+			return nil, nil, nil, err
+		}
 
-	senderAcc, err := authante.GetSignerAcc(ctx, sad.accountKeeper, senderAddr)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	var senderAccNum uint64
-	if ctx.BlockHeight() != 0 {
-		senderAccNum = senderAcc.GetAccountNumber()
-	}
+		senderAcc, err := authante.GetSignerAcc(ctx, sad.accountKeeper, senderAddr)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		var senderAccNum uint64
+		if ctx.BlockHeight() != 0 {
+			senderAccNum = senderAcc.GetAccountNumber()
+		}
 
-	signerData := authsigning.SignerData{
-		Address:       senderAddr.String(),
-		ChainID:       ctx.ChainID(),
-		AccountNumber: senderAccNum,
-		Sequence:      senderAcc.GetSequence(),
-		PubKey:        signature.PubKey,
-	}
+		signerData := authsigning.SignerData{
+			Address:       senderAddr.String(),
+			ChainID:       ctx.ChainID(),
+			AccountNumber: senderAccNum,
+			Sequence:      senderAcc.GetSequence(),
+			PubKey:        signature.PubKey,
+		}
 
-	signatureBz, err = signatureDataToBz(signature.Data)
-	if err != nil {
-		return nil, nil, nil, err
+		signatureBz, err := signatureDataToBz(signature.Data)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		signedBytes, err := GetSignBytesArr(signature.PubKey, signerData, signature.Data, sad.signModeHandler, sigTx)
+		signedBzs = append(signedBzs, signedBytes...)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		signatureBzs = append(signatureBzs, signatureBz...)
 	}
-	signedBytes, err = GetSignBytesArr(signature.PubKey, signerData, signature.Data, sad.signModeHandler, sigTx)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	signaturesBs = append(signaturesBs, signatureBz...)
-	return senderAddr, signaturesBs, signedBytes, nil
+	return senderAddrs, signatureBzs, signedBzs, nil
 }
 
 func (sad SmartAccountAuthDecorator) CustomAuthVerify(
 	ctx sdk.Context,
 	authMsgs []*types.AuthorizationMsg,
-	sender []string,
+	senders []string,
 	account string,
 	signatures,
 	signedBytes [][]byte,
 	data []byte,
-) (success bool, err error) {
-	success = false
+) (bool, error) {
+	success := false
+	var errs []error
 	for _, auth := range authMsgs {
 		authMsg := types.Authorization{
-			Senders: sender,
-			Account: account,
-			// TODO: add in future when needed
+			Senders:     senders,
+			Account:     account,
 			Signatures:  signatures,
 			SignedBytes: signedBytes,
 			Data:        data,
@@ -216,9 +225,15 @@ func (sad SmartAccountAuthDecorator) CustomAuthVerify(
 		if err == nil {
 			success = true
 			break
+		} else {
+			errs = append(errs, err)
 		}
 	}
-	return success, nil
+	if success {
+		return success, nil
+	} else {
+		return success, fmt.Errorf("%v", errs)
+	}
 }
 
 // signatureDataToBz converts a SignatureData into raw bytes signature.
@@ -267,12 +282,6 @@ func GetSignBytesArr(pubKey cryptotypes.PubKey, signerData authsigning.SignerDat
 		if err != nil {
 			return nil, err
 		}
-		// TODO: should this be removed?
-		// this works right now because its secp256k1
-		// if verification is done only in wasm, then this probably would not work
-		// if !pubKey.VerifySignature(signBytes, data.Signature) {
-		// 	return nil, fmt.Errorf("unable to verify single signer signature")
-		// }
 		return [][]byte{signBytes}, nil
 
 	case *signing.MultiSignatureData:
@@ -332,4 +341,22 @@ func GetMultiSigSignBytes(multiPK multisig.PubKey, sig *signing.MultiSignatureDa
 		}
 	}
 	return signersBytes, nil
+}
+
+func GetSignerAddrStrings(pubKey cryptotypes.PubKey) ([]string, error) {
+	switch pubKey := pubKey.(type) {
+	case multisig.PubKey:
+		pubKeys := pubKey.GetPubKeys()
+		var addrStrings []string
+		for _, pk := range pubKeys {
+			as, err := GetSignerAddrStrings(pk)
+			if err != nil {
+				return nil, err
+			}
+			addrStrings = append(addrStrings, as...)
+		}
+		return addrStrings, nil
+	default:
+		return []string{pubKey.Address().String()}, nil
+	}
 }
