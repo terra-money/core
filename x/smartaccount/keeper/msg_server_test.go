@@ -3,10 +3,11 @@ package keeper_test
 import (
 	"encoding/base64"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	"github.com/terra-money/core/v2/x/smartaccount/test_helpers"
 	"github.com/terra-money/core/v2/x/smartaccount/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *IntegrationTestSuite) TestMsgCreateAndDisableSmartAccount() {

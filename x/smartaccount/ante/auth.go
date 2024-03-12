@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/terra-money/core/v2/x/smartaccount/types"
+
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,7 +14,6 @@ import (
 	authante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
 // SmartAccountAuthDecorator does authentication for smart accounts
@@ -51,11 +52,6 @@ func NewSmartAccountAuthDecorator(
 
 // AnteHandle checks if the tx provides sufficient fee to cover the required fee from the fee market.
 func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	// skip the smartaccount auth decorator if the tx is a simulation
-	if simulate {
-		return next(ctx, tx, simulate)
-	}
-
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
 		return ctx, sdkerrors.ErrInvalidType.Wrap("expected SigVerifiableTx")
@@ -79,6 +75,11 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		return next(newCtx, tx, simulate)
 	} else if err != nil {
 		return ctx, err
+	}
+	ctx = ctx.WithValue(types.ModuleName, setting)
+	// skip authorization checks if simulate since no signatures will be provided
+	if simulate {
+		return next(ctx, tx, simulate)
 	}
 
 	// Current smartaccount only supports one signer (TODO review in the future)

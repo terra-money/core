@@ -25,22 +25,9 @@ func NewPreTransactionHookDecorator(sak SmartAccountKeeper, wk WasmKeeper) PreTr
 }
 
 func (pth PreTransactionHookDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	sigTx, ok := tx.(authsigning.SigVerifiableTx)
+	setting, ok := ctx.Value(types.ModuleName).(*types.Setting)
 	if !ok {
-		return ctx, sdkerrors.ErrInvalidType.Wrap("expected SigVerifiableTx")
-	}
-
-	// Signer here is the account that the state transition is affecting
-	// e.g. Account that is transferring some Coins
-	signers := sigTx.GetSigners()
-	account := signers[0]
-	accountStr := account.String()
-
-	setting, err := pth.smartAccountKeeper.GetSetting(ctx, accountStr)
-	if sdkerrors.ErrKeyNotFound.Is(err) {
 		return next(ctx, tx, simulate)
-	} else if err != nil {
-		return ctx, err
 	}
 
 	if setting.PreTransaction != nil && len(setting.PreTransaction) > 0 {
