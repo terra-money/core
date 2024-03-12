@@ -297,20 +297,6 @@ func GetSignBytesArr(pubKey cryptotypes.PubKey, signerData authsigning.SignerDat
 	}
 }
 
-func GetSignerAddrStrings(pubKey cryptotypes.PubKey) ([]string, error) {
-	switch pubKey := pubKey.(type) {
-	case multisig.PubKey:
-		pubKeys := pubKey.GetPubKeys()
-		addrStrings := make([]string, len(pubKeys))
-		for i, pk := range pubKeys {
-			addrStrings[i] = pk.Address().String()
-		}
-		return addrStrings, nil
-	default:
-		return []string{pubKey.Address().String()}, nil
-	}
-}
-
 func GetMultiSigSignBytes(multiPK multisig.PubKey, sig *signing.MultiSignatureData, signerData authsigning.SignerData, handler authsigning.SignModeHandler, tx sdk.Tx) (signersBytes [][]byte, err error) {
 	bitarray := sig.BitArray
 	sigs := sig.Signatures
@@ -357,4 +343,22 @@ func GetMultiSigSignBytes(multiPK multisig.PubKey, sig *signing.MultiSignatureDa
 		}
 	}
 	return signersBytes, nil
+}
+
+func GetSignerAddrStrings(pubKey cryptotypes.PubKey) ([]string, error) {
+	switch pubKey := pubKey.(type) {
+	case multisig.PubKey:
+		pubKeys := pubKey.GetPubKeys()
+		var addrStrings []string
+		for _, pk := range pubKeys {
+			as, err := GetSignerAddrStrings(pk)
+			if err != nil {
+				return nil, err
+			}
+			addrStrings = append(addrStrings, as...)
+		}
+		return addrStrings, nil
+	default:
+		return []string{pubKey.Address().String()}, nil
+	}
 }
