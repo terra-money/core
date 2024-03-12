@@ -1,5 +1,5 @@
-import { Coin, Coins, MsgDelegate, MsgInstantiateContract, MsgSend, MsgStoreCode, SimplePublicKey, ValAddress } from "@terra-money/feather.js";
-import { AuthorizationMsg, Initialization, MsgCreateSmartAccount, MsgUpdateAuthorization, MsgUpdateTransactionHooks } from "@terra-money/feather.js/dist/core/smartaccount";
+import { Coins, MsgInstantiateContract, MsgSend, MsgStoreCode, SimplePublicKey } from "@terra-money/feather.js";
+import { AuthorizationMsg, Initialization, MsgCreateSmartAccount, MsgUpdateAuthorization } from "@terra-money/feather.js/dist/core/smartaccount";
 import fs from "fs";
 import path from 'path';
 import { blockInclusion, getLCDClient, getMnemonics } from "../../helpers";
@@ -15,10 +15,8 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
     const pubkey = accounts.mnemonic4.publicKey;
     expect(pubkey).toBeDefined();
 
-    // TODO: convert pubkey to base64 string similar to golang pubkey.Bytes()
     const pubkeybb = pubkey as SimplePublicKey;
     const pubkeyStr = pubkeybb.key;
-    // AsCe1GUUuW2cT63a35JRpGYaJ6/xIZXvrZRfRGsyxIhK
     const initMsg =  Initialization.fromData({
         account: controlledAccountAddress,
         msg: pubkeyStr,
@@ -27,7 +25,7 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
     const deployer = LCD.chain1.wallet(accounts.tokenFactoryMnemonic);
     const deployerAddress = accounts.tokenFactoryMnemonic.accAddress("terra");
 
-    let authContractAddress: string, limitContractAddress: string;
+    let authContractAddress: string;
 
     test('Deploy smart account auth contract', async () => {
         try {

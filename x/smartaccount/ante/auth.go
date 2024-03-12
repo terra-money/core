@@ -93,9 +93,6 @@ func (sad SmartAccountAuthDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simu
 		return ctx, err
 	}
 
-	// set the setting in the context for the pre and post tx handlers
-	ctx = ctx.WithValue(types.ModuleName, setting)
-
 	// run through the custom authorization verification
 	if setting.Authorization != nil && len(setting.Authorization) > 0 {
 		success, err := sad.CustomAuthVerify(

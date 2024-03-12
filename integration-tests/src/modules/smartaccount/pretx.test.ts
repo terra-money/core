@@ -113,7 +113,7 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
         }
     });
 
-    test.only('Transaction should fail for limit', async () => {
+    test('Transaction should fail for limit', async () => {
         try {
             // signing with the controlledAccountAddress should now fail 
             let tx = await wallet.createAndSignTx({
@@ -129,7 +129,7 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
             });
             let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
             console.log(result)
-            expect(result.raw_log).toEqual("Unauthorized message type");
+            expect(result.raw_log).toEqual("Unauthorized: Unauthorized message type: execute wasm contract failed");
         } catch (e:any) {
             console.log(e)
             expect(e).toBeUndefined();
