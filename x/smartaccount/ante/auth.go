@@ -157,7 +157,7 @@ func (sad SmartAccountAuthDecorator) GetParamsForCustomAuthVerification(
 
 		// This is to get the address of the signer (either a multisig or a single sig)
 		// For multisig, the address to generated from the json encoded list of signers
-		// See: cosmos-sdk: crypto/keys/multisig/multisig.go
+		// See: https://github.com/cosmos/cosmos-sdk/blob/v0.47.10/crypto/keys/multisig/multisig.go
 		senderAddr, err := sdk.AccAddressFromHexUnsafe(signature.PubKey.Address().String())
 		if err != nil {
 			return nil, nil, nil, err
