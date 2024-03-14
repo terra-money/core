@@ -119,6 +119,8 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
             const balance = await LCD.chain1.bank.balance(smartaccAddress);
             const coinsToSend = balance[0].sub(Coins.fromString("1000000uluna"));
 
+            const receiverBalanceBefore = await LCD.chain1.bank.balance(receiver);
+
             let tx = await wallet.createAndSignTx({
                 msgs: [
                     new MsgSend(
@@ -134,25 +136,29 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
             await LCD.chain1.tx.broadcastSync(tx, "test-1");
             await blockInclusion();
 
-            const balanceAfter = await LCD.chain1.bank.balance(smartaccAddress);
-            const coinAfter = balanceAfter[0].find((coin: Coin) => coin.denom === "uluna");
-            expect(coinAfter).toBeDefined();
-            expect(coinAfter!.amount.toNumber()).toBeLessThan(1000000);
-            expect(coinAfter!.amount.toNumber()).toBeGreaterThan(900000);
+            // check that MsgSend succeeds
+            const receiverBalanceAfter = await LCD.chain1.bank.balance(receiver);
+            const deltaBalance = receiverBalanceAfter[0].sub(receiverBalanceBefore[0]);
+            expect(deltaBalance).toEqual(coinsToSend);
         } catch (e:any) {
             console.log(e)
             expect(e).toBeUndefined();
         }
     });
     
-    test.only('Transaction should fail simulation for sending over limit', async () => {
+    test('Transaction should fail for sending over limit', async () => {
         try {
-            // let setting = await LCD.chain1.smartaccount.setting(smartaccAddress);
-            // expect(setting.postTransaction).toEqual([limitContractAddress]);
+            let setting = await LCD.chain1.smartaccount.setting(smartaccAddress);
+            expect(setting.postTransaction).toEqual([limitContractAddress]);
 
             // should have 940000uluna at this point 60000
-            const balance = await LCD.chain1.bank.balance(smartaccAddress);
-            const coinsToSend = balance[0].sub(Coins.fromString("60000uluna"));
+            const balanceBefore = await LCD.chain1.bank.balance(smartaccAddress);
+            // leave 23905uluna for fees so transaction will not fail due to insufficient funds
+            // should cost 23705uluna
+            const coinsToSend = balanceBefore[0].sub(Coins.fromString("23905uluna"));
+
+            const coinBefore = balanceBefore[0].find((coin: Coin) => coin.denom === "uluna");
+            expect(coinBefore).toBeDefined();
 
             let tx = await wallet.createAndSignTx({
                 msgs: [
@@ -163,53 +169,27 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
                     ),
                 ],
                 chainID: "test-1",
-                gas: '400000',
             });
-            await LCD.chain1.tx.simulateTx(tx, "test-1");            
+            const fee_coins = tx.toData().auth_info.fee.amount;
+
+            // fee_coins[0].amount string to number
+            const fee_amount = parseInt(fee_coins[0].amount);
+
+            await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await blockInclusion();
+
+            // check that MsgSend failed
+            const balanceAfter = await LCD.chain1.bank.balance(smartaccAddress);
+            const coinAfter = balanceAfter[0].find((coin: Coin) => coin.denom === "uluna");
+            expect(coinAfter).toBeDefined();
+            
+            // check that only fees were deducted
+            const coinAfter_amount = parseInt(coinAfter!.amount.toString());
+            const balaceBeforeMinusFee = coinBefore!.amount.toNumber() - fee_amount;
+            expect(balaceBeforeMinusFee).toEqual(coinAfter_amount);
         } catch (e:any) {
-            // TODO: simulate transaction will fail but e is an object
-            // find a way to make assertion below pass
             console.log(e)
-            expect(e.toString()).toContain("Failed post transaction process: Account balance is less than 1000: execute wasm contract failed");
+            expect(e).toBeUndefined();
         }
     });
-
-    // test('Transaction should fail simulation for sending over limit', async () => {
-    //     try {
-    //         // let setting = await LCD.chain1.smartaccount.setting(smartaccAddress);
-    //         // expect(setting.postTransaction).toEqual([limitContractAddress]);
-
-    //         // should have 940000uluna at this point 60000
-    //         const balance = await LCD.chain1.bank.balance(smartaccAddress);
-    //         const coinsToSend = balance[0].sub(Coins.fromString("61000uluna"));
-
-    //         let tx = await wallet.createAndSignTx({
-    //             msgs: [
-    //                 new MsgSend(
-    //                     smartaccAddress,
-    //                     receiver,
-    //                     coinsToSend,
-    //                 ),
-    //             ],
-    //             chainID: "test-1",
-    //             gas: '400000',
-    //         });
-    //         // simulate should not fail
-    //         await LCD.chain1.tx.simulateTx(tx, "test-1");
-
-    //         console.log("asdasd")
-    //         const result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
-    //         console.log(result)
-    //         await blockInclusion();
-
-    //         // check that MsgSend failed
-    //         const balanceAfter = await LCD.chain1.bank.balance(smartaccAddress);
-    //         const coinAfter = balanceAfter[0].find((coin: Coin) => coin.denom === "uluna");
-    //         expect(coinAfter).toBeDefined();
-    //         expect(coinAfter!.amount.toNumber()).toBeGreaterThan(60000);
-    //     } catch (e:any) {
-    //         console.log(e)
-    //         expect(e).toBeUndefined();
-    //     }
-    // });
 });
