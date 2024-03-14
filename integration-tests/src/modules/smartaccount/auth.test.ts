@@ -8,11 +8,11 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
     // Prepare environment clients, accounts and wallets
     const LCD = getLCDClient();
     const accounts = getMnemonics();
-    const wallet = LCD.chain1.wallet(accounts.mnemonic5);
-    const controlledAccountAddress = accounts.mnemonic5.accAddress("terra");
+    const wallet = LCD.chain1.wallet(accounts.smartaccAuthMnemonic);
+    const controlledAccountAddress = accounts.smartaccAuthMnemonic.accAddress("terra");
     
-    const controller = LCD.chain1.wallet(accounts.mnemonic4);
-    const pubkey = accounts.mnemonic4.publicKey;
+    const controller = LCD.chain1.wallet(accounts.smartaccControllerMnemonic);
+    const pubkey = accounts.smartaccControllerMnemonic.publicKey;
     expect(pubkey).toBeDefined();
 
     const pubkeybb = pubkey as SimplePublicKey;

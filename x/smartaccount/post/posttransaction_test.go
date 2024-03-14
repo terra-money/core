@@ -62,7 +62,7 @@ func (s *PostTxTestSuite) TestPostTransactionHookWithEmptySmartAccount() {
 
 func (s *PostTxTestSuite) TestInvalidContractAddress() {
 	s.Setup()
-	s.Ctx = s.Ctx.WithValue(smartaccounttypes.ModuleName, smartaccounttypes.Setting{
+	s.Ctx = s.Ctx.WithValue(smartaccounttypes.ModuleName, &smartaccounttypes.Setting{
 		PostTransaction: []string{s.TestAccs[0].String()},
 	})
 	txBuilder := s.BuildDefaultMsgTx(0, &types.MsgSend{

@@ -8,16 +8,13 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
     // Prepare environment clients, accounts and wallets
     const LCD = getLCDClient();
     const accounts = getMnemonics();
-    const wallet = LCD.chain1.wallet(accounts.mnemonic3);
-    const controlledAccountAddress = accounts.mnemonic3.accAddress("terra");
-    
-    const pubkey = accounts.mnemonic4.publicKey;
-    expect(pubkey).toBeDefined();
+    const wallet = LCD.chain1.wallet(accounts.smartaccPostTxMnemonic);
+    const controlledAccountAddress = accounts.smartaccPostTxMnemonic.accAddress("terra");
     
     const deployer = LCD.chain1.wallet(accounts.tokenFactoryMnemonic);
     const deployerAddress = accounts.tokenFactoryMnemonic.accAddress("terra");
 
-    let limitContractAddress: string = "terra1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrquka9l6"
+    let limitContractAddress: string;
 
     test('Create new smart account', async () => {
         try {
