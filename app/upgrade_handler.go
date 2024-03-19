@@ -7,6 +7,7 @@ import (
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	terraappconfig "github.com/terra-money/core/v2/app/config"
 	v2_10 "github.com/terra-money/core/v2/app/upgrades/v2.10"
+	v2_11 "github.com/terra-money/core/v2/app/upgrades/v2.11"
 	v2_2_0 "github.com/terra-money/core/v2/app/upgrades/v2.2.0"
 	v2_3_0 "github.com/terra-money/core/v2/app/upgrades/v2.3.0"
 	v2_4 "github.com/terra-money/core/v2/app/upgrades/v2.4"
@@ -101,6 +102,15 @@ func (app *TerraApp) RegisterUpgradeHandlers() {
 			app.GetAppCodec(),
 		),
 	)
+	app.Keepers.UpgradeKeeper.SetUpgradeHandler(
+		terraappconfig.Upgrade2_11,
+		v2_11.CreateUpgradeHandler(
+			app.GetModuleManager(),
+			app.GetConfigurator(),
+			app.Keepers.BankKeeper,
+			app.Keepers.TransferKeeper,
+		),
+	)
 }
 
 func (app *TerraApp) RegisterUpgradeStores() {
@@ -134,6 +144,9 @@ func (app *TerraApp) RegisterUpgradeStores() {
 		storeUpgrades := storetypes.StoreUpgrades{Deleted: []string{"builder"}, Added: []string{icqtypes.StoreKey}}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	} else if upgradeInfo.Name == terraappconfig.Upgrade2_10 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{}
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	} else if upgradeInfo.Name == terraappconfig.Upgrade2_11 && !app.Keepers.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{}
 		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
