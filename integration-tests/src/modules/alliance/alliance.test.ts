@@ -129,8 +129,7 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
             expect(e.response.data.message).toContain("alliance asset already exists");
         }
 
-        // Query the alliance and check if it exists
-        const res = await LCD.chain2.alliance.alliance("test-2", ibcCoin.denom);
+        const res = await LCD.chain2.alliance.alliance("test-2", encodeURIComponent(encodeURIComponent(ibcCoin.denom)));
         expect(res).toBeDefined();
         expect(res.alliance.denom).toBe(ibcCoin.denom);
         expect(res.alliance.reward_weight).toBe("0.100000000000000000");

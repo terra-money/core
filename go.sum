@@ -400,8 +400,8 @@ github.com/cosmos/gogoproto v1.4.10 h1:QH/yT8X+c0F4ZDacDv3z+xE3WU1P1Z3wQoLMBRJoK
 github.com/cosmos/gogoproto v1.4.10/go.mod h1:3aAZzeRWpAwr+SS/LLkICX2/kDFyaYVzckBDzygIxek=
 github.com/cosmos/iavl v0.20.1 h1:rM1kqeG3/HBT85vsZdoSNsehciqUQPWrR4BYmqE2+zg=
 github.com/cosmos/iavl v0.20.1/go.mod h1:WO7FyvaZJoH65+HFOsDir7xU9FWk2w9cHXNW1XHcl7A=
-github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.1-0.20231012160012-d0f49580a238 h1:vc9zQUjiYctU3q4uF5usbl2JUqaa3F6bEyboNKOKyBk=
-github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.1-0.20231012160012-d0f49580a238/go.mod h1:WO/xWf+I8m+9PZsBkwZkEREZIW24j90Sz2yOsXU3B9U=
+github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.1.3-0.20240228213828-cce7f56d000b h1:VwhHRRIPdMshBMb2TP7xrkY4Ee8CJWsHZvucYeJ56no=
+github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.1.3-0.20240228213828-cce7f56d000b/go.mod h1:UvDmcGIWJPIytq+Q78/ff5NTOsuX/7IrNgEugTW5i0s=
 github.com/cosmos/ibc-apps/modules/async-icq/v7 v7.0.0 h1:mMHedP3Q+mz5gpOWNz0P+X8hxPdamylrBKc/P2cFakA=
 github.com/cosmos/ibc-apps/modules/async-icq/v7 v7.0.0/go.mod h1:/P6l2bWo2AR3rrsfs0DHuFZO3Imzb93sxFD3ihrIgw4=
 github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20230803181732-7c8f814d3b79 h1:pCxyhIxgWTabAQC5UerkITraHG3SwajdLKKMCFDWCv4=
@@ -1125,8 +1125,8 @@ github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 h1:epCh84lMvA70
 github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7/go.mod h1:q4W45IWZaF22tdD+VEXcAWRA037jwmWEB5VWYORlTpc=
 github.com/tendermint/go-amino v0.16.0 h1:GyhmgQKvqF82e2oZeuMSp9JTN0N09emoSZlb2lyGa2E=
 github.com/tendermint/go-amino v0.16.0/go.mod h1:TQU0M1i/ImAo+tYpZi73AU3V/dKeCoMC9Sphe2ZwGME=
-github.com/terra-money/alliance v0.3.4 h1:rBEKw8o9mN8AL6yCS2+Pb8DIi82an2HUnfdUtq5CPNo=
-github.com/terra-money/alliance v0.3.4/go.mod h1:HDiUexeXRUkLkLRw5jLQcHuVt1Sx43HfyVl0kfwW3JM=
+github.com/terra-money/alliance v0.3.5 h1:7bLlw9ZUNaFFxGYiKyJKB7x2SV2+6lVvMYbmBm3OORU=
+github.com/terra-money/alliance v0.3.5/go.mod h1:HDiUexeXRUkLkLRw5jLQcHuVt1Sx43HfyVl0kfwW3JM=
 github.com/terra-money/cosmos-sdk v0.47.6-terra.0 h1:BrK2cq8W5HsMT5siVdJCFDx1vcEMm+BGN5713FEm84g=
 github.com/terra-money/cosmos-sdk v0.47.6-terra.0/go.mod h1:xTc1chW8HyUWCfrgGbjS5jNu9RzlPVrBNfbL9RmZUio=
 github.com/terra-money/ibc-go/v7 v7.3.1-terra.0 h1:CF+iicqyI4BJsW2zjUrUrTxRRrPWFZC30VqvlRyVl28=

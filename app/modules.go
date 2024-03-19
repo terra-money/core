@@ -39,8 +39,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
-	routertypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
@@ -108,7 +108,7 @@ var ModuleBasics = module.NewBasicManager(
 	vesting.AppModuleBasic{},
 	ica.AppModuleBasic{},
 	ibcfee.AppModuleBasic{},
-	router.AppModuleBasic{},
+	packetforward.AppModuleBasic{},
 	authzmodule.AppModuleBasic{},
 	tokenfactory.AppModuleBasic{},
 	ibchooks.AppModuleBasic{},
@@ -147,7 +147,7 @@ func appModules(app *TerraApp, encodingConfig terrappsparams.EncodingConfig, ski
 		ibctransfer.NewAppModule(app.Keepers.TransferKeeper),
 		ibcfee.NewAppModule(app.Keepers.IBCFeeKeeper),
 		ica.NewAppModule(&app.Keepers.ICAControllerKeeper, &app.Keepers.ICAHostKeeper),
-		router.NewAppModule(&app.Keepers.RouterKeeper),
+		packetforward.NewAppModule(&app.Keepers.PacketForwardKeeper, app.GetSubspace(packetforwardtypes.ModuleName)),
 		customwasmodule.NewAppModule(app.appCodec, &app.Keepers.WasmKeeper, app.Keepers.StakingKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 		ibchooks.NewAppModule(app.Keepers.AccountKeeper),
 		tokenfactory.NewAppModule(app.Keepers.TokenFactoryKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.GetSubspace(tokenfactorytypes.ModuleName)),
@@ -183,7 +183,7 @@ var initGenesisOrder = []string{
 	ibctransfertypes.ModuleName,
 	icatypes.ModuleName,
 	ibcfeetypes.ModuleName,
-	routertypes.ModuleName,
+	packetforwardtypes.ModuleName,
 	tokenfactorytypes.ModuleName,
 	ibchookstypes.ModuleName,
 	wasmtypes.ModuleName,
@@ -215,7 +215,7 @@ var beginBlockersOrder = []string{
 	ibctransfertypes.ModuleName,
 	icatypes.ModuleName,
 	ibcfeetypes.ModuleName,
-	routertypes.ModuleName,
+	packetforwardtypes.ModuleName,
 	ibchookstypes.ModuleName,
 	wasmtypes.ModuleName,
 	tokenfactorytypes.ModuleName,
@@ -247,7 +247,7 @@ var endBlockerOrder = []string{
 	ibctransfertypes.ModuleName,
 	icatypes.ModuleName,
 	ibcfeetypes.ModuleName,
-	routertypes.ModuleName,
+	packetforwardtypes.ModuleName,
 	ibchookstypes.ModuleName,
 	wasmtypes.ModuleName,
 	tokenfactorytypes.ModuleName,

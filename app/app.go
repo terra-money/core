@@ -72,7 +72,8 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
 	ibcfee "github.com/cosmos/ibc-go/v7/modules/apps/29-fee"
@@ -452,7 +453,7 @@ func (app *TerraApp) SimulationManager() *module.SimulationManager {
 		ibctransfer.NewAppModule(app.Keepers.TransferKeeper),
 		ibcfee.NewAppModule(app.Keepers.IBCFeeKeeper),
 		ica.NewAppModule(&app.Keepers.ICAControllerKeeper, &app.Keepers.ICAHostKeeper),
-		router.NewAppModule(&app.Keepers.RouterKeeper),
+		packetforward.NewAppModule(&app.Keepers.PacketForwardKeeper, app.GetSubspace(packetforwardtypes.ModuleName)),
 		customwasmodule.NewAppModule(appCodec, &app.Keepers.WasmKeeper, app.Keepers.StakingKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.BaseApp.MsgServiceRouter(), app.Keepers.GetSubspace(wasmtypes.ModuleName)),
 		alliance.NewAppModule(appCodec, app.Keepers.AllianceKeeper, app.Keepers.StakingKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.interfaceRegistry, app.Keepers.GetSubspace(alliancetypes.ModuleName)),
 		feeshare.NewAppModule(app.Keepers.FeeShareKeeper, app.Keepers.AccountKeeper, app.GetSubspace(feesharetypes.ModuleName)),
