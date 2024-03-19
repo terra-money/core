@@ -62,7 +62,7 @@ func (s *PostTxTestSuite) TestPostTransactionHookWithEmptySmartAccount() {
 
 func (s *PostTxTestSuite) TestInvalidContractAddress() {
 	s.Setup()
-	s.Ctx = s.Ctx.WithValue(smartaccounttypes.ModuleName, smartaccounttypes.Setting{
+	s.Ctx = s.Ctx.WithValue(smartaccounttypes.ModuleName, &smartaccounttypes.Setting{
 		PostTransaction: []string{s.TestAccs[0].String()},
 	})
 	txBuilder := s.BuildDefaultMsgTx(0, &types.MsgSend{
@@ -74,46 +74,54 @@ func (s *PostTxTestSuite) TestInvalidContractAddress() {
 	require.ErrorContainsf(s.T(), err, "no such contract", "error message: %s", err)
 }
 
-func (s *PostTxTestSuite) TestSendCoinsWithLimitSendHook() {
+func (s *PostTxTestSuite) TestSendWithinLimitWithLimitCoinsSendHook() {
 	s.Setup()
 
 	acc := s.TestAccs[0]
-	codeId, _, err := s.WasmKeeper.Create(s.Ctx, acc, test_helpers.LimitSendOnlyHookWasm, nil)
+	codeId, _, err := s.WasmKeeper.Create(s.Ctx, acc, test_helpers.LimitMinCoinsHookWasm, nil)
 	require.NoError(s.T(), err)
 	contractAddr, _, err := s.WasmKeeper.Instantiate(s.Ctx, codeId, acc, acc, []byte("{}"), "limit send", sdk.NewCoins())
 	require.NoError(s.T(), err)
 
-	s.Ctx = s.Ctx.WithValue(smartaccounttypes.ModuleName, smartaccounttypes.Setting{
+	s.Ctx = s.Ctx.WithValue(smartaccounttypes.ModuleName, &smartaccounttypes.Setting{
 		PostTransaction: []string{contractAddr.String()},
 	})
+
+	err = s.App.Keepers.BankKeeper.SendCoinsFromAccountToModule(s.Ctx, acc, smartaccounttypes.ModuleName, sdk.NewCoins(sdk.NewInt64Coin("uluna", 10000000)))
+	require.NoError(s.T(), err)
+
 	txBuilder := s.BuildDefaultMsgTx(0, &types.MsgSend{
 		FromAddress: acc.String(),
 		ToAddress:   acc.String(),
-		Amount:      sdk.NewCoins(sdk.NewInt64Coin("uluna", 100000000)),
+		Amount:      sdk.NewCoins(sdk.NewInt64Coin("uluna", 10000000)),
 	})
 	_, err = s.PostTxDecorator.PostHandle(s.Ctx, txBuilder.GetTx(), false, true, sdk.ChainPostDecorators(sdk.Terminator{}))
 	require.NoError(s.T(), err)
 }
 
-func (s *PostTxTestSuite) TestStakingWithLimitSendHook() {
+func (s *PostTxTestSuite) TestSendOverLimitWithLimitCoinsSendHook() {
 	s.Setup()
 
 	acc := s.TestAccs[0]
-	codeId, _, err := s.WasmKeeper.Create(s.Ctx, acc, test_helpers.LimitSendOnlyHookWasm, nil)
+	codeId, _, err := s.WasmKeeper.Create(s.Ctx, acc, test_helpers.LimitMinCoinsHookWasm, nil)
 	require.NoError(s.T(), err)
 	contractAddr, _, err := s.WasmKeeper.Instantiate(s.Ctx, codeId, acc, acc, []byte("{}"), "limit send", sdk.NewCoins())
 	require.NoError(s.T(), err)
 
-	s.Ctx = s.Ctx.WithValue(smartaccounttypes.ModuleName, smartaccounttypes.Setting{
+	s.Ctx = s.Ctx.WithValue(smartaccounttypes.ModuleName, &smartaccounttypes.Setting{
 		PostTransaction: []string{contractAddr.String()},
 	})
+
+	err = s.App.Keepers.BankKeeper.SendCoinsFromAccountToModule(s.Ctx, acc, smartaccounttypes.ModuleName, sdk.NewCoins(sdk.NewInt64Coin("uluna", 100000000)))
+	require.NoError(s.T(), err)
+
 	txBuilder := s.BuildDefaultMsgTx(0, &stakingtypes.MsgDelegate{
 		DelegatorAddress: acc.String(),
 		ValidatorAddress: acc.String(),
 		Amount:           sdk.NewInt64Coin("uluna", 100000000),
 	})
 	_, err = s.PostTxDecorator.PostHandle(s.Ctx, txBuilder.GetTx(), false, true, sdk.ChainPostDecorators(sdk.Terminator{}))
-	require.ErrorContainsf(s.T(), err, "Unauthorized message type", "error message: %s", err)
+	require.ErrorContainsf(s.T(), err, "Failed post transaction process", "error message: %s", err)
 }
 
 func (s *PostTxTestSuite) BuildDefaultMsgTx(accountIndex int, msgs ...sdk.Msg) client.TxBuilder {

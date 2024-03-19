@@ -1,4 +1,4 @@
-import { Coin, Coins, MsgDelegate, MsgInstantiateContract, MsgSend, MsgStoreCode, ValAddress } from "@terra-money/feather.js";
+import { Coin, Coins, MsgInstantiateContract, MsgSend, MsgStoreCode } from "@terra-money/feather.js";
 import { MsgCreateSmartAccount, MsgUpdateTransactionHooks } from "@terra-money/feather.js/dist/core/smartaccount";
 import fs from "fs";
 import path from 'path';
@@ -8,8 +8,9 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
     // Prepare environment clients, accounts and wallets
     const LCD = getLCDClient();
     const accounts = getMnemonics();
-    const wallet = LCD.chain1.wallet(accounts.smartaccPostTxMnemonic);
-    const controlledAccountAddress = accounts.smartaccPostTxMnemonic.accAddress("terra");
+    const wallet = LCD.chain1.wallet(accounts.smartaccPreTxMnemonic);
+    const smartaccAddress = accounts.smartaccPreTxMnemonic.accAddress("terra");
+    const receiver = accounts.smartaccControllerMnemonic.accAddress("terra")
     
     const deployer = LCD.chain1.wallet(accounts.tokenFactoryMnemonic);
     const deployerAddress = accounts.tokenFactoryMnemonic.accAddress("terra");
@@ -21,7 +22,7 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
             // create the smartaccount
             let tx = await wallet.createAndSignTx({
                 msgs: [new MsgCreateSmartAccount(
-                    controlledAccountAddress
+                    smartaccAddress
                 )],
                 chainID: 'test-1',
                 gas: '400000',
@@ -29,10 +30,10 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
             await LCD.chain1.tx.broadcastSync(tx, "test-1");
             await blockInclusion();
             // Query smartaccount setting for the smart waccount
-            let setting = await LCD.chain1.smartaccount.setting(controlledAccountAddress);
+            let setting = await LCD.chain1.smartaccount.setting(smartaccAddress);
             expect(setting.toData())
                 .toEqual({
-                    owner: controlledAccountAddress,
+                    owner: smartaccAddress,
                     authorization: [],
                     post_transaction: [],
                     pre_transaction: [],
@@ -49,7 +50,7 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
             let tx = await deployer.createAndSignTx({
                 msgs: [new MsgStoreCode(
                     deployerAddress,
-                    fs.readFileSync(path.join(__dirname, "/../../../../x/smartaccount/test_helpers/test_data/limit_send_only_hooks.wasm")).toString("base64"),
+                    fs.readFileSync(path.join(__dirname, "/../../../../x/smartaccount/test_helpers/test_data/limit_min_coins_hooks.wasm")).toString("base64"),
                 )],
                 chainID: "test-1",
             });
@@ -84,15 +85,15 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
         }
     });
 
-    test('Update pre tx hooks', async () => {
+    test('Update post tx hooks', async () => {
         try {
             // signing with the controlledAccountAddress should now fail 
             let tx = await wallet.createAndSignTx({
                 msgs: [
                     new MsgUpdateTransactionHooks(
-                        controlledAccountAddress,
-                        [limitContractAddress],
+                        smartaccAddress,
                         [],
+                        [limitContractAddress],
                     ),
                 ],
                 chainID: "test-1",
@@ -102,57 +103,90 @@ describe("Smartaccount Module (https://github.com/terra-money/core/tree/release/
             await blockInclusion();
 
             // check if update authorization was successful
-            let setting = await LCD.chain1.smartaccount.setting(controlledAccountAddress);
-            expect(setting.preTransaction).toEqual([limitContractAddress]);
+            let setting = await LCD.chain1.smartaccount.setting(smartaccAddress);
+            expect(setting.postTransaction).toEqual([limitContractAddress]);
         } catch (e:any) {
             console.log(e)
             expect(e).toBeUndefined();
         }
     });
 
-    test('Transaction should fail for delegation', async () => {
+    test('Transaction should pass for sending below limit', async () => {
         try {
-            let setting = await LCD.chain1.smartaccount.setting(controlledAccountAddress);
-            expect(setting.preTransaction).toEqual([limitContractAddress]);
-            // signing with the controlledAccountAddress should now fail 
-            let tx = await wallet.createAndSignTx({
-                msgs: [
-                    new MsgDelegate(
-                        controlledAccountAddress,
-                        ValAddress.fromAccAddress(controlledAccountAddress, "terra"),
-                        Coin.fromString("100000000uluna"),
-                    ),
-                ],
-                chainID: "test-1",
-                gas: '400000',
-            });
-            expect.assertions(1);
-            await LCD.chain1.tx.broadcastSync(tx, "test-1");
-            await blockInclusion();
-        } catch (e:any) {
-            console.log(e)
-            expect(e).toEqual("Unauthorized: Unauthorized message type: execute wasm contract failed");
-        }
-    });
-    
-    test('Transaction should pass for send', async () => {
-        try {
-            // signing with the controlledAccountAddress should now fail 
+            let setting = await LCD.chain1.smartaccount.setting(smartaccAddress);
+            expect(setting.postTransaction).toEqual([limitContractAddress]);
+
+            const balance = await LCD.chain1.bank.balance(smartaccAddress);
+            const coinsToSend = balance[0].sub(Coins.fromString("1000000uluna"));
+
+            const receiverBalanceBefore = await LCD.chain1.bank.balance(receiver);
+
             let tx = await wallet.createAndSignTx({
                 msgs: [
                     new MsgSend(
-                        controlledAccountAddress,
-                        controlledAccountAddress,
-                        Coins.fromString("100000000uluna"),
+                        smartaccAddress,
+                        receiver,
+                        coinsToSend,
                     ),
                 ],
                 chainID: "test-1",
                 gas: '400000',
             });
-            let res = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            // expect.assertions(1);
+            await LCD.chain1.tx.broadcastSync(tx, "test-1");
             await blockInclusion();
-            let txResult = await LCD.chain1.tx.txInfo(res.txhash, "test-1") as any;
-            expect(txResult);
+
+            // check that MsgSend succeeds
+            const receiverBalanceAfter = await LCD.chain1.bank.balance(receiver);
+            const deltaBalance = receiverBalanceAfter[0].sub(receiverBalanceBefore[0]);
+            expect(deltaBalance).toEqual(coinsToSend);
+        } catch (e:any) {
+            console.log(e)
+            expect(e).toBeUndefined();
+        }
+    });
+    
+    test('Transaction should fail for sending over limit', async () => {
+        try {
+            let setting = await LCD.chain1.smartaccount.setting(smartaccAddress);
+            expect(setting.postTransaction).toEqual([limitContractAddress]);
+
+            // should have 940000uluna at this point 60000
+            const balanceBefore = await LCD.chain1.bank.balance(smartaccAddress);
+            // leave 23905uluna for fees so transaction will not fail due to insufficient funds
+            // should cost 23705uluna
+            const coinsToSend = balanceBefore[0].sub(Coins.fromString("23905uluna"));
+
+            const coinBefore = balanceBefore[0].find((coin: Coin) => coin.denom === "uluna");
+            expect(coinBefore).toBeDefined();
+
+            let tx = await wallet.createAndSignTx({
+                msgs: [
+                    new MsgSend(
+                        smartaccAddress,
+                        receiver,
+                        coinsToSend,
+                    ),
+                ],
+                chainID: "test-1",
+            });
+            const fee_coins = tx.toData().auth_info.fee.amount;
+
+            // fee_coins[0].amount string to number
+            const fee_amount = parseInt(fee_coins[0].amount);
+
+            await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await blockInclusion();
+
+            // check that MsgSend failed
+            const balanceAfter = await LCD.chain1.bank.balance(smartaccAddress);
+            const coinAfter = balanceAfter[0].find((coin: Coin) => coin.denom === "uluna");
+            expect(coinAfter).toBeDefined();
+            
+            // check that only fees were deducted
+            const coinAfter_amount = parseInt(coinAfter!.amount.toString());
+            const balaceBeforeMinusFee = coinBefore!.amount.toNumber() - fee_amount;
+            expect(balaceBeforeMinusFee).toEqual(coinAfter_amount);
         } catch (e:any) {
             console.log(e)
             expect(e).toBeUndefined();

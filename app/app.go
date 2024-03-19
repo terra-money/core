@@ -272,9 +272,10 @@ func NewTerraApp(
 	}
 	postHandler := post.NewPostHandler(
 		post.HandlerOptions{
-			FeeShareKeeper: app.Keepers.FeeShareKeeper,
-			BankKeeper:     app.Keepers.BankKeeper,
-			WasmKeeper:     app.Keepers.WasmKeeper,
+			FeeShareKeeper:     app.Keepers.FeeShareKeeper,
+			BankKeeper:         app.Keepers.BankKeeper,
+			WasmKeeper:         app.Keepers.WasmKeeper,
+			SmartAccountKeeper: &app.Keepers.SmartAccountKeeper,
 		},
 	)
 

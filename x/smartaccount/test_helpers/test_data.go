@@ -10,3 +10,6 @@ var SmartAuthContractWasm []byte
 
 //go:embed test_data/smart_auth_multisig.wasm
 var SmartMultiSigWasm []byte
+
+//go:embed test_data/limit_min_coins_hooks.wasm
+var LimitMinCoinsHookWasm []byte
