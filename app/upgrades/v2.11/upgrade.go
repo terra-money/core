@@ -21,6 +21,9 @@ func CreateUpgradeHandler(
 	transferKeeper ibctransferkeeper.Keeper,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+		if ctx.ChainID() != "phoenix-1" {
+			return mm.RunMigrations(ctx, cfg, vm)
+		}
 		// This slice is initialized with objects that describe the escrow account address and the coins that need to be minted to fix the discrepancy.
 		// To find the escrow account and address have been used the following software:
 		// https://github.com/strangelove-ventures/escrow-checker/commit/adf0d867e2210c9ff0a27d8dff1c74ed0c8a00dc
@@ -50,12 +53,6 @@ func CreateUpgradeHandler(
 			}
 		}
 
-		// Run migrations.
-		versionMap, err := mm.RunMigrations(ctx, cfg, vm)
-		if err != nil {
-			return nil, err
-		}
-
-		return versionMap, err
+		return mm.RunMigrations(ctx, cfg, vm)
 	}
 }
