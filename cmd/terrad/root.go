@@ -18,6 +18,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 
+	sdkcmd "cosmossdk.io/simapp/simd/cmd"
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -34,6 +35,7 @@ import (
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
 	wasm "github.com/CosmWasm/wasmd/x/wasm"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	terraapp "github.com/terra-money/core/v2/app"
 	"github.com/terra-money/core/v2/app/params"
 )
@@ -112,12 +114,13 @@ func initRootCmd(rootCmd *cobra.Command, moduleBasics module.BasicManager, encod
 	a := appCreator{encodingConfig}
 
 	rootCmd.AddCommand(
-		InitCmd(terraapp.ModuleBasics, terraapp.DefaultNodeHome),
+		InitCmd(moduleBasics, terraapp.DefaultNodeHome),
 		config.Cmd(),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
 		pruning.Cmd(a.newApp, terraapp.DefaultNodeHome),
 		snapshot.Cmd(a.newApp),
+		sdkcmd.NewTestnetCmd(moduleBasics, banktypes.GenesisBalancesIterator{}),
 	)
 
 	server.AddCommands(rootCmd, terraapp.DefaultNodeHome, a.newApp, a.appExport, addModuleInitFlags)
