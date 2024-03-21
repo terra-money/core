@@ -10,7 +10,6 @@ import (
 	// #nosec G702
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/cosmos/cosmos-sdk/types/mempool"
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -194,9 +193,6 @@ func NewTerraApp(
 	bApp := baseapp.NewBaseApp(terraappconfig.AppName, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
-
-	mpool := mempool.NewSenderNonceMempool()
-	bApp.SetMempool(mpool)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
 	app := &TerraApp{
 		BaseApp:           bApp,

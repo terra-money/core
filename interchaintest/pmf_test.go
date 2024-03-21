@@ -241,7 +241,7 @@ func TestPMF(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 2, chainA)
+		err = testutil.WaitForBlocks(ctx, 1, chainA)
 		require.NoError(t, err)
 
 		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
