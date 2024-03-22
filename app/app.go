@@ -194,6 +194,7 @@ func NewTerraApp(
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
+	bApp.SetTxEncoder(encodingConfig.TxConfig.TxEncoder())
 	app := &TerraApp{
 		BaseApp:           bApp,
 		cdc:               cdc,
