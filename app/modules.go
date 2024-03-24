@@ -51,6 +51,8 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v7/modules/core"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
+	"github.com/terra-money/core/v2/x/feeburn"
+	feeburntypes "github.com/terra-money/core/v2/x/feeburn/types"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
@@ -116,6 +118,7 @@ var ModuleBasics = module.NewBasicManager(
 	consensus.AppModuleBasic{},
 	alliance.AppModuleBasic{},
 	feeshare.AppModuleBasic{},
+	feeburn.AppModuleBasic{},
 	icq.AppModuleBasic{},
 )
 
@@ -154,6 +157,7 @@ func appModules(app *TerraApp, encodingConfig terrappsparams.EncodingConfig, ski
 		alliance.NewAppModule(app.appCodec, app.Keepers.AllianceKeeper, app.Keepers.StakingKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.interfaceRegistry, app.GetSubspace(alliancetypes.ModuleName)),
 		feeshare.NewAppModule(app.Keepers.FeeShareKeeper, app.Keepers.AccountKeeper, app.GetSubspace(feesharetypes.ModuleName)),
 		icq.NewAppModule(app.Keepers.ICQKeeper),
+		feeburn.NewAppModule(app.Keepers.FeeBurnKeeper),
 	}
 }
 
@@ -191,6 +195,7 @@ var initGenesisOrder = []string{
 	feesharetypes.ModuleName,
 	consensusparamtypes.ModuleName,
 	icqtypes.ModuleName,
+	feeburntypes.ModuleName,
 }
 
 var beginBlockersOrder = []string{
@@ -223,6 +228,7 @@ var beginBlockersOrder = []string{
 	feesharetypes.ModuleName,
 	consensusparamtypes.ModuleName,
 	icqtypes.ModuleName,
+	feeburntypes.ModuleName,
 }
 
 var endBlockerOrder = []string{
@@ -255,4 +261,5 @@ var endBlockerOrder = []string{
 	feesharetypes.ModuleName,
 	consensusparamtypes.ModuleName,
 	icqtypes.ModuleName,
+	feeburntypes.ModuleName,
 }

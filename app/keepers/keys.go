@@ -44,6 +44,7 @@ import (
 	tokenfactorytypes "github.com/terra-money/core/v2/x/tokenfactory/types"
 
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
+	feeburntypes "github.com/terra-money/core/v2/x/feeburn/types"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 
 	// unnamed import of statik for swagger UI support
@@ -60,7 +61,7 @@ func (keepers *TerraAppKeepers) GenerateKeys() {
 		icahosttypes.StoreKey, icacontrollertypes.StoreKey, packetforwardtypes.StoreKey,
 		consensusparamtypes.StoreKey, tokenfactorytypes.StoreKey, wasmtypes.StoreKey,
 		ibcfeetypes.StoreKey, ibchookstypes.StoreKey, crisistypes.StoreKey,
-		alliancetypes.StoreKey, feesharetypes.StoreKey, icqtypes.StoreKey,
+		alliancetypes.StoreKey, feesharetypes.StoreKey, icqtypes.StoreKey, feeburntypes.StoreKey,
 	)
 
 	keepers.tkeys = sdk.NewTransientStoreKeys(paramstypes.TStoreKey)

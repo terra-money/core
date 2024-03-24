@@ -86,6 +86,7 @@ import (
 	"github.com/terra-money/alliance/x/alliance"
 	allianceclient "github.com/terra-money/alliance/x/alliance/client"
 	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
+	"github.com/terra-money/core/v2/x/feeburn"
 	feeshare "github.com/terra-money/core/v2/x/feeshare"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 
@@ -272,6 +273,7 @@ func NewTerraApp(
 	postHandler := post.NewPostHandler(
 		post.HandlerOptions{
 			FeeShareKeeper: app.Keepers.FeeShareKeeper,
+			FeeBurnKeeper:  app.Keepers.FeeBurnKeeper,
 			BankKeeper:     app.Keepers.BankKeeper,
 			WasmKeeper:     app.Keepers.WasmKeeper,
 		},
@@ -457,6 +459,7 @@ func (app *TerraApp) SimulationManager() *module.SimulationManager {
 		customwasmodule.NewAppModule(appCodec, &app.Keepers.WasmKeeper, app.Keepers.StakingKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.BaseApp.MsgServiceRouter(), app.Keepers.GetSubspace(wasmtypes.ModuleName)),
 		alliance.NewAppModule(appCodec, app.Keepers.AllianceKeeper, app.Keepers.StakingKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.interfaceRegistry, app.Keepers.GetSubspace(alliancetypes.ModuleName)),
 		feeshare.NewAppModule(app.Keepers.FeeShareKeeper, app.Keepers.AccountKeeper, app.GetSubspace(feesharetypes.ModuleName)),
+		feeburn.NewAppModule(app.Keepers.FeeBurnKeeper),
 	)
 
 	sm.RegisterStoreDecoders()

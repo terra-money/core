@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/terra-money/alliance/x/alliance"
 	"github.com/terra-money/core/v2/app"
+	"github.com/terra-money/core/v2/x/feeburn"
 	"github.com/terra-money/core/v2/x/feeshare"
 	"github.com/terra-money/core/v2/x/tokenfactory"
 
@@ -207,6 +208,7 @@ func (s *AppGenesisTestSuite) TestMigration() {
 			"crisis":                 crisis.AppModule{}.ConsensusVersion(),
 			"distribution":           distribution.AppModule{}.ConsensusVersion(),
 			"evidence":               evidence.AppModule{}.ConsensusVersion(),
+			"feeburn":                feeburn.AppModule{}.ConsensusVersion(),
 			"feegrant":               feegrantmodule.AppModule{}.ConsensusVersion(),
 			"feeshare":               feeshare.AppModule{}.ConsensusVersion(),
 			"feeibc":                 ibcfee.AppModule{}.ConsensusVersion(),
@@ -239,6 +241,7 @@ func (s *AppGenesisTestSuite) TestMigration() {
 		"crisis":                 2,
 		"distribution":           3,
 		"evidence":               1,
+		"feeburn":                1,
 		"feegrant":               2,
 		"feeshare":               2,
 		"feeibc":                 1,
@@ -341,6 +344,11 @@ func (s *AppGenesisTestSuite) TestGenesis() {
 		},
 		"evidence": {
 			"evidence": []
+		},
+		"feeburn": {
+		  "params": {
+			"enable_fee_burn": true
+		  }
 		},
 		"feegrant": {
 			"allowances": []
