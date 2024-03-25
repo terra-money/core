@@ -112,12 +112,13 @@ func initRootCmd(rootCmd *cobra.Command, moduleBasics module.BasicManager, encod
 	a := appCreator{encodingConfig}
 
 	rootCmd.AddCommand(
-		InitCmd(terraapp.ModuleBasics, terraapp.DefaultNodeHome),
+		InitCmd(moduleBasics, terraapp.DefaultNodeHome),
 		config.Cmd(),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
 		pruning.Cmd(a.newApp, terraapp.DefaultNodeHome),
 		snapshot.Cmd(a.newApp),
+		NewTestnetCmd(moduleBasics),
 	)
 
 	server.AddCommands(rootCmd, terraapp.DefaultNodeHome, a.newApp, a.appExport, addModuleInitFlags)
