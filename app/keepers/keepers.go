@@ -1,9 +1,6 @@
 package keepers
 
 import (
-
-	// #nosec G702
-
 	"path/filepath"
 
 	ibctransfer "github.com/cosmos/ibc-go/v7/modules/apps/transfer"
@@ -100,6 +97,9 @@ import (
 	feesharekeeper "github.com/terra-money/core/v2/x/feeshare/keeper"
 	feesharetypes "github.com/terra-money/core/v2/x/feeshare/types"
 
+	smartaccountkeeper "github.com/terra-money/core/v2/x/smartaccount/keeper"
+	smartaccounttypes "github.com/terra-money/core/v2/x/smartaccount/types"
+
 	terraappconfig "github.com/terra-money/core/v2/app/config"
 	// unnamed import of statik for swagger UI support
 	_ "github.com/terra-money/core/v2/client/docs/statik"
@@ -121,6 +121,7 @@ var maccPerms = map[string][]string{
 	tokenfactorytypes.ModuleName:   {authtypes.Burner, authtypes.Minter},
 	alliancetypes.ModuleName:       {authtypes.Burner, authtypes.Minter},
 	alliancetypes.RewardsPoolName:  nil,
+	smartaccounttypes.ModuleName:   nil,
 }
 
 type TerraAppKeepers struct {
@@ -155,6 +156,7 @@ type TerraAppKeepers struct {
 	AllianceKeeper        alliancekeeper.Keeper
 	FeeShareKeeper        feesharekeeper.Keeper
 	ICQKeeper             icqkeeper.Keeper
+	SmartAccountKeeper    smartaccountkeeper.Keeper
 
 	// IBC hooks
 	IBCHooksKeeper   *ibchookskeeper.Keeper
@@ -467,6 +469,12 @@ func NewTerraAppKeepers(
 		wasmOpts...,
 	)
 
+	keepers.SmartAccountKeeper = smartaccountkeeper.NewKeeper(
+		appCodec,
+		keys[smartaccounttypes.StoreKey],
+		keepers.WasmKeeper.Keeper,
+	)
+
 	keepers.Ics20WasmHooks.ContractKeeper = keepers.WasmKeeper.Keeper
 	// Setup the contract keepers.WasmKeeper before the
 	// hook for the BankKeeper othrwise the WasmKeeper
@@ -569,6 +577,7 @@ func (app *TerraAppKeepers) initParamsKeeper(appCodec codec.BinaryCodec, legacyA
 	paramsKeeper.Subspace(tokenfactorytypes.ModuleName).WithKeyTable(tokenfactorytypes.ParamKeyTable())
 	paramsKeeper.Subspace(feesharetypes.ModuleName).WithKeyTable(feesharetypes.ParamKeyTable())
 	paramsKeeper.Subspace(alliancetypes.ModuleName).WithKeyTable(alliancetypes.ParamKeyTable())
+	paramsKeeper.Subspace(smartaccounttypes.ModuleName).WithKeyTable(smartaccounttypes.ParamKeyTable())
 
 	return paramsKeeper
 }

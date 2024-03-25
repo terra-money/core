@@ -1,0 +1,31 @@
+syntax = "proto3";
+package terra.smartaccount.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "terra/smartaccount/v1/wasm.proto";
+
+option go_package = "github.com/terra-money/core/v2/x/smartaccount/types";
+
+message Setting {
+    // Owner that can do priviledged operations on the Smart Account
+    // Defaults to the Smart Account Addr
+    string owner = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+    // List of contract addresses to perform auth instead of SigVerify
+    repeated AuthorizationMsg authorization = 2 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+    
+    // List of contract addresses to perform pre-txn logic
+    repeated string pre_transaction = 3 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+    
+    // List of contract addresses to perform post-txn logic
+    repeated string post_transaction = 4 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+    // Fallback to default SigVerify if custom authorization fails
+    bool fallback = 5;
+}
+
+message AuthorizationMsg {
+    string contract_address = 1;
+    Initialization init_msg = 2;
+}

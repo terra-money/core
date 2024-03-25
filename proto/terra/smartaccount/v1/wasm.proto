@@ -1,0 +1,14 @@
+syntax = "proto3";
+package terra.smartaccount.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/terra-money/core/v2/x/smartaccount/types";
+
+message Initialization {
+    string account = 1 [(gogoproto.jsontag) = "account"];
+    bytes msg = 2 [(gogoproto.jsontag) = "msg"];
+}
+
+
+
