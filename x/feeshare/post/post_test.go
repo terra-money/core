@@ -200,7 +200,7 @@ func (suite *AnteTestSuite) TestCalculateFee() {
 func (suite *AnteTestSuite) TestPostHandler() {
 	suite.Setup()
 
-	// Create a mocked next post hanlder to assert the function being called.
+	// Create a mocked next post handler to assert the function being called.
 	ctrl := gomock.NewController(suite.T())
 	mockedPostDecorator := mocks.NewMockPostDecorator(ctrl)
 
@@ -234,7 +234,7 @@ func (suite *AnteTestSuite) TestPostHandler() {
 	// Remove all events from the context to assert the events being added correctly.
 	suite.Ctx = suite.Ctx.WithEventManager(sdk.NewEventManager())
 
-	// Assert the next hanlder is called once
+	// Assert the next handler is called once
 	mockedPostDecorator.
 		EXPECT().
 		PostHandle(gomock.Any(), gomock.Any(), false, true, gomock.Any()).
@@ -294,7 +294,7 @@ func (suite *AnteTestSuite) TestPostHandler() {
 func (suite *AnteTestSuite) TestDisabledPostHandle() {
 	suite.Setup()
 
-	// Create a mocked next post hanlder to assert the function being called.
+	// Create a mocked next post handler to assert the function being called.
 	ctrl := gomock.NewController(suite.T())
 	mockedPostDecorator := mocks.NewMockPostDecorator(ctrl)
 
@@ -319,7 +319,7 @@ func (suite *AnteTestSuite) TestDisabledPostHandle() {
 		suite.App.Keepers.WasmKeeper,
 	)
 
-	// Assert the next hanlder is called once
+	// Assert the next handler is called once
 	mockedPostDecorator.
 		EXPECT().
 		PostHandle(gomock.Any(), gomock.Any(), false, true, gomock.Any()).
@@ -341,7 +341,7 @@ func (suite *AnteTestSuite) TestDisabledPostHandle() {
 func (suite *AnteTestSuite) TestWithZeroFeesPostHandle() {
 	suite.Setup()
 
-	// Create a mocked next post hanlder to assert the function being called.
+	// Create a mocked next post handler to assert the function being called.
 	ctrl := gomock.NewController(suite.T())
 	mockedPostDecorator := mocks.NewMockPostDecorator(ctrl)
 
@@ -355,7 +355,7 @@ func (suite *AnteTestSuite) TestWithZeroFeesPostHandle() {
 		suite.App.Keepers.WasmKeeper,
 	)
 
-	// Assert the next hanlder is called once
+	// Assert the next handler is called once
 	mockedPostDecorator.
 		EXPECT().
 		PostHandle(gomock.Any(), gomock.Any(), false, true, gomock.Any()).
@@ -377,7 +377,7 @@ func (suite *AnteTestSuite) TestWithZeroFeesPostHandle() {
 func (suite *AnteTestSuite) TestPostHandlerWithEmptySmartContractStore() {
 	suite.Setup()
 
-	// Create a mocked next post hanlder to assert the function being called.
+	// Create a mocked next post handler to assert the function being called.
 	ctrl := gomock.NewController(suite.T())
 	mockedPostDecorator := mocks.NewMockPostDecorator(ctrl)
 
@@ -405,7 +405,7 @@ func (suite *AnteTestSuite) TestPostHandlerWithEmptySmartContractStore() {
 		suite.App.Keepers.WasmKeeper,
 	)
 
-	// Assert the next hanlder is called once
+	// Assert the next handler is called once
 	mockedPostDecorator.
 		EXPECT().
 		PostHandle(gomock.Any(), gomock.Any(), false, true, gomock.Any()).
@@ -427,7 +427,7 @@ func (suite *AnteTestSuite) TestPostHandlerWithEmptySmartContractStore() {
 func (suite *AnteTestSuite) TestPostHandlerNoSmartContractExecuted() {
 	suite.Setup()
 
-	// Create a mocked next post hanlder to assert the function being called.
+	// Create a mocked next post handler to assert the function being called.
 	ctrl := gomock.NewController(suite.T())
 	mockedPostDecorator := mocks.NewMockPostDecorator(ctrl)
 
@@ -459,7 +459,7 @@ func (suite *AnteTestSuite) TestPostHandlerNoSmartContractExecuted() {
 		suite.App.Keepers.WasmKeeper,
 	)
 
-	// Assert the next hanlder is called once
+	// Assert the next handler is called once
 	mockedPostDecorator.
 		EXPECT().
 		PostHandle(gomock.Any(), gomock.Any(), false, true, gomock.Any()).
@@ -481,7 +481,7 @@ func (suite *AnteTestSuite) TestPostHandlerNoSmartContractExecuted() {
 func (suite *AnteTestSuite) TestPostHandlerWithInvalidContractAddrOnExecution() {
 	suite.Setup()
 
-	// Create a mocked next post hanlder to assert the function being called.
+	// Create a mocked next post handler to assert the function being called.
 	ctrl := gomock.NewController(suite.T())
 	mockedPostDecorator := mocks.NewMockPostDecorator(ctrl)
 

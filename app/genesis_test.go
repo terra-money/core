@@ -11,9 +11,10 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/log"
+	"github.com/terra-money/core/v2/app/test_helpers"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	"github.com/terra-money/core/v2/app/test_helpers"
 
 	ibcfee "github.com/cosmos/ibc-go/v7/modules/apps/29-fee"
 	"github.com/golang/mock/gomock"
@@ -28,7 +29,7 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
 	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
@@ -57,6 +58,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	tmtypes "github.com/cometbft/cometbft/types"
+
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -217,7 +219,7 @@ func (s *AppGenesisTestSuite) TestMigration() {
 			"ibchooks":               ibchooks.AppModule{}.ConsensusVersion(),
 			"interchainaccounts":     ica.AppModule{}.ConsensusVersion(),
 			"mint":                   mint.AppModule{}.ConsensusVersion(),
-			"packetfowardmiddleware": router.AppModule{}.ConsensusVersion(),
+			"packetfowardmiddleware": packetforward.AppModule{}.ConsensusVersion(),
 			"params":                 params.AppModule{}.ConsensusVersion(),
 			"slashing":               slashing.AppModule{}.ConsensusVersion(),
 			"staking":                staking.AppModule{}.ConsensusVersion(),
@@ -251,7 +253,7 @@ func (s *AppGenesisTestSuite) TestMigration() {
 		"interchainquery":        1,
 		"mint":                   2,
 		"mock":                   0,
-		"packetfowardmiddleware": 1,
+		"packetfowardmiddleware": 2,
 		"params":                 1,
 		"slashing":               3,
 		"staking":                4,

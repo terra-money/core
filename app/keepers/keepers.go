@@ -3,7 +3,6 @@ package keepers
 import (
 	"path/filepath"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
 	ibctransfer "github.com/cosmos/ibc-go/v7/modules/apps/transfer"
 	ibcclient "github.com/cosmos/ibc-go/v7/modules/core/02-client"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
@@ -52,8 +51,9 @@ import (
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	routerkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
-	routertypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
+	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 
 	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
@@ -105,8 +105,6 @@ import (
 	_ "github.com/terra-money/core/v2/client/docs/statik"
 )
 
-var wasmCapabilities = "iterator,staking,stargate,token_factory,cosmwasm_1_1,cosmwasm_1_2,cosmwasm_1_3,cosmwasm_1_4"
-
 // module account permissions
 var maccPerms = map[string][]string{
 	authtypes.FeeCollectorName:     nil,
@@ -153,7 +151,7 @@ type TerraAppKeepers struct {
 	ICAControllerKeeper   icacontrollerkeeper.Keeper
 	ICAHostKeeper         icahostkeeper.Keeper
 	IBCFeeKeeper          ibcfeekeeper.Keeper
-	RouterKeeper          routerkeeper.Keeper
+	PacketForwardKeeper   packetforwardkeeper.Keeper
 	TokenFactoryKeeper    tokenfactorykeeper.Keeper
 	AllianceKeeper        alliancekeeper.Keeper
 	FeeShareKeeper        feesharekeeper.Keeper
@@ -371,22 +369,22 @@ func NewTerraAppKeepers(
 	transferIBCModule := ibctransfer.NewIBCModule(keepers.TransferKeeper)
 
 	hooksTransferStack := ibchooks.NewIBCMiddleware(&transferIBCModule, &keepers.HooksICS4Wrapper)
-	keepers.RouterKeeper = *routerkeeper.NewKeeper(
+	keepers.PacketForwardKeeper = *packetforwardkeeper.NewKeeper(
 		appCodec,
-		keepers.keys[routertypes.StoreKey],
-		keepers.GetSubspace(routertypes.ModuleName),
+		keepers.keys[packetforwardtypes.StoreKey],
 		keepers.TransferKeeper,
 		keepers.IBCKeeper.ChannelKeeper,
 		keepers.DistrKeeper,
 		keepers.BankKeeper,
 		keepers.IBCKeeper.ChannelKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	keepers.TransferStack = router.NewIBCMiddleware(
+	keepers.TransferStack = packetforward.NewIBCMiddleware(
 		hooksTransferStack,
-		&keepers.RouterKeeper,
+		&keepers.PacketForwardKeeper,
 		5,
-		routerkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
-		routerkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
+		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
+		packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
 	keepers.ICQKeeper = icqkeeper.NewKeeper(
 		appCodec,
@@ -571,7 +569,7 @@ func (app *TerraAppKeepers) initParamsKeeper(appCodec codec.BinaryCodec, legacyA
 	paramsKeeper.Subspace(ibcexported.ModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
-	paramsKeeper.Subspace(routertypes.ModuleName).WithKeyTable(routertypes.ParamKeyTable())
+	paramsKeeper.Subspace(packetforwardtypes.ModuleName).WithKeyTable(packetforwardtypes.ParamKeyTable())
 	paramsKeeper.Subspace(icqtypes.ModuleName)
 
 	// Custom Modules

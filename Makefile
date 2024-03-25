@@ -300,3 +300,27 @@ format: format-tools
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "*statik*" -not -name '*.pb.go' | xargs goimports -w -local github.com/cosmos/cosmos-sdk
 
 .PHONY: lint  lint-fix lint-docker format-tools format
+
+
+###############################################################################
+###                                Local Testnet (docker)                   ###
+###############################################################################
+
+localnet-rmi:
+	$(DOCKER) rmi terra-money/localnet-core 2>/dev/null; true
+
+localnet-build-env: localnet-rmi
+	$(DOCKER) build --tag terra-money/localnet-core -f scripts/containers/Dockerfile \
+			$(shell git rev-parse --show-toplevel)
+
+localnet-build-nodes:
+	$(DOCKER) run --rm -v $(CURDIR)/.testnets:/terra terra-money/localnet-core \
+		testnet init-files --v 3 -o /terra --starting-ip-address 192.168.15.20 --keyring-backend=test --chain-id=core-testnet-1
+	$(DOCKER) compose up -d
+
+localnet-stop:
+	$(DOCKER) compose down
+	
+localnet-start: localnet-stop localnet-build-env localnet-build-nodes
+
+.PHONY: localnet-stop localnet-start localnet-build-env localnet-build-nodes localnet-rmi
