@@ -480,7 +480,8 @@ func (app *TerraApp) GetWasmOpts(appOpts servertypes.AppOptions) []wasmkeeper.Op
 
 	wasmOpts = append(wasmOpts, tokenfactorybindings.RegisterCustomPlugins(
 		&app.Keepers.BankKeeper.BaseKeeper,
-		&app.Keepers.TokenFactoryKeeper)...,
+		&app.Keepers.TokenFactoryKeeper,
+		&app.Keepers.AllianceKeeper)...,
 	)
 
 	return wasmOpts

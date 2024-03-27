@@ -1,0 +1,57 @@
+[config]
+default_to_workspace = false
+skip_core_tasks = true
+
+[tasks.fmt]
+command = "cargo"
+args = ["fmt", "--all", "--check"]
+
+[tasks.fmt-apply]
+command = "cargo"
+args = ["fmt"]
+
+[tasks.test]
+command = "cargo"
+args = ["test", "--locked"]
+
+[tasks.test-cover]
+script = """docker run --security-opt seccomp=unconfined -v "${PWD}:/volume" xd009642/tarpaulin"""
+
+[tasks.test-cover-to-file]
+script = "cargo tarpaulin --out Lcov"
+
+[tasks.lint]
+command = "cargo"
+args = ["clippy", "--tests", "--", "-D", "warnings"]
+
+[tasks.build]
+command = "cargo"
+args = ["build", "--release", "--locked", "--target", "wasm32-unknown-unknown"]
+
+[tasks.schema]
+script = """
+for d in contracts/*; do
+  if [ -d "$d" ]; then
+    cd $d
+    cargo schema
+    cd ../..
+  fi
+done
+"""
+
+[tasks.optimize]
+script = """
+if [[ $(arch) == "arm64" ]]; then
+  image="cosmwasm/optimizer-arm64"
+else
+  image="cosmwasm/optimizer"
+fi
+
+docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  ${image}:0.15.0
+
+rm -rf scripts/artifacts
+mv artifacts/ scripts/
+"""
