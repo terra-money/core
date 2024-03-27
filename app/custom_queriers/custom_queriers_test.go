@@ -1,16 +1,18 @@
-package wasm
+package custom_queriers
 
 import (
 	"encoding/json"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"runtime"
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	alliancebindings "github.com/terra-money/alliance/x/alliance/bindings"
 	"github.com/terra-money/alliance/x/alliance/bindings/types"
 	"github.com/terra-money/core/v2/x/tokenfactory/bindings"
 	types2 "github.com/terra-money/core/v2/x/tokenfactory/bindings/types"
-	"runtime"
-	"testing"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func AlwaysErrorQuerier(ctx sdk.Context, request json.RawMessage) ([]byte, error) {
@@ -51,7 +53,7 @@ func TestWithTfAndAllianceButCallAlliance(t *testing.T) {
 			stack := make([]byte, 1024)
 			runtime.Stack(stack, false)
 			// We make sure alliance is called here
-			require.Containsf(t, string(stack), "keeper.Keeper.GetAssetByDenom", "")
+			require.Containsf(t, string(stack), "GetAlliance", "")
 		}
 	}()
 
@@ -78,7 +80,7 @@ func TestWithTfAndAllianceButCallTf(t *testing.T) {
 			stack := make([]byte, 1024)
 			runtime.Stack(stack, false)
 			// We make sure tf is called here
-			require.Containsf(t, string(stack), "bindings.QueryPlugin.GetParams", "")
+			require.Containsf(t, string(stack), "GetParams", "")
 		}
 	}()
 
