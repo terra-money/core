@@ -13,10 +13,10 @@ import (
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/terra-money/core/v2/app/custom_queriers"
 	"github.com/terra-money/core/v2/app/keepers"
 	"github.com/terra-money/core/v2/app/post"
 	"github.com/terra-money/core/v2/app/rpc"
-	tokenfactorybindings "github.com/terra-money/core/v2/x/tokenfactory/bindings"
 
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -478,9 +478,10 @@ func (app *TerraApp) GetWasmOpts(appOpts servertypes.AppOptions) []wasmkeeper.Op
 		wasmOpts = append(wasmOpts, wasmkeeper.WithVMCacheMetrics(prometheus.DefaultRegisterer))
 	}
 
-	wasmOpts = append(wasmOpts, tokenfactorybindings.RegisterCustomPlugins(
+	wasmOpts = append(wasmOpts, custom_queriers.RegisterCustomPlugins(
 		&app.Keepers.BankKeeper.BaseKeeper,
-		&app.Keepers.TokenFactoryKeeper)...,
+		&app.Keepers.TokenFactoryKeeper,
+		&app.Keepers.AllianceKeeper)...,
 	)
 
 	return wasmOpts

@@ -1,0 +1,30 @@
+[package]
+name    = "custom-queries"
+version = "0.0.1"
+authors = ["Terra Money <core@terra.money>"]
+edition = "2021"
+exclude = ["contract.wasm", "hash.txt"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+backtraces = ["cosmwasm-std/backtraces"]
+stargate = ["cosmwasm-std/stargate"]
+library = []
+
+[dependencies]
+cosmwasm-std            = { version = "1.5.3", default-features = false ,features = ["stargate", "cosmwasm_1_4"] }
+cosmwasm-storage        = "1.5.2"
+cosmwasm-schema         = "1.5.3"
+cw-storage-plus         = "1.2.0"
+cw2                     = "1.1.2"
+bech32                  = "0.9.1"
+schemars                = "0.8.16"
+serde                   = { version = "1.0.196", default-features = false, features = ["derive"] }
+terra-proto-rs          = { version = "4.0.4", default-features = false}
+thiserror               = { version = "1.0.57" }
+cw-utils                = "1.0.3"
+sha2                    = {version = "0.10.8"}
+base64                  = "0.21.7"
+hex                     = "0.4.3"

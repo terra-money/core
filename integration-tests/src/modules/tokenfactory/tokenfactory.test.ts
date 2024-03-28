@@ -13,6 +13,7 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
     let contractAddress: string;
     let subdenom = Math.random().toString(36).substring(7);
     let factoryDenom: string | undefined = undefined
+    let customQueryContractAddress: string;
 
     // Read the no100 contract, store on chain, 
     // instantiate to be used in the following tests
@@ -545,6 +546,56 @@ describe("TokenFactory Module (https://github.com/terra-money/core/tree/release/
         test("Must query the before send hook", async () => {
             const res = await LCD.chain1.tokenfactory.denomsFromCreator(tokenFactoryWalletAddr);
             expect(res.denoms.length).toBeGreaterThanOrEqual(1);
+        })
+    })
+
+    describe("Query using CosmWasm", () => {
+        beforeAll(async () => {
+            // Deploy alliance query contract
+            let tx = await wallet.createAndSignTx({
+                msgs: [
+                    new MsgStoreCode(tokenFactoryWalletAddr, fs.readFileSync(path.join(__dirname, "/../../contracts/custom_queries.wasm")).toString("base64")),
+                ],
+                chainID: "test-1",
+            });
+
+            let result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await blockInclusion();
+
+            let txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
+            let customQueryCodeId = Number(txResult.logs[0].events[1].attributes[1].value);
+            expect(customQueryCodeId).toBeDefined();
+
+            // Instantiate alliance query contract
+            tx = await wallet.createAndSignTx({
+                msgs: [new MsgInstantiateContract(
+                    tokenFactoryWalletAddr,
+                    tokenFactoryWalletAddr,
+                    customQueryCodeId,
+                    {},
+                    undefined,
+                    "Alliance query contract" + Math.random(),
+                )],
+                chainID: "test-1",
+            });
+            result = await LCD.chain1.tx.broadcastSync(tx, "test-1");
+            await blockInclusion();
+
+            txResult = await LCD.chain1.tx.txInfo(result.txhash, "test-1") as any;
+            customQueryContractAddress = txResult.logs[0].events[1].attributes[0].value;
+            expect(customQueryContractAddress).toBeDefined();
+        })
+        test("Must query token data using contract", async () => {
+            let res = await LCD.chain1.wasm.contractQuery(customQueryContractAddress, {
+                token: {
+                    admin: {
+                        denom: factoryDenom
+                    }
+                }
+            }) as any;
+            expect(res).toStrictEqual({
+                admin: randomAccountAddr
+            });
         })
     })
 });

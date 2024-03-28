@@ -1,19 +1,37 @@
 import { getLCDClient, getMnemonics, blockInclusion, votingPeriod } from "../../helpers";
-import { Coin, MsgTransfer, MsgCreateAlliance, Coins, MsgVote, Fee, MsgAllianceDelegate, MsgClaimDelegationRewards, MsgAllianceUndelegate, MsgDeleteAlliance, MsgSubmitProposal } from "@terra-money/feather.js";
+import {
+    Coin,
+    MsgTransfer,
+    MsgCreateAlliance,
+    Coins,
+    MsgVote,
+    Fee,
+    MsgAllianceDelegate,
+    MsgClaimDelegationRewards,
+    MsgAllianceUndelegate,
+    MsgDeleteAlliance,
+    MsgSubmitProposal,
+    MsgStoreCode, MsgInstantiateContract
+} from "@terra-money/feather.js";
 import { VoteOption } from "@terra-money/terra.proto/cosmos/gov/v1beta1/gov";
 import { Height } from "@terra-money/feather.js/dist/core/ibc/core/client/Height";
+import fs from "fs";
+import path from "path";
 
 describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/v0.3.x) ", () => {
     // Prepare environment clients, accounts and wallets
     const LCD = getLCDClient();
     const accounts = getMnemonics();
     const chain1Wallet = LCD.chain1.wallet(accounts.allianceMnemonic);
+    const allianceWallet2 = LCD.chain2.wallet(accounts.allianceMnemonic);
     const val2Wallet = LCD.chain2.wallet(accounts.val2);
     const val2WalletAddress = val2Wallet.key.accAddress("terra");
     const val2Address = val2Wallet.key.valAddress("terra");
     const allianceAccountAddress = accounts.allianceMnemonic.accAddress("terra");
     // This will be populated in the "Must create an alliance"
     let ibcCoin = Coin.fromString("1uluna");
+    let allianceQueryCodeId: number;
+    let allianceQueryContract: string;
 
     // Send uluna from chain-1 to chain-2 using 
     // the same wallet on both chains and start
@@ -218,15 +236,88 @@ describe("Alliance Module (https://github.com/terra-money/alliance/tree/release/
                 })
         });
 
+        describe("Alliance wasm queries", () => {
+            beforeAll(async () => {
+
+                // Deploy query contract
+                let tx = await allianceWallet2.createAndSignTx({
+                    msgs: [
+                        new MsgStoreCode(allianceAccountAddress, fs.readFileSync(path.join(__dirname, "/../../contracts/custom_queries.wasm")).toString("base64")),
+                    ],
+                    chainID: "test-2",
+                });
+
+                let result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
+                await blockInclusion();
+
+                let txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;
+                allianceQueryCodeId = Number(txResult.logs[0].events[1].attributes[1].value);
+                expect(allianceQueryCodeId).toBeDefined();
+
+                // Instantiate query contract
+                tx = await allianceWallet2.createAndSignTx({
+                    msgs: [new MsgInstantiateContract(
+                        allianceAccountAddress,
+                        allianceAccountAddress,
+                        allianceQueryCodeId,
+                        {},
+                        undefined,
+                        "Alliance query contract" + Math.random(),
+                    )],
+                    chainID: "test-2",
+                });
+                result = await LCD.chain2.tx.broadcastSync(tx, "test-2");
+                await blockInclusion();
+
+                txResult = await LCD.chain2.tx.txInfo(result.txhash, "test-2") as any;
+                allianceQueryContract = txResult.logs[0].events[1].attributes[0].value;
+                expect(allianceQueryContract).toBeDefined();
+            })
+
+            test("Must be able to query alliance state in CosmWasm", async () => {
+
+                let res = await LCD.chain2.wasm.contractQuery(allianceQueryContract, {
+                    alliance: {
+                        denom: ibcCoin.denom
+                    }
+                }) as any;
+                expect(res.denom).toEqual(ibcCoin.denom);
+
+                res = await LCD.chain2.wasm.contractQuery(allianceQueryContract, {
+                    delegation: {
+                        denom: ibcCoin.denom,
+                        validator: val2Address,
+                        delegator: allianceAccountAddress,
+                    }
+                }) as any;
+                expect(res).toStrictEqual({
+                    delegator: allianceAccountAddress,
+                    validator: val2Address,
+                    denom: ibcCoin.denom,
+                    amount: "1000",
+                });
+
+                await blockInclusion();
+                res = await LCD.chain2.wasm.contractQuery(allianceQueryContract, {
+                    delegation_rewards: {
+                        denom: ibcCoin.denom,
+                        validator: val2Address,
+                        delegator: allianceAccountAddress,
+                    }
+                }) as any;
+                expect(res.rewards.length).toEqual(1);
+            })
+        })
+
         describe("After delegation", () => {
             test("Must claim rewards from the alliance", async () => {
                 const allianceWallet2 = LCD.chain2.wallet(accounts.allianceMnemonic);
                 let ibcCoin = (await LCD.chain2.bank.balance(allianceAccountAddress))[0].find(c => c.denom.startsWith("ibc/")) as Coin;
                 let tx = await allianceWallet2.createAndSignTx({
-                    msgs: [
-                        new MsgClaimDelegationRewards(
-                            allianceAccountAddress,
-                            val2Address,
+                msgs: [
+                    new MsgClaimDelegationRewards(
+                        allianceAccountAddress,
+                        val2Address,
                             ibcCoin.denom,
                         ),
                     ],

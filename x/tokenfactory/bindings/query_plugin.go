@@ -21,7 +21,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 			return nil, errorsmod.Wrap(err, "failed query")
 		}
 		if contractQuery.Token == nil {
-			return nil, errorsmod.Wrap(sdkerrors.ErrUnknownRequest, "nil token field")
+			return nil, errorsmod.Wrap(sdkerrors.ErrUnknownRequest, "unknown query: nil token field")
 		}
 		tokenQuery := contractQuery.Token
 
@@ -99,7 +99,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 			return bz, nil
 
 		default:
-			return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown token query variant"}
+			return nil, wasmvmtypes.UnsupportedRequest{Kind: "unknown query"}
 		}
 	}
 }
