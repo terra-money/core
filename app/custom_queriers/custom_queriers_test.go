@@ -88,3 +88,22 @@ func TestWithTfAndAllianceButCallTf(t *testing.T) {
 	_, err = querier(sdk.Context{}, bz)
 	require.Fail(t, "should panic")
 }
+
+func TestWithTfAndAllianceButRandomCall(t *testing.T) {
+	tfQuerier := bindings.CustomQuerier(&bindings.QueryPlugin{})
+	allianceQuerier := alliancebindings.CustomQuerier(&alliancebindings.QueryPlugin{})
+	querier := CustomQueriers(tfQuerier, allianceQuerier)
+
+	query := sdk.NewCoin("denom", sdk.NewInt(1))
+	bz, err := json.Marshal(query)
+	require.NoError(t, err)
+
+	// We call querier but it will panic because we don't have a keeper
+	_, err = querier(sdk.Context{}, bz)
+	require.Error(t, err)
+}
+
+func TestRegisterCustomPlugins(t *testing.T) {
+	options := RegisterCustomPlugins(nil, nil, nil)
+	require.Len(t, options, 2)
+}
