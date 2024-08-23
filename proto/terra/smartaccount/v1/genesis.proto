@@ -1,0 +1,16 @@
+syntax = "proto3";
+package terra.smartaccount.v1;
+
+import "gogoproto/gogo.proto";
+import "terra/smartaccount/v1/params.proto";
+import "terra/smartaccount/v1/setting.proto";
+
+option go_package = "github.com/terra-money/core/v2/x/smartaccount/types";
+
+// GenesisState defines the smartaccount module's genesis state.
+message GenesisState {
+  // params defines the paramaters of the module.
+  Params params = 1 [ (gogoproto.nullable) = false ];
+
+  repeated Setting settings = 2;
+}

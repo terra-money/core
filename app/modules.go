@@ -21,6 +21,8 @@ import (
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/terra-money/core/v2/x/smartaccount"
+	smartaccounttypes "github.com/terra-money/core/v2/x/smartaccount/types"
 
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -117,6 +119,7 @@ var ModuleBasics = module.NewBasicManager(
 	alliance.AppModuleBasic{},
 	feeshare.AppModuleBasic{},
 	icq.AppModuleBasic{},
+	smartaccount.AppModuleBasic{},
 )
 
 // NOTE: Any module instantiated in the module manager that is later modified
@@ -154,6 +157,7 @@ func appModules(app *TerraApp, encodingConfig terrappsparams.EncodingConfig, ski
 		alliance.NewAppModule(app.appCodec, app.Keepers.AllianceKeeper, app.Keepers.StakingKeeper, app.Keepers.AccountKeeper, app.Keepers.BankKeeper, app.interfaceRegistry, app.GetSubspace(alliancetypes.ModuleName)),
 		feeshare.NewAppModule(app.Keepers.FeeShareKeeper, app.Keepers.AccountKeeper, app.GetSubspace(feesharetypes.ModuleName)),
 		icq.NewAppModule(app.Keepers.ICQKeeper),
+		smartaccount.NewAppModule(app.Keepers.SmartAccountKeeper, app.GetSubspace(smartaccounttypes.ModuleName)),
 	}
 }
 
@@ -191,6 +195,7 @@ var initGenesisOrder = []string{
 	feesharetypes.ModuleName,
 	consensusparamtypes.ModuleName,
 	icqtypes.ModuleName,
+	smartaccounttypes.ModuleName,
 }
 
 var beginBlockersOrder = []string{
@@ -223,6 +228,7 @@ var beginBlockersOrder = []string{
 	feesharetypes.ModuleName,
 	consensusparamtypes.ModuleName,
 	icqtypes.ModuleName,
+	smartaccounttypes.ModuleName,
 }
 
 var endBlockerOrder = []string{
@@ -255,4 +261,5 @@ var endBlockerOrder = []string{
 	feesharetypes.ModuleName,
 	consensusparamtypes.ModuleName,
 	icqtypes.ModuleName,
+	smartaccounttypes.ModuleName,
 }

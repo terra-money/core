@@ -18,6 +18,7 @@ import (
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	smartaccounttypes "github.com/terra-money/core/v2/x/smartaccount/types"
 )
 
 // GenesisState - The genesis state of the blockchain is represented here as a map of raw json
@@ -78,6 +79,12 @@ func (genState GenesisState) SetDefaultTerraConfig(cdc codec.JSONCodec) GenesisS
 		AllowMessages: icaAllowedMsgs(),
 	}
 	genState[icatypes.ModuleName] = cdc.MustMarshalJSON(&icaGenState)
+
+	var smartaccountGenState smartaccounttypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[smartaccounttypes.ModuleName], &smartaccountGenState)
+	setting := smartaccounttypes.NewSetting("terra1tck9vx8vwu6l83zy76ssdkhnhw8dfcrt80hc6x")
+	smartaccountGenState.Settings = smartaccounttypes.NewSettings(&setting)
+	genState[smartaccounttypes.ModuleName] = cdc.MustMarshalJSON(&smartaccountGenState)
 
 	return genState
 }

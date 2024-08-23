@@ -1,0 +1,55 @@
+package post
+
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/terra-money/core/v2/x/smartaccount/ante"
+	"github.com/terra-money/core/v2/x/smartaccount/types"
+)
+
+type PostTransactionHookDecorator struct {
+	smartaccountKeeper SmartAccountKeeper
+	wasmKeeper         WasmKeeper
+}
+
+func NewPostTransactionHookDecorator(sak SmartAccountKeeper, wk WasmKeeper) PostTransactionHookDecorator {
+	return PostTransactionHookDecorator{
+		smartaccountKeeper: sak,
+		wasmKeeper:         wk,
+	}
+}
+
+func (pth PostTransactionHookDecorator) PostHandle(
+	ctx sdk.Context,
+	tx sdk.Tx,
+	simulate bool,
+	success bool,
+	next sdk.PostHandler,
+) (newCtx sdk.Context, err error) {
+	setting, ok := ctx.Value(types.ModuleName).(*types.Setting)
+	if !ok {
+		return next(ctx, tx, simulate, success)
+	}
+
+	if setting.PostTransaction != nil && len(setting.PostTransaction) > 0 {
+		for _, postTx := range setting.PostTransaction {
+			contractAddr, err := sdk.AccAddressFromBech32(postTx)
+			if err != nil {
+				return ctx, err
+			}
+			data, err := BuildPostTransactionHookMsg(tx)
+			if err != nil {
+				return ctx, err
+			}
+			_, err = pth.wasmKeeper.Sudo(ctx, contractAddr, data)
+			if err != nil {
+				return ctx, err
+			}
+		}
+	}
+	return next(ctx, tx, simulate, success)
+}
+
+func BuildPostTransactionHookMsg(tx sdk.Tx) ([]byte, error) {
+	return ante.BuildPrePostTransactionHookMsg(tx, false)
+}

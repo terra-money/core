@@ -1,0 +1,53 @@
+syntax = "proto3";
+package terra.smartaccount.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
+import "terra/smartaccount/v1/setting.proto";
+
+option go_package = "github.com/terra-money/core/v2/x/smartaccount/types";
+
+// Msg defines the fees Msg service.
+service Msg {
+    option (cosmos.msg.v1.service) = true;
+
+    // CreateSmartAccount defines a method for creating a smart account.
+    rpc CreateSmartAccount(MsgCreateSmartAccount) returns (MsgCreateSmartAccountResponse);
+    
+    // UpdateAuthorization defines a method for updating the wasm authentication contract.
+    rpc UpdateAuthorization(MsgUpdateAuthorization) returns (MsgUpdateAuthorizationResponse);
+
+    // UpdateTransactionHooks defines a method for updating the wasm transaction hooks contract.
+    rpc UpdateTransactionHooks(MsgUpdateTransactionHooks) returns (MsgUpdateTransactionHooksResponse);
+
+    // DisableSmartAccountMsg defines a method for converting smart account to basic account.
+    rpc DisableSmartAccount(MsgDisableSmartAccount) returns (MsgDisableSmartAccountResponse);
+}
+
+message MsgCreateSmartAccount {
+    string account = 1;
+}
+
+message MsgCreateSmartAccountResponse {}
+
+message MsgUpdateAuthorization {
+    string account = 1;
+    bool fallback = 2;
+    repeated AuthorizationMsg authorization_msgs = 3;
+}
+
+message MsgUpdateAuthorizationResponse {}
+
+message MsgUpdateTransactionHooks {
+    string account = 1;
+    repeated string pre_transaction_hooks = 2;
+    repeated string post_transaction_hooks = 3;
+}
+
+message MsgUpdateTransactionHooksResponse {}
+
+message MsgDisableSmartAccount {
+    string account = 1;
+}
+
+message MsgDisableSmartAccountResponse {}

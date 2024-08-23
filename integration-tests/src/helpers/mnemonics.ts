@@ -48,20 +48,20 @@ export function getMnemonics() {
     let wasmContracts = new MnemonicKey({
         mnemonic: "degree under tray object thought mercy mushroom captain bus work faint basic twice cube noble man ripple close flush bunker dish spare hungry arm"
     })
-    let mnemonic2 = new MnemonicKey({
+    let smartaccControllerMnemonic = new MnemonicKey({
         mnemonic: "range struggle season mesh antenna delay sell light yard path risk curve brain nut cabin injury dilemma fun comfort crumble today transfer bring draft"
     })
-    let mnemonic3 = new MnemonicKey({
+    let smartaccPreTxMnemonic = new MnemonicKey({
         mnemonic: "giraffe trim element wheel cannon nothing enrich shiver upon output iron recall already fix appear produce fix behind scissors artefact excite tennis into side"
     })
-    let mnemonic4 = new MnemonicKey({
+    let smartaccPostTxMnemonic = new MnemonicKey({
         mnemonic: "run turn cup combine sad toast roof already melt chimney arctic save avocado theory bracket cherry cotton fee once favorite swarm ignore dream element"
     })
-    let mnemonic5 = new MnemonicKey({
-        mnemonic: "script key fold coyote cage squirrel prevent pole auction slide vintage shoot mirror erosion equip goose capable critic test space sketch monkey eight candy"
-    })
-    let mnemonic6 = new MnemonicKey({
+    let smartaccAuthMnemonic = new MnemonicKey({
         mnemonic: "work clap clarify edit explain exact depth ramp law hard feel beauty stumble occur prevent crush distance purpose scrap current describe skirt panther skirt"
+    })
+    let mnemonic1 = new MnemonicKey({
+        mnemonic: "script key fold coyote cage squirrel prevent pole auction slide vintage shoot mirror erosion equip goose capable critic test space sketch monkey eight candy"
     })
 
     return {
@@ -79,10 +79,10 @@ export function getMnemonics() {
         tokenFactoryMnemonic,
         ibcHooksMnemonic,
         wasmContracts,
-        mnemonic2,
-        mnemonic3,
-        mnemonic4,
-        mnemonic5,
-        mnemonic6,
+        mnemonic1,
+        smartaccAuthMnemonic,
+        smartaccControllerMnemonic,
+        smartaccPreTxMnemonic,
+        smartaccPostTxMnemonic,
     }
 }
