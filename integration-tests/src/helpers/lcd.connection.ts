@@ -6,8 +6,8 @@ export function getLCDClient() {
             "test-1": {
                 lcd: "http://localhost:1316",
                 chainID: "test-1",
-                gasPrices: "0.15uluna",
-                gasAdjustment: 1.5,
+                gasPrices: "0.015uluna",
+                gasAdjustment: 1.75,
                 prefix: "terra"
             }
         }),
@@ -15,8 +15,8 @@ export function getLCDClient() {
             "test-2": {
                 lcd: "http://localhost:1317",
                 chainID: "test-2",
-                gasPrices: "0.15uluna",
-                gasAdjustment: 1.5,
+                gasPrices: "0.015uluna",
+                gasAdjustment: 1.75,
                 prefix: "terra"
             }
         })

@@ -1,0 +1,25 @@
+syntax = "proto3";
+package terra.feeburn.v1;
+
+import "terra/feeburn/v1/params.proto";
+import "google/api/annotations.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/terra-money/core/v2/x/feeburn/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Params retrieves the FeeShare module params
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/terra/feeburn/v1/params";
+  }
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params is the returned FeeShare parameter
+  Params params = 1 [ (gogoproto.nullable) = false ];
+}

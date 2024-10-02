@@ -1,0 +1,13 @@
+syntax = "proto3";
+package terra.feeburn.v1;
+
+import "terra/feeburn/v1/params.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/terra-money/core/v2/x/feeburn/types";
+
+// GenesisState defines the feeburn module's genesis state.
+message GenesisState {
+  // params defines the paramaters of the module.
+  Params params = 1 [ (gogoproto.nullable) = false ];
+}
